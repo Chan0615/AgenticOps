@@ -37,14 +37,17 @@ async def create_menu(db: AsyncSession, menu_data: dict) -> Menu:
     return menu
 
 
-async def update_menu(
-    db: AsyncSession, menu_id: int, menu_data: dict
-) -> Optional[Menu]:
+async def update_menu(db: AsyncSession, menu_id: int, menu_data) -> Optional[Menu]:
     """更新菜单"""
     menu = await get_menu_by_id(db, menu_id)
     if not menu:
         return None
-    for key, value in menu_data.items():
+    update_data = (
+        menu_data.model_dump(exclude_unset=True)
+        if hasattr(menu_data, "model_dump")
+        else menu_data
+    )
+    for key, value in update_data.items():
         if value is not None:
             setattr(menu, key, value)
     await db.commit()

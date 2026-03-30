@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Config (contains secrets)
+backend/config.yaml
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+.qoder/

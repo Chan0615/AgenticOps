@@ -1,30 +1,39 @@
 <template>
   <div>
+    <!-- 页头 -->
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-surface-900">用户管理</h2>
+      <div>
+        <h2 class="text-xl font-bold text-surface-900">用户管理</h2>
+        <p class="text-sm text-surface-400 mt-0.5">管理系统用户账号与权限</p>
+      </div>
       <button 
         @click="showAddModal = true"
-        class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center"
+        class="px-4 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 text-white text-sm font-medium rounded-xl shadow-lg shadow-brand-200/50 hover:shadow-brand-300/50 hover:from-brand-400 hover:to-brand-500 transition-all duration-200 flex items-center gap-2"
       >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         添加用户
       </button>
     </div>
 
     <!-- 搜索栏 -->
-    <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-surface-100">
-      <div class="flex flex-col md:flex-row gap-4">
-        <input 
-          v-model="searchQuery"
-          type="text"
-          placeholder="搜索用户名或邮箱..."
-          class="flex-1 px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
-        />
+    <div class="bg-white rounded-2xl border border-surface-100 p-4 mb-6">
+      <div class="flex flex-col md:flex-row gap-3">
+        <div class="relative w-full md:w-72">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            v-model="searchQuery"
+            type="text"
+            placeholder="搜索用户名或邮箱..."
+            class="w-full h-10 pl-10 pr-4 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
+          />
+        </div>
         <select 
           v-model="statusFilter"
-          class="px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
+          class="h-10 px-4 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-700 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-all appearance-none cursor-pointer"
         >
           <option value="">所有状态</option>
           <option value="true">正常</option>
@@ -33,66 +42,61 @@
       </div>
     </div>
 
-    <!-- 用户列表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-surface-100 overflow-hidden">
+    <!-- 用户表格 -->
+    <div class="bg-white rounded-2xl border border-surface-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-surface-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">用户</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">邮箱</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">角色</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">状态</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider">创建时间</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-surface-400 uppercase tracking-wider">操作</th>
+          <thead>
+            <tr class="border-b border-surface-100">
+              <th class="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">用户</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">邮箱</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">角色</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">状态</th>
+              <th class="px-6 py-4 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">创建时间</th>
+              <th class="px-6 py-4 text-right text-xs font-semibold text-surface-500 uppercase tracking-wider">操作</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200">
-            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-surface-50">
+          <tbody class="divide-y divide-surface-50">
+            <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-brand-50/30 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                    <span class="text-white text-sm font-medium">{{ user.username.charAt(0).toUpperCase() }}</span>
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0">
+                    <span class="text-white text-sm font-semibold">{{ user.username.charAt(0).toUpperCase() }}</span>
                   </div>
-                  <div class="ml-4">
+                  <div>
                     <div class="text-sm font-medium text-surface-900">{{ user.username }}</div>
-                    <div class="text-sm text-surface-400">{{ user.full_name || '-' }}</div>
+                    <div class="text-xs text-surface-400">{{ user.full_name || '-' }}</div>
                   </div>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-surface-400">{{ user.email }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-surface-600">{{ user.email }}</td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                <span :class="[
+                  'px-2.5 py-1 text-xs font-medium rounded-lg',
+                  user.is_superuser ? 'bg-brand-50 text-brand-700' : 'bg-surface-100 text-surface-600'
+                ]">
                   {{ user.is_superuser ? '超级管理员' : '普通用户' }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span 
-                  :class="[
-                    'px-2 py-1 text-xs font-medium rounded-full',
-                    user.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  ]"
-                >
-                  {{ user.status ? '正常' : '禁用' }}
+                <span class="flex items-center gap-1.5">
+                  <span :class="['w-1.5 h-1.5 rounded-full', user.status ? 'bg-emerald-500' : 'bg-surface-300']"></span>
+                  <span class="text-sm" :class="user.status ? 'text-surface-700' : 'text-surface-400'">{{ user.status ? '正常' : '禁用' }}</span>
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-surface-400">
                 {{ formatDate(user.created_at) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <td class="px-6 py-4 whitespace-nowrap text-right">
                 <button 
                   @click="editUser(user)"
-                  class="text-brand-600 hover:text-purple-900 mr-3"
-                >
-                  编辑
-                </button>
+                  class="text-sm text-brand-500 hover:text-brand-700 font-medium mr-3 transition-colors"
+                >编辑</button>
                 <button 
                   v-if="!user.is_superuser"
                   @click="deleteUser(user.id)"
-                  class="text-red-600 hover:text-red-900"
-                >
-                  删除
-                </button>
+                  class="text-sm text-surface-400 hover:text-rose-500 font-medium transition-colors"
+                >删除</button>
               </td>
             </tr>
           </tbody>
@@ -100,99 +104,109 @@
       </div>
       
       <!-- 空状态 -->
-      <div v-if="filteredUsers.length === 0" class="p-12 text-center">
-        <svg class="mx-auto h-12 w-12 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-surface-900">没有用户</h3>
-        <p class="mt-1 text-sm text-surface-400">开始添加第一个用户吧。</p>
+      <div v-if="filteredUsers.length === 0" class="p-16 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-surface-50 border border-surface-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-7 h-7 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <h3 class="text-sm font-medium text-surface-700">暂无用户</h3>
+        <p class="text-xs text-surface-400 mt-1">点击上方「添加用户」开始创建</p>
       </div>
     </div>
 
-    <!-- 添加/编辑用户模态框 -->
-    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closeModal">
-      <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
-        <div class="px-6 py-4 border-b border-surface-200">
-          <h3 class="text-lg font-semibold text-surface-900">{{ showEditModal ? '编辑用户' : '添加用户' }}</h3>
+    <!-- 添加/编辑模态框 -->
+    <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeModal">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md animate-fade-in">
+        <!-- 模态框头部 -->
+        <div class="flex items-center justify-between px-6 py-5 border-b border-surface-100">
+          <h3 class="text-base font-semibold text-surface-900">{{ showEditModal ? '编辑用户' : '添加用户' }}</h3>
+          <button @click="closeModal" class="w-8 h-8 rounded-lg hover:bg-surface-100 flex items-center justify-center transition-colors">
+            <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         
         <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1">用户名</label>
+            <label class="block text-xs font-medium text-surface-600 mb-1.5">用户名</label>
             <input 
               v-model="formData.username"
               type="text"
               required
               :disabled="showEditModal"
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 disabled:bg-surface-100"
+              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white disabled:bg-surface-100 disabled:text-surface-400 transition-all"
+              placeholder="请输入用户名"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1">邮箱</label>
+            <label class="block text-xs font-medium text-surface-600 mb-1.5">邮箱</label>
             <input 
               v-model="formData.email"
               type="email"
               required
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
+              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
+              placeholder="请输入邮箱"
             />
           </div>
           
           <div v-if="!showEditModal">
-            <label class="block text-sm font-medium text-surface-700 mb-1">密码</label>
+            <label class="block text-xs font-medium text-surface-600 mb-1.5">密码</label>
             <input 
               v-model="formData.password"
               type="password"
-              :required="!showEditModal"
+              required
               minlength="6"
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
+              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
+              placeholder="至少6个字符"
             />
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1">真实姓名</label>
-            <input 
-              v-model="formData.full_name"
-              type="text"
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1">手机号</label>
-            <input 
-              v-model="formData.phone"
-              type="text"
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
-            />
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium text-surface-600 mb-1.5">真实姓名</label>
+              <input 
+                v-model="formData.full_name"
+                type="text"
+                class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
+                placeholder="选填"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-surface-600 mb-1.5">手机号</label>
+              <input 
+                v-model="formData.phone"
+                type="text"
+                class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
+                placeholder="选填"
+              />
+            </div>
           </div>
           
           <div v-if="showEditModal">
-            <label class="block text-sm font-medium text-surface-700 mb-1">状态</label>
+            <label class="block text-xs font-medium text-surface-600 mb-1.5">状态</label>
             <select 
               v-model="formData.status"
-              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
+              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-700 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-all"
             >
               <option :value="true">正常</option>
               <option :value="false">禁用</option>
             </select>
           </div>
           
-          <div class="flex justify-end space-x-3 pt-4">
+          <div class="flex justify-end gap-3 pt-4 border-t border-surface-100">
             <button 
               type="button"
               @click="closeModal"
-              class="px-4 py-2 text-surface-700 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
-            >
-              取消
-            </button>
+              class="px-5 py-2.5 text-sm font-medium text-surface-600 bg-surface-50 border border-surface-200 rounded-xl hover:bg-surface-100 transition-colors"
+            >取消</button>
             <button 
               type="submit"
               :disabled="loading"
-              class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-50"
-            >
-              {{ loading ? '保存中...' : '保存' }}
-            </button>
+              class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-600 rounded-xl shadow-lg shadow-brand-200/50 hover:from-brand-400 hover:to-brand-500 transition-all disabled:opacity-50"
+            >{{ loading ? '保存中...' : '保存' }}</button>
           </div>
         </form>
       </div>
@@ -227,10 +241,8 @@ const filteredUsers = computed(() => {
     const matchesSearch = searchQuery.value === '' || 
       user.username.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.value.toLowerCase())
-    
     const matchesStatus = statusFilter.value === '' || 
       user.status.toString() === statusFilter.value
-    
     return matchesSearch && matchesStatus
   })
 })
@@ -287,7 +299,6 @@ async function handleSubmit() {
     closeModal()
   } catch (error) {
     console.error('Failed to save user:', error)
-    alert('保存失败，请稍后重试')
   } finally {
     loading.value = false
   }
@@ -295,13 +306,11 @@ async function handleSubmit() {
 
 async function deleteUser(userId: number) {
   if (!confirm('确定要删除这个用户吗？')) return
-  
   try {
     await userApi.deleteUser(userId)
     await fetchUsers()
   } catch (error) {
     console.error('Failed to delete user:', error)
-    alert('删除失败，请稍后重试')
   }
 }
 

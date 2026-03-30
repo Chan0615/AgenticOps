@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, List
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional, List, Any
 from datetime import datetime
 
 
@@ -35,15 +35,35 @@ class MenuUpdate(BaseModel):
     description: Optional[str] = None
 
 
-class MenuResponse(MenuBase):
+class MenuResponse(BaseModel):
     id: int
-    status: bool
+    name: str
+    code: str
+    path: Optional[str] = None
+    component: Optional[str] = None
+    icon: Optional[str] = None
+    parent_id: Optional[int] = None
+    sort_order: int = 0
+    type: str = "menu"
+    status: bool = True
+    meta: Optional[dict] = None
+    description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     children: List["MenuResponse"] = []
-    
+
     class Config:
         from_attributes = True
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_data(cls, obj: Any) -> Any:
+        if hasattr(obj, "__dict__"):
+            data = {k: v for k, v in obj.__dict__.items() if not k.startswith("_")}
+            if "children" not in data or data["children"] is None:
+                data["children"] = []
+            return data
+        return obj
 
 
 # 更新前向引用
