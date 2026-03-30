@@ -118,37 +118,57 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- 搜索 -->
-          <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-50 border border-surface-200 text-surface-400 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span class="text-xs">搜索知识库...</span>
-            <kbd class="ml-4 px-1.5 py-0.5 text-[10px] bg-white rounded border border-surface-200 text-surface-400">⌘K</kbd>
-          </div>
-
           <!-- 用户下拉 -->
           <div class="relative">
-            <button @click.stop="userMenuOpen = !userMenuOpen" class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-50 transition-colors">
-              <div class="w-7 h-7 rounded-full bg-brand-100 border border-brand-200 flex items-center justify-center">
-                <span class="text-xs font-semibold text-brand-600">{{ userInitial }}</span>
+            <button @click.stop="userMenuOpen = !userMenuOpen" class="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-xl hover:bg-surface-50 transition-all border border-transparent hover:border-surface-200">
+              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-md shadow-brand-200/50">
+                <span class="text-sm font-semibold text-white">{{ userInitial }}</span>
               </div>
-              <svg class="w-3.5 h-3.5 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div class="hidden sm:block text-left">
+                <p class="text-sm font-medium text-surface-900 leading-tight">{{ authStore.user?.full_name || authStore.user?.username }}</p>
+                <p class="text-[11px] text-surface-400 leading-tight">{{ authStore.user?.is_superuser ? '超级管理员' : '普通用户' }}</p>
+              </div>
+              <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
-            <div v-if="userMenuOpen" @click.stop class="absolute right-0 mt-2 w-56 bg-white border border-surface-200 rounded-xl shadow-lg py-1.5 z-50 animate-fade-in">
-              <div class="px-4 py-3 border-b border-surface-100">
-                <p class="text-sm font-medium text-surface-900">{{ authStore.user?.full_name || authStore.user?.username }}</p>
-                <p class="text-xs text-surface-400 mt-0.5">{{ authStore.user?.email }}</p>
+            <div v-if="userMenuOpen" @click.stop class="absolute right-0 mt-2 w-64 bg-white border border-surface-200 rounded-2xl shadow-xl py-2 z-50 animate-fade-in">
+              <!-- 用户信息卡片 -->
+              <div class="px-4 py-4 border-b border-surface-100">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-200/50">
+                    <span class="text-lg font-bold text-white">{{ userInitial }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-surface-900 truncate">{{ authStore.user?.full_name || authStore.user?.username }}</p>
+                    <p class="text-xs text-surface-400 truncate">{{ authStore.user?.email || '未设置邮箱' }}</p>
+                    <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium" :class="authStore.user?.is_superuser ? 'bg-brand-50 text-brand-600' : 'bg-surface-100 text-surface-500'">
+                      <span class="w-1.5 h-1.5 rounded-full" :class="authStore.user?.is_superuser ? 'bg-brand-400' : 'bg-surface-400'"></span>
+                      {{ authStore.user?.is_superuser ? '超级管理员' : '普通用户' }}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <button @click="handleLogout" class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                退出登录
-              </button>
+              
+              <!-- 菜单项 -->
+              <div class="py-1">
+                <router-link to="/settings/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-colors">
+                  <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  个人设置
+                </router-link>
+              </div>
+              
+              <div class="border-t border-surface-100 mt-1 pt-1">
+                <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  退出登录
+                </button>
+              </div>
             </div>
           </div>
         </div>

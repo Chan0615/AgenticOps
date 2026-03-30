@@ -4,9 +4,8 @@ from contextlib import asynccontextmanager
 
 from app.core import config
 from app.db.database import init_db
-from app.api.common import auth_router
+from app.api.common import auth_router, rag_router
 from app.api.system import users_router, roles_router, menus_router
-from app.api.agent import rag_router
 
 
 @asynccontextmanager

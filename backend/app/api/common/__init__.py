@@ -1,4 +1,7 @@
-# Common module - 通用模块
-from .auth import router as auth_router, get_current_user
 
-__all__ = ["auth_router", "get_current_user"]
+
+# Common API 模块
+from app.api.common.auth import router as auth_router
+from app.api.common.rag import router as rag_router
+
+__all__ = ["auth_router", "rag_router"]
