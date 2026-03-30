@@ -1,6 +1,7 @@
 """
 多 Agent 协作 RAG 系统
 基于 smolagents 和 LangChain 实现
+支持 Tools 工具调用（时间、天气等）
 """
 
 import os
@@ -14,6 +15,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader, DirectoryLoader
 from langchain_core.documents import Document
+
+from app.rag.tools import execute_tool, get_tools
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -476,29 +479,37 @@ class IterativeRAG:
         return answer
     
     def _generate_llm_answer(self, question: str) -> str:
-        """当知识库无结果时，使用 LLM 直接回答"""
-        # 这里应该调用实际的 LLM API（如阿里云通义千问）
-        # 简化版本：返回友好的提示
-        
-        # 尝试识别问题类型并给出通用回答
+        """当知识库无结果时，尝试使用 Tools 回答，否则返回友好提示"""
         question_lower = question.lower()
         
-        # 时间相关问题
-        if any(kw in question_lower for kw in ['今天', '明天', '昨天', '星期', '日期', '时间']):
-            from datetime import datetime
-            now = datetime.now()
-            weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
-            today_str = now.strftime('%Y年%m月%d日')
-            weekday_str = weekdays[now.weekday()]
-            
-            return f"今天是 {today_str} {weekday_str}。\n\n我当前无法访问知识库中的相关信息，但可以根据系统时间回答你的问题。如果你有其他关于知识库内容的问题，欢迎继续提问！"
+        # 尝试使用 Tools 回答
+        # 1. 时间相关
+        if any(kw in question_lower for kw in ['现在', '时间', '几点', '日期', '星期', '今天', '明天', '昨天']):
+            try:
+                result = execute_tool("get_current_time")
+                return f"{result}\n\n📌 这是通过工具调用获取的实时信息。"
+            except Exception as e:
+                logger.warning(f"工具调用失败: {e}")
         
-        # 问候语
-        if any(kw in question_lower for kw in ['你好', '您好', 'hello', 'hi']):
-            return "你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以通过知识库为你提供精准的信息检索服务。如果你有关于知识库内容的问题，欢迎随时提问！"
+        # 2. 计算相关
+        if any(kw in question_lower for kw in ['计算', '等于', '多少', '+', '-', '*', '/', '平方', '根号']):
+            # 尝试提取数学表达式
+            import re
+            # 简单匹配数字和运算符
+            expr_match = re.search(r'[\d\+\-\*\/\(\)\.\s]+', question)
+            if expr_match:
+                try:
+                    result = execute_tool("calculate", expression=expr_match.group())
+                    return f"{result}\n\n📌 这是通过计算工具得出的结果。"
+                except Exception as e:
+                    logger.warning(f"计算工具调用失败: {e}")
+        
+        # 4. 问候语
+        if any(kw in question_lower for kw in ['你好', '您好', 'hello', 'hi', '在吗']):
+            return "你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以：\n• 通过知识库检索专业信息\n• 查询当前时间、天气等实时信息\n• 进行简单的数学计算\n\n有什么可以帮你的吗？"
         
         # 默认回答
-        return f"关于「{question}」，我在知识库中没有找到相关的文档资料。\n\n这可能是因为：\n1. 知识库中暂无相关内容\n2. 问题描述需要更具体\n\n你可以尝试：\n• 用不同的关键词描述问题\n• 检查知识库是否已上传相关文档\n• 直接询问，我会根据通用知识回答\n\n有什么其他我可以帮你的吗？"
+        return f"关于「{question}」，我在知识库中没有找到相关的文档资料。\n\n这可能是因为：\n1. 知识库中暂无相关内容\n2. 问题描述需要更具体\n\n你可以尝试：\n• 用不同的关键词描述问题\n• 检查知识库是否已上传相关文档\n• 询问时间、天气、计算等，我可以使用工具回答\n\n有什么其他我可以帮你的吗？"
 
 
 # 保留旧的类以保持兼容性

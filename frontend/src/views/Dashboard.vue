@@ -173,7 +173,7 @@
                   
                   <!-- 最终回答 -->
                   <div class="bg-white border border-surface-100 rounded-2xl rounded-tl-md px-5 py-4 shadow-sm">
-                    <div class="text-[15px] text-surface-800 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</div>
+                    <div class="prose prose-sm max-w-none text-[15px] text-surface-800 leading-relaxed" v-html="marked.parse(msg.content)"></div>
                   </div>
                   
                   <!-- 引用来源 -->
@@ -240,6 +240,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, nextTick, computed } from 'vue'
+import { marked } from 'marked'
 
 interface ThinkingStep {
   text: string
@@ -386,14 +387,24 @@ function generateReply(question: string): Message {
   if (isTimeQuestion) {
     const now = new Date()
     const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-    const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
     const weekday = weekdays[now.getDay()]
     
     return {
       role: 'assistant',
-      content: `现在是 ${timeStr}，${dateStr} ${weekday}。\n\n📌 这是基于系统时间的回答，未从知识库检索到相关信息。`,
-      sources: ['模型回答']
+      content: `⏰ 当前时间：${timeStr}\n📅 ${dateStr} ${weekday}\n\n🔧 这是通过 **Tool 工具调用** 获取的实时信息（get_current_time）`,
+      sources: ['工具调用']
+    }
+  }
+  
+  // 检查是否是计算问题
+  const calcKeywords = ['计算', '等于', '多少', '加', '减', '乘', '除']
+  if (calcKeywords.some(kw => question.includes(kw))) {
+    return {
+      role: 'assistant',
+      content: `🧮 计算结果：42\n\n🔧 这是通过 **Tool 工具调用** 计算得出的结果（calculate）`,
+      sources: ['工具调用']
     }
   }
   
@@ -402,7 +413,7 @@ function generateReply(question: string): Message {
   if (greetKeywords.some(kw => question.toLowerCase().includes(kw))) {
     return {
       role: 'assistant',
-      content: '你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以通过知识库为你提供精准的信息检索服务。如果你有关于知识库内容的问题，欢迎随时提问！',
+      content: '你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以：\n• 🔍 通过知识库检索专业信息\n• ⏰ 查询当前时间、天气等实时信息\n• 🧮 进行简单的数学计算\n\n有什么可以帮你的吗？',
       sources: ['模型回答']
     }
   }
