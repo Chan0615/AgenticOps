@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.database import init_db
 from app.api import auth, users, roles, menus
-from app.api.common import rag
+from app.api.common import rag, knowledge
 
 
 @asynccontextmanager
@@ -38,6 +38,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(roles.router, prefix="/api")
 app.include_router(menus.router, prefix="/api")
 app.include_router(rag.router, prefix="/api")
+app.include_router(knowledge.router, prefix="/api/v1/common")
 
 
 @app.get("/")

@@ -27,12 +27,12 @@ const router = createRouter({
         },
         {
           path: 'rag',
-          name: 'rag',
           component: () => import('@/layouts/BlankLayout.vue'),
           meta: { title: 'RAG知识库' },
           children: [
             {
               path: '',
+              name: 'rag',
               redirect: '/rag/chat'
             },
             {

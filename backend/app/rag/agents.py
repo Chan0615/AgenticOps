@@ -13,8 +13,12 @@ from enum import Enum
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import TextLoader, DirectoryLoader
+from langchain_community.document_loaders import (
+    TextLoader, DirectoryLoader, PyPDFLoader, UnstructuredWordDocumentLoader
+)
 from langchain_core.documents import Document
+import markdown
+from bs4 import BeautifulSoup
 
 from app.rag.tools import execute_tool, get_tools
 
@@ -62,21 +66,63 @@ class DocumentProcessor:
             separators=["\n\n", "\n", "。", "；", " ", ""]
         )
     
+    def load_document(self, file_path: str, file_type: str) -> List[Document]:
+        """加载单个文档 - 支持多种格式"""
+        logger.info(f"正在加载文档: {file_path}, 类型: {file_type}")
+        
+        documents = []
+        try:
+            if file_type == 'txt':
+                loader = TextLoader(file_path, encoding='utf-8')
+                documents = loader.load()
+            elif file_type == 'pdf':
+                loader = PyPDFLoader(file_path)
+                documents = loader.load()
+            elif file_type in ['docx', 'doc']:
+                loader = UnstructuredWordDocumentLoader(file_path)
+                documents = loader.load()
+            elif file_type == 'md':
+                # Markdown 转纯文本
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    md_content = f.read()
+                html = markdown.markdown(md_content)
+                soup = BeautifulSoup(html, 'html.parser')
+                text = soup.get_text()
+                documents = [Document(page_content=text, metadata={"source": file_path})]
+            else:
+                # 默认按文本处理
+                loader = TextLoader(file_path, encoding='utf-8')
+                documents = loader.load()
+                
+            logger.info(f"加载了 {len(documents)} 页/段")
+            return documents
+        except Exception as e:
+            logger.error(f"加载文档失败: {e}")
+            raise
+    
     def load_documents(self, input_path: str) -> List[Document]:
         """加载文档 - 支持单文件或目录"""
         logger.info(f"正在加载文档: {input_path}")
         
         if os.path.isfile(input_path):
-            loader = TextLoader(input_path, encoding='utf-8')
-            documents = loader.load()
+            # 根据扩展名判断类型
+            ext = input_path.split('.')[-1].lower()
+            documents = self.load_document(input_path, ext)
         else:
-            loader = DirectoryLoader(
-                input_path, 
-                glob="**/*.txt",
-                loader_cls=TextLoader,
-                loader_kwargs={'encoding': 'utf-8'}
-            )
-            documents = loader.load()
+            # 目录加载 - 支持多种格式
+            all_docs = []
+            for pattern in ["**/*.txt", "**/*.pdf", "**/*.docx", "**/*.md"]:
+                try:
+                    loader = DirectoryLoader(
+                        input_path, 
+                        glob=pattern,
+                        loader_cls=TextLoader if pattern.endswith('txt') else None
+                    )
+                    docs = loader.load()
+                    all_docs.extend(docs)
+                except Exception as e:
+                    logger.warning(f"加载 {pattern} 失败: {e}")
+            documents = all_docs
         
         logger.info(f"加载了 {len(documents)} 个文档")
         return documents
@@ -110,7 +156,7 @@ class DocumentProcessor:
 
 
 class VectorStoreManager:
-    """向量数据库管理器"""
+    """向量数据库管理器 - 支持多索引合并"""
     
     def __init__(self, embedding_model_name: str = "thenlper/gte-small"):
         logger.info(f"正在初始化嵌入模型: {embedding_model_name}")
@@ -133,6 +179,45 @@ class VectorStoreManager:
             allow_dangerous_deserialization=True
         )
         logger.info("向量数据库加载成功")
+    
+    def load_all_vector_stores(self, base_path: str = "vector_db"):
+        """加载所有文档的向量索引（支持多文档）"""
+        import os
+        import glob
+        
+        # 查找所有文档的向量索引目录
+        doc_paths = glob.glob(os.path.join(base_path, "doc_*"))
+        
+        if not doc_paths:
+            # 尝试加载单一向量数据库
+            if os.path.exists(base_path) and os.path.isdir(base_path):
+                try:
+                    self.load_vector_store(base_path)
+                    logger.info(f"加载单一向量数据库: {base_path}")
+                    return
+                except Exception as e:
+                    logger.warning(f"加载单一向量数据库失败: {e}")
+            raise ValueError(f"未找到任何向量数据库: {base_path}")
+        
+        # 加载第一个索引
+        first_path = doc_paths[0]
+        logger.info(f"加载向量索引: {first_path}")
+        self.load_vector_store(first_path)
+        
+        # 合并其他索引
+        for doc_path in doc_paths[1:]:
+            try:
+                logger.info(f"合并向量索引: {doc_path}")
+                other_store = FAISS.load_local(
+                    doc_path,
+                    self.embeddings,
+                    allow_dangerous_deserialization=True
+                )
+                self.vector_store.merge_from(other_store)
+            except Exception as e:
+                logger.warning(f"合并向量索引失败 {doc_path}: {e}")
+        
+        logger.info(f"共加载 {len(doc_paths)} 个向量索引")
     
     def similarity_search(self, query: str, k: int = 5) -> List[Document]:
         """相似性搜索"""
@@ -330,7 +415,13 @@ class IterativeRAG:
     
     def __init__(self, vector_store_path: str = "vector_db"):
         self.vector_store = VectorStoreManager()
-        self.vector_store.load_vector_store(vector_store_path)
+        
+        # 尝试加载所有向量索引（支持多文档）
+        try:
+            self.vector_store.load_all_vector_stores(vector_store_path)
+        except Exception as e:
+            logger.warning(f"加载多文档索引失败，尝试单一索引: {e}")
+            self.vector_store.load_vector_store(vector_store_path)
         
         self.transformer = QueryTransformer()
         self.retriever = RetrieverAgent(self.vector_store)
