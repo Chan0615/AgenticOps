@@ -326,18 +326,16 @@ class RetrieverAgent:
 class RelevanceChecker:
     """相关性检查器 - 判断文档是否与查询相关"""
     
-    def __init__(self, threshold: float = 0.3):
+    def __init__(self, threshold: float = 0.1):
         self.threshold = threshold
     
     def check(self, statement: str, documents: List[Document]) -> Dict[str, Any]:
         """
         检查检索结果的相关性
         
-        返回:
-            - relevant: 是否有足够相关的文档
-            - reason: 判断原因
-            - relevant_docs: 相关文档列表
-            - best_score: 最佳匹配分数
+        FAISS 已经基于向量相似度返回了最相关的文档，这里主要做：
+        1. 检查文档是否包含查询中的关键信息
+        2. 根据排名赋予递减的置信度分数
         """
         logger.info(f"检查 {len(documents)} 个文档与查询 '{statement}' 的相关性")
         
@@ -349,32 +347,36 @@ class RelevanceChecker:
                 "best_score": 0.0
             }
         
-        # 提取查询关键词
+        # 提取查询关键词（保留数字）
         query_keywords = set(self._extract_keywords(statement))
+        logger.info(f"查询关键词: {query_keywords}")
         
         relevant_docs = []
-        for doc in documents:
-            doc_keywords = set(self._extract_keywords(doc.page_content))
+        for i, doc in enumerate(documents):
+            # 基于排名计算基础分数（FAISS 向量相似度排名）
+            # 第1名: 0.9, 第2名: 0.8, ...
+            base_score = max(0.5, 0.9 - i * 0.1)
             
-            # 计算 Jaccard 相似度
-            intersection = query_keywords & doc_keywords
-            union = query_keywords | doc_keywords
+            # 检查关键词匹配
+            doc_text = doc.page_content.lower()
+            matched_keywords = []
+            for kw in query_keywords:
+                if kw in doc_text:
+                    matched_keywords.append(kw)
             
-            if union:
-                score = len(intersection) / len(union)
-            else:
-                score = 0.0
+            # 关键词匹配率
+            keyword_match_ratio = len(matched_keywords) / len(query_keywords) if query_keywords else 0
             
-            # 额外加分：关键词在文档开头出现
-            doc_start = doc.page_content[:100].lower()
-            keyword_hits = sum(1 for kw in query_keywords if kw in doc_start)
-            score += keyword_hits * 0.1
+            # 综合分数：基础分数 + 关键词匹配加成
+            score = base_score * (0.5 + 0.5 * keyword_match_ratio)
             
-            if score >= self.threshold:
+            # 如果有关键词匹配，认为是相关的
+            if matched_keywords or base_score >= 0.7:
                 relevant_docs.append({
                     "document": doc,
                     "score": min(score, 1.0),
-                    "matched_keywords": list(intersection)
+                    "matched_keywords": matched_keywords,
+                    "rank": i + 1
                 })
         
         # 按分数排序
@@ -382,28 +384,36 @@ class RelevanceChecker:
         
         best_score = relevant_docs[0]["score"] if relevant_docs else 0.0
         
-        # 判断标准：至少2个相关文档，或最佳分数>0.5
-        has_enough = len(relevant_docs) >= 2 or best_score > 0.5
+        # 判断标准：只要有匹配的文档就认为相关
+        has_relevant = len(relevant_docs) > 0 and best_score >= self.threshold
         
         return {
-            "relevant": has_enough,
-            "reason": f"找到 {len(relevant_docs)} 个相关文档，最佳匹配度 {best_score:.2f}" if has_enough else f"相关文档不足（{len(relevant_docs)}个，最佳匹配度 {best_score:.2f}）",
+            "relevant": has_relevant,
+            "reason": f"找到 {len(relevant_docs)} 个相关文档，最佳匹配度 {best_score:.2f}" if has_relevant else f"相关文档不足（{len(relevant_docs)}个，最佳匹配度 {best_score:.2f}）",
             "relevant_docs": relevant_docs[:5],
             "best_score": best_score
         }
     
     def _extract_keywords(self, text: str) -> List[str]:
-        """提取关键词（简化版）"""
+        """提取关键词（保留数字和中文）"""
         import re
         
-        # 去除标点，分词
-        text = re.sub(r'[^\w\s]', ' ', text.lower())
+        # 去除标点，保留中文、英文、数字
+        text = re.sub(r'[^\w\s\u4e00-\u9fff]', ' ', text.lower())
         words = text.split()
         
-        # 过滤停用词和短词
-        stopwords = {'的', '是', '在', '和', '了', '有', '我', '都', '个', '与', '也', '对', '为', '能', '很', '可以', '就', '不', '会', '要', '没有', '我们', '这', '上', '他', '而', '及', '与', '或', '但是', 'the', 'is', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
+        # 过滤停用词，但保留数字（如"第十八条"中的"十八"）
+        stopwords = {'的', '是', '在', '和', '了', '有', '我', '都', '个', '与', '也', '对', '为', '能', '很', '可以', '就', '不', '会', '要', '没有', '我们', '这', '上', '他', '而', '及', '或', '但是', '什么', '啥', '吗', '呢', '啊', 'the', 'is', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'}
         
-        keywords = [w for w in words if len(w) > 1 and w not in stopwords]
+        # 保留长度>=2的词，或者纯数字/中文数字
+        keywords = []
+        for w in words:
+            if w in stopwords:
+                continue
+            # 保留中文词、英文词、数字
+            if len(w) >= 2 or re.match(r'^\d+$', w) or re.match(r'^[一二三四五六七八九十百千万]+$', w):
+                keywords.append(w)
+        
         return keywords
 
 
