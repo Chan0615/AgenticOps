@@ -26,10 +26,28 @@ const router = createRouter({
           meta: { title: '仪表盘' }
         },
         {
-          path: 'chat',
-          name: 'chat',
-          component: () => import('@/views/Chat.vue'),
-          meta: { title: 'AI 问答' }
+          path: 'rag',
+          name: 'rag',
+          component: () => import('@/layouts/BlankLayout.vue'),
+          meta: { title: 'RAG知识库' },
+          children: [
+            {
+              path: '',
+              redirect: '/rag/chat'
+            },
+            {
+              path: 'chat',
+              name: 'rag-chat',
+              component: () => import('@/views/rag/Chat.vue'),
+              meta: { title: 'AI 问答' }
+            },
+            {
+              path: 'knowledge',
+              name: 'rag-knowledge',
+              component: () => import('@/views/rag/KnowledgeBase.vue'),
+              meta: { title: '知识库管理' }
+            }
+          ]
         },
         {
           path: 'settings',

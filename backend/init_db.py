@@ -44,7 +44,7 @@ def create_database():
         conn.close()
 
 
-async def create_tables():
+async def create_tables(force_reset: bool = False):
     """创建所有表"""
     print("[2/4] 创建数据表 ...")
     from app.db.database import Base
@@ -52,6 +52,13 @@ async def create_tables():
 
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:
+        if force_reset:
+            # 先删除有外键依赖的表，避免外键约束错误
+            from sqlalchemy import text
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
+            print("      已清空旧数据表")
         await conn.run_sync(Base.metadata.create_all)
     await engine.dispose()
     print("      数据表创建完成")
@@ -92,12 +99,44 @@ async def seed_data():
                 "description": "数据概览",
             },
             {
+                "name": "RAG知识库",
+                "code": "rag",
+                "path": "/rag",
+                "icon": "Brain",
+                "type": "directory",
+                "sort_order": 1,
+                "parent_id": None,
+                "description": "RAG 知识库模块",
+            },
+            {
+                "name": "AI 问答",
+                "code": "rag:chat",
+                "path": "/rag/chat",
+                "icon": "ChatDotRound",
+                "type": "menu",
+                "sort_order": 1,
+                "parent_code": "rag",
+                "component": "rag/chat/index",
+                "description": "智能问答",
+            },
+            {
+                "name": "知识库管理",
+                "code": "rag:knowledge",
+                "path": "/rag/knowledge",
+                "icon": "Collection",
+                "type": "menu",
+                "sort_order": 2,
+                "parent_code": "rag",
+                "component": "rag/knowledge/index",
+                "description": "知识库文档管理",
+            },
+            {
                 "name": "系统管理",
                 "code": "system",
                 "path": "/system",
                 "icon": "Setting",
                 "type": "directory",
-                "sort_order": 1,
+                "sort_order": 2,
                 "parent_id": None,
                 "description": "系统管理模块",
             },
@@ -287,7 +326,7 @@ async def seed_data():
 
 async def main():
     create_database()
-    await create_tables()
+    await create_tables(force_reset=True)
     await seed_data()
     print("\n✅ 数据库初始化成功！")
     print(f"   管理员账号: admin  密码: admin123")
