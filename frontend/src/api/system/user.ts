@@ -12,5 +12,8 @@ export const userApi = {
   
   updateUser: (id: number, data: UserUpdate) => api.put<User>(`/users/${id}`, data),
   
-  deleteUser: (id: number) => api.delete(`/users/${id}`)
+  deleteUser: (id: number) => api.delete(`/users/${id}`),
+  
+  resetPassword: (id: number, password: string) => 
+    api.post(`/users/${id}/reset-password`, { password })
 }

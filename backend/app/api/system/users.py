@@ -98,3 +98,38 @@ async def delete_user(
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
     return {"message": "用户删除成功"}
+
+
+@router.post("/{user_id}/reset-password")
+async def reset_password(
+    user_id: int,
+    password_data: dict,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """重置用户密码（仅超级管理员）"""
+    if not current_user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="只有超级管理员可以重置密码"
+        )
+    
+    new_password = password_data.get("password")
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="密码长度至少6位"
+        )
+    
+    from app.core.security import get_password_hash
+    from app.models.user import User
+    from sqlalchemy import select
+    
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="用户不存在")
+    
+    user.hashed_password = get_password_hash(new_password)
+    await db.commit()
+    
+    return {"message": "密码重置成功"}

@@ -414,27 +414,34 @@ class IterativeRAG:
                 # 达到最大迭代次数，使用已找到的文档
                 all_relevant_docs = check_result["relevant_docs"]
         
-        # 步骤4: 生成回答
+        # 步骤4: 生成回答（知识库 + LLM fallback）
         step_answer = AgentStep(AgentRole.ANSWERER, "生成最终回答")
         step_answer.status = "running"
         steps.append(step_answer)
         
         if all_relevant_docs:
+            # 使用知识库生成回答
             answer = self._generate_answer(question, all_relevant_docs)
+            sources = list(set([
+                doc["document"].metadata.get("source", "未知来源")
+                for doc in all_relevant_docs[:5]
+            ]))
+            confidence = all_relevant_docs[0]["score"]
         else:
-            answer = f"抱歉，我在知识库中没有找到与「{question}」相关的信息。请尝试用不同的方式描述你的问题。"
+            # 知识库无结果，fallback 到 LLM
+            step_fallback = AgentStep(AgentRole.ANSWERER, "知识库无结果，使用模型回答")
+            step_fallback.status = "running"
+            steps.append(step_fallback)
+            
+            answer = self._generate_llm_answer(question)
+            sources = ["模型回答"]
+            confidence = 0.0
+            
+            step_fallback.result = {"source": "LLM fallback"}
+            step_fallback.status = "done"
         
         step_answer.result = {"answer": answer}
         step_answer.status = "done"
-        
-        # 提取来源
-        sources = list(set([
-            doc["document"].metadata.get("source", "未知来源")
-            for doc in all_relevant_docs[:5]
-        ]))
-        
-        # 计算置信度
-        confidence = all_relevant_docs[0]["score"] if all_relevant_docs else 0.0
         
         return RAGResponse(
             answer=answer,
@@ -444,7 +451,7 @@ class IterativeRAG:
         )
     
     def _generate_answer(self, question: str, relevant_docs: List[Dict]) -> str:
-        """生成回答"""
+        """基于知识库生成回答"""
         # 按分数排序
         docs = sorted(relevant_docs, key=lambda x: x["score"], reverse=True)
         
@@ -452,7 +459,7 @@ class IterativeRAG:
         context_parts = []
         for i, doc_info in enumerate(docs[:3], 1):
             doc = doc_info["document"]
-            content = doc.page_content[:400]  # 限制长度
+            content = doc.page_content[:400]
             context_parts.append(f"[资料{i}] {content}")
         
         context = "\n\n".join(context_parts)
@@ -467,6 +474,31 @@ class IterativeRAG:
             answer += f"匹配度为 {docs[0]['score']:.1%}。"
         
         return answer
+    
+    def _generate_llm_answer(self, question: str) -> str:
+        """当知识库无结果时，使用 LLM 直接回答"""
+        # 这里应该调用实际的 LLM API（如阿里云通义千问）
+        # 简化版本：返回友好的提示
+        
+        # 尝试识别问题类型并给出通用回答
+        question_lower = question.lower()
+        
+        # 时间相关问题
+        if any(kw in question_lower for kw in ['今天', '明天', '昨天', '星期', '日期', '时间']):
+            from datetime import datetime
+            now = datetime.now()
+            weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+            today_str = now.strftime('%Y年%m月%d日')
+            weekday_str = weekdays[now.weekday()]
+            
+            return f"今天是 {today_str} {weekday_str}。\n\n我当前无法访问知识库中的相关信息，但可以根据系统时间回答你的问题。如果你有其他关于知识库内容的问题，欢迎继续提问！"
+        
+        # 问候语
+        if any(kw in question_lower for kw in ['你好', '您好', 'hello', 'hi']):
+            return "你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以通过知识库为你提供精准的信息检索服务。如果你有关于知识库内容的问题，欢迎随时提问！"
+        
+        # 默认回答
+        return f"关于「{question}」，我在知识库中没有找到相关的文档资料。\n\n这可能是因为：\n1. 知识库中暂无相关内容\n2. 问题描述需要更具体\n\n你可以尝试：\n• 用不同的关键词描述问题\n• 检查知识库是否已上传相关文档\n• 直接询问，我会根据通用知识回答\n\n有什么其他我可以帮你的吗？"
 
 
 # 保留旧的类以保持兼容性

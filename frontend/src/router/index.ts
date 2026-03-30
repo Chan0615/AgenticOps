@@ -32,11 +32,17 @@ const router = createRouter({
           meta: { title: 'AI 问答' }
         },
         {
-          path: 'system',
-          name: 'system',
+          path: 'settings',
+          name: 'settings',
           component: () => import('@/views/Settings.vue'),
-          meta: { title: '系统管理' },
+          meta: { title: '设置' },
           children: [
+            {
+              path: 'profile',
+              name: 'profile',
+              component: () => import('@/views/settings/Profile.vue'),
+              meta: { title: '个人设置' }
+            },
             {
               path: 'users',
               name: 'user-management',
@@ -56,6 +62,13 @@ const router = createRouter({
               meta: { title: '菜单管理' }
             }
           ]
+        },
+        {
+          path: 'system/:path(.*)*',
+          redirect: (to) => {
+            const subPath = to.params.path || 'users'
+            return `/settings/${subPath}`
+          }
         }
       ]
     }
