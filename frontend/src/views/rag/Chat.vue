@@ -345,11 +345,19 @@ async function sendMessage() {
   messages.push(thinkingMsg)
 
   try {
-    // 调用后端 RAG API
+    // 调用后端 RAG API（增加超时时间，因为 LLM 调用较慢）
+    interface ChatResponse {
+      answer: string
+      sources: string[]
+      confidence: number
+      steps: any[]
+    }
     const response = await api.post('/rag/chat', {
       message: text,
       conversation_id: currentChatId.value || undefined
-    })
+    }, { timeout: 60000 }) as ChatResponse
+    
+    console.log('RAG API 响应:', response)
     
     // 更新思考步骤为完成
     thinkingMsg.thinkingSteps?.forEach(step => step.done = true)
@@ -359,8 +367,8 @@ async function sendMessage() {
     messages.pop()
     messages.push({
       role: 'assistant',
-      content: response.answer,
-      sources: response.sources
+      content: response.answer || '抱歉，未能获取到有效回答',
+      sources: response.sources || []
     })
     
     // 添加到历史记录
@@ -375,10 +383,13 @@ async function sendMessage() {
     }
   } catch (e: any) {
     messages.pop()
-    const errorMsg = e.response?.data?.detail || '抱歉，服务暂时不可用，请稍后重试。'
+    console.error('RAG API 错误:', e)
+    console.error('错误响应:', e.response)
+    console.error('错误详情:', e.response?.data)
+    const errorMsg = e.response?.data?.detail || e.message || '抱歉，服务暂时不可用，请稍后重试。'
     messages.push({
       role: 'assistant',
-      content: errorMsg,
+      content: `请求失败：${errorMsg}`,
     })
   }
 

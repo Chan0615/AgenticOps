@@ -21,10 +21,47 @@ import markdown
 from bs4 import BeautifulSoup
 
 from app.rag.tools import execute_tool, get_tools
+from app.core import config
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+# ============ LLM 调用 ============
+def _get_ai_config() -> dict:
+    """获取 AI 配置（优先 qwen）"""
+    for provider in ["qwen", "deepseek", "openai"]:
+        try:
+            cfg = config.get_ai_config(provider)
+            if cfg.get("enabled") and cfg.get("api_key"):
+                return cfg
+        except KeyError:
+            continue
+    return {}
+
+
+async def call_llm(messages: list[dict], stream: bool = False):
+    """调用 LLM（OpenAI 兼容接口）"""
+    from openai import AsyncOpenAI
+
+    cfg = _get_ai_config()
+    if not cfg:
+        raise ValueError("未配置 AI 模型，请在 config.yaml 中设置 api_key")
+
+    client = AsyncOpenAI(
+        api_key=cfg["api_key"],
+        base_url=cfg["base_url"],
+    )
+
+    response = await client.chat.completions.create(
+        model=cfg["model"],
+        messages=messages,
+        stream=stream,
+        temperature=0.7,
+        max_tokens=4096,
+    )
+    return response
 
 
 class AgentRole(Enum):
@@ -443,7 +480,7 @@ class IterativeRAG:
         
         logger.info("迭代式 RAG Agent 初始化完成")
     
-    def query(self, question: str, max_iterations: int = 3) -> RAGResponse:
+    async def query(self, question: str, max_iterations: int = 3) -> RAGResponse:
         """
         执行迭代式 RAG 查询
         
@@ -528,8 +565,8 @@ class IterativeRAG:
         steps.append(step_answer)
         
         if all_relevant_docs:
-            # 使用知识库生成回答
-            answer = self._generate_answer(question, all_relevant_docs)
+            # 使用知识库生成回答（调用 LLM 润色）
+            answer = await self._generate_answer(question, all_relevant_docs)
             sources = list(set([
                 doc["document"].metadata.get("source", "未知来源")
                 for doc in all_relevant_docs[:5]
@@ -558,30 +595,102 @@ class IterativeRAG:
             confidence=confidence
         )
     
-    def _generate_answer(self, question: str, relevant_docs: List[Dict]) -> str:
-        """基于知识库生成回答"""
+    async def _generate_answer(self, question: str, relevant_docs: List[Dict]) -> str:
+        """基于知识库生成回答 - 使用 LLM 润色"""
+        import asyncio
+        
         # 按分数排序
         docs = sorted(relevant_docs, key=lambda x: x["score"], reverse=True)
         
-        # 构建上下文
+        # 提取来源信息
+        sources = []
+        for doc_info in docs[:3]:
+            source = doc_info["document"].metadata.get("source", "未知来源")
+            if source not in sources:
+                sources.append(source)
+        
+        # 构建上下文（最多3个文档）
         context_parts = []
         for i, doc_info in enumerate(docs[:3], 1):
             doc = doc_info["document"]
-            content = doc.page_content[:400]
-            context_parts.append(f"[资料{i}] {content}")
+            content = doc.page_content.strip()
+            context_parts.append(f"【资料{i}】\n{content}")
         
         context = "\n\n".join(context_parts)
         
-        # 生成回答（简化版，实际应调用 LLM）
-        answer = f"根据知识库检索结果：\n\n{context}\n\n"
-        answer += f"针对您的问题「{question}」，"
+        # 构建 LLM Prompt
+        system_prompt = """你是「托马斯回旋喵」，一个专业的法律知识助手。
+
+你的任务是根据知识库检索到的资料，回答用户的法律问题。
+
+回答要求：
+1. 直接回答用户问题，提取资料中的核心信息
+2. 剔除无关文本（如页眉、页脚、版权信息等）
+3. 准确定位目标条款，保留条款编号
+4. 语句通顺、结构清晰
+5. 适当补充条文标题或上下文
+6. 不要编造资料中没有的内容
+
+格式要求：
+- 使用 Markdown 格式
+- 重要内容加粗
+- 条款编号突出显示"""
+
+        user_prompt = f"""用户问题：{question}
+
+=== 知识库检索资料 ===
+{context}
+=== 资料结束 ===
+
+请基于以上资料，用专业、清晰的方式回答用户的问题。如果资料不足以回答问题，请说明。"""
+
+        # 调用 LLM
+        try:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ]
+            
+            response = await call_llm(messages, stream=False)
+            answer = response.choices[0].message.content
+            
+            # 添加来源标注
+            answer += f"\n\n---\n📖 **信息来源**：{sources[0] if sources else '未知'}"
+            answer += f"\n✅ **匹配度**：{docs[0]['score']:.1%}"
+            
+            return answer
+            
+        except Exception as e:
+            logger.error(f"LLM 调用失败: {e}")
+            # 降级为简单格式
+            return self._generate_simple_answer(question, docs, sources)
+    
+    def _generate_simple_answer(self, question: str, docs: List[Dict], sources: List[str]) -> str:
+        """降级方案：简单格式化（当 LLM 不可用时）"""
+        best_doc = docs[0]["document"]
+        best_content = best_doc.page_content.strip()
         
-        if docs:
-            best_doc = docs[0]["document"]
-            answer += f"最相关的资料来自《{best_doc.metadata.get('source', '未知')}》，"
-            answer += f"匹配度为 {docs[0]['score']:.1%}。"
+        answer_parts = []
+        answer_parts.append(f"根据知识库资料：")
+        answer_parts.append("")
         
-        return answer
+        # 清理文本
+        lines = [line.strip() for line in best_content.split('\n') if line.strip()]
+        formatted_content = '\n'.join(lines)
+        answer_parts.append(formatted_content)
+        
+        if len(docs) > 1:
+            answer_parts.append("")
+            answer_parts.append("📚 **补充参考**：")
+            for doc_info in docs[1:3]:
+                content = doc_info["document"].page_content[:200].replace('\n', ' ')
+                answer_parts.append(f"  • {content}...")
+        
+        answer_parts.append("")
+        answer_parts.append(f"📖 **信息来源**：{sources[0] if sources else '未知'}")
+        answer_parts.append(f"✅ **匹配度**：{docs[0]['score']:.1%}")
+        
+        return '\n'.join(answer_parts)
     
     def _generate_llm_answer(self, question: str) -> str:
         """当知识库无结果时，尝试使用 Tools 回答，否则返回友好提示"""
@@ -733,7 +842,7 @@ def create_knowledge_base(input_path: str, output_path: str = "vector_db"):
     logger.info(f"知识库创建完成: {output_path}")
 
 
-def query_knowledge_base(question: str, vector_db_path: str = "vector_db") -> RAGResponse:
+async def query_knowledge_base(question: str, vector_db_path: str = "vector_db") -> RAGResponse:
     """查询知识库"""
     rag = MultiAgentRAG(vector_db_path)
-    return rag.query(question)
+    return await rag.query(question)

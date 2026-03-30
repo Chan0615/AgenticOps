@@ -105,7 +105,7 @@ async def chat(request: ChatRequest):
         )
     
     try:
-        result = rag.query(request.message, max_iterations=3)
+        result = await rag.query(request.message, max_iterations=3)
         
         # 转换步骤为可序列化的格式
         steps = []
