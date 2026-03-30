@@ -229,6 +229,10 @@ async def process_document(
             "chunk_count": len(chunks)
         })
         
+        # 触发 RAG 重新加载
+        from app.api.common.rag import reload_rag
+        reload_rag()
+        
         return {
             "message": "处理成功",
             "chunk_count": len(chunks)

@@ -241,6 +241,7 @@
 <script setup lang="ts">
 import { ref, reactive, nextTick, computed } from 'vue'
 import { marked } from 'marked'
+import api from '@/api'
 
 interface ThinkingStep {
   text: string
@@ -344,18 +345,23 @@ async function sendMessage() {
   messages.push(thinkingMsg)
 
   try {
-    // 模拟多 Agent 协作过程
-    for (let i = 0; i < thinkingMsg.thinkingSteps!.length; i++) {
-      await new Promise(r => setTimeout(r, 500))
-      thinkingMsg.thinkingSteps![i].done = true
-    }
-
-    await new Promise(r => setTimeout(r, 400))
+    // 调用后端 RAG API
+    const response = await api.post('/rag/chat', {
+      message: text,
+      conversation_id: currentChatId.value || undefined
+    })
+    
+    // 更新思考步骤为完成
+    thinkingMsg.thinkingSteps?.forEach(step => step.done = true)
+    await new Promise(r => setTimeout(r, 300))
     
     // 移除思考状态，显示最终回答
-    const reply = generateReply(text)
     messages.pop()
-    messages.push(reply)
+    messages.push({
+      role: 'assistant',
+      content: response.answer,
+      sources: response.sources
+    })
     
     // 添加到历史记录
     if (!currentChatId.value) {
@@ -367,11 +373,12 @@ async function sendMessage() {
       chatHistory.unshift(newChat)
       currentChatId.value = newChat.id
     }
-  } catch (e) {
+  } catch (e: any) {
     messages.pop()
+    const errorMsg = e.response?.data?.detail || '抱歉，服务暂时不可用，请稍后重试。'
     messages.push({
       role: 'assistant',
-      content: '抱歉，服务暂时不可用，请稍后重试。',
+      content: errorMsg,
     })
   }
 

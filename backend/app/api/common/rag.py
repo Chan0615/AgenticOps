@@ -3,6 +3,7 @@ RAG API 路由
 提供知识库管理和智能问答接口
 """
 
+import logging
 from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, BackgroundTasks
@@ -14,6 +15,8 @@ from app.rag.agents import (
     create_knowledge_base,
     query_knowledge_base
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/rag", tags=["RAG 知识库"])
 
@@ -48,18 +51,29 @@ class KnowledgeBaseStatus(BaseModel):
 # ============ 全局 RAG 实例 ============
 
 _rag_instance: Optional[MultiAgentRAG] = None
+_rag_instance_lock = False
 
 
-def get_rag() -> MultiAgentRAG:
+def get_rag(force_reload: bool = False) -> MultiAgentRAG:
     """获取或初始化 RAG 实例"""
-    global _rag_instance
-    if _rag_instance is None:
+    global _rag_instance, _rag_instance_lock
+    
+    if force_reload or _rag_instance is None:
         try:
             _rag_instance = MultiAgentRAG("vector_db")
+            logger.info("RAG 实例初始化/重新加载完成")
         except Exception as e:
+            logger.error(f"RAG 实例初始化失败: {e}")
             # 向量数据库不存在，返回 None
             return None
     return _rag_instance
+
+
+def reload_rag():
+    """重新加载 RAG 实例（在知识库更新后调用）"""
+    global _rag_instance
+    _rag_instance = None
+    logger.info("RAG 实例已标记为需要重新加载")
 
 
 # ============ API 路由 ============
@@ -75,7 +89,15 @@ async def chat(request: ChatRequest):
     3. 判断相关性
     4. 不相关 → 生成新陈述句 → 回到步骤2（迭代）
     """
-    rag = get_rag()
+    # 检查是否有新的知识库更新
+    import os
+    import glob
+    doc_paths = glob.glob("vector_db/doc_*")
+    
+    # 如果有文档索引且 RAG 未初始化，需要重新加载
+    needs_reload = len(doc_paths) > 0 and _rag_instance is None
+    rag = get_rag(force_reload=needs_reload)
+    
     if rag is None:
         raise HTTPException(
             status_code=503,
@@ -118,8 +140,9 @@ async def chat(request: ChatRequest):
         )
     except Exception as e:
         import traceback
-        logger.error(f"查询失败: {e}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"查询失败: {str(e)}")
+        error_msg = f"查询失败: {str(e)}"
+        logger.error(f"{error_msg}\n{traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=error_msg)
 
 
 @router.post("/documents/upload")

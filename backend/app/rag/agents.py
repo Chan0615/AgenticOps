@@ -160,7 +160,11 @@ class VectorStoreManager:
     
     def __init__(self, embedding_model_name: str = "thenlper/gte-small"):
         logger.info(f"正在初始化嵌入模型: {embedding_model_name}")
-        self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
+        try:
+            self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model_name)
+        except Exception as e:
+            logger.error(f"嵌入模型加载失败: {e}")
+            raise
         self.vector_store: Optional[FAISS] = None
     
     def create_vector_store(self, documents: List[Document], save_path: str = "vector_db"):
