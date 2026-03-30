@@ -26,6 +26,12 @@ const router = createRouter({
           meta: { title: '仪表盘' }
         },
         {
+          path: 'chat',
+          name: 'chat',
+          component: () => import('@/views/Chat.vue'),
+          meta: { title: 'AI 问答' }
+        },
+        {
           path: 'system',
           name: 'system',
           component: () => import('@/views/Settings.vue'),

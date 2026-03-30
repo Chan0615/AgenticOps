@@ -1,135 +1,224 @@
 <template>
-  <div>
-    <!-- 标题区 -->
-    <div class="mb-8">
-      <h1 class="text-xl font-bold text-surface-900">知识库概览</h1>
-      <p class="text-sm text-surface-400 mt-1">托马斯回旋喵 · 管理你的智能知识库</p>
-    </div>
-
-    <!-- 统计卡片 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <div
-        v-for="(card, i) in statCards"
-        :key="i"
-        class="bg-white rounded-2xl border border-surface-100 p-5 hover:border-brand-200 hover:shadow-lg hover:shadow-brand-100/50 transition-all duration-300"
-      >
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-xs text-surface-400 mb-1">{{ card.label }}</p>
-            <p class="text-2xl font-bold text-surface-900">{{ card.value }}</p>
-          </div>
-          <div :class="['w-10 h-10 rounded-xl flex items-center justify-center', card.bgClass]">
-            <svg class="w-5 h-5" :class="card.iconClass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="card.icon" />
-            </svg>
-          </div>
+  <div class="h-[calc(100vh-80px)] flex flex-col">
+    <!-- 顶部标题栏 -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-surface-100 bg-white">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-200/50">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
         </div>
-        <p class="text-xs mt-3" :class="card.trendClass">{{ card.trend }}</p>
+        <div>
+          <h1 class="text-lg font-bold text-surface-900">托马斯回旋喵</h1>
+          <p class="text-xs text-surface-400">基于知识库的 AI 智能助手</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button 
+          @click="clearChat"
+          class="flex items-center gap-2 px-4 py-2 text-sm text-surface-600 hover:text-surface-900 hover:bg-surface-100 rounded-xl transition-all"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          清空对话
+        </button>
       </div>
     </div>
 
-    <!-- 内容区 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-      <!-- 最近知识 -->
-      <div class="lg:col-span-2 bg-white rounded-2xl border border-surface-100 p-6">
-        <div class="flex items-center justify-between mb-5">
-          <h3 class="text-sm font-semibold text-surface-900">最近更新的知识</h3>
-          <button class="text-xs text-brand-500 hover:text-brand-600 transition-colors">查看全部</button>
+    <!-- 消息区域 -->
+    <div ref="messagesRef" class="flex-1 overflow-y-auto bg-surface-50/50">
+      <div class="max-w-4xl mx-auto py-6 px-4">
+        <!-- 空状态 -->
+        <div v-if="!messages.length" class="h-full flex flex-col items-center justify-center py-20">
+          <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center mb-6 shadow-xl shadow-brand-200/50">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-surface-900 mb-2">有什么可以帮你的？</h2>
+          <p class="text-sm text-surface-400 mb-8">基于知识库的智能问答，精准理解你的问题</p>
+          
+          <!-- 快捷问题 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+            <button 
+              v-for="q in suggestions" 
+              :key="q"
+              @click="sendQuick(q)"
+              class="px-5 py-4 text-left text-sm text-surface-600 bg-white border border-surface-100 rounded-2xl hover:border-brand-300 hover:shadow-lg hover:shadow-brand-100/50 transition-all group"
+            >
+              <span class="group-hover:text-brand-600 transition-colors">{{ q }}</span>
+              <svg class="w-4 h-4 text-surface-300 group-hover:text-brand-400 float-right mt-0.5 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="space-y-1">
-          <div
-            v-for="item in recentDocs"
-            :key="item.id"
-            class="flex items-center gap-4 p-3 rounded-xl hover:bg-brand-50/50 transition-colors cursor-pointer group"
-          >
-            <div class="w-9 h-9 rounded-xl bg-surface-50 border border-surface-100 flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-surface-400 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+
+        <!-- 消息列表 -->
+        <div v-else class="space-y-6">
+          <div v-for="(msg, i) in messages" :key="i" class="animate-fade-in">
+            <!-- 用户消息 -->
+            <div v-if="msg.role === 'user'" class="flex justify-end mb-6">
+              <div class="max-w-[85%] bg-brand-500 text-white px-5 py-3.5 rounded-2xl rounded-br-md text-sm leading-relaxed shadow-lg shadow-brand-200/30">
+                {{ msg.content }}
+              </div>
+            </div>
+            <!-- AI 消息 -->
+            <div v-else class="flex gap-4 mb-6">
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 mt-0.5 shadow-lg shadow-brand-200/50">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0 max-w-[calc(100%-3.5rem)]">
+                <div class="text-sm text-surface-800 leading-relaxed whitespace-pre-wrap bg-white px-5 py-4 rounded-2xl rounded-tl-md shadow-sm border border-surface-100">{{ msg.content }}</div>
+                <div v-if="msg.sources?.length" class="mt-3 flex flex-wrap gap-2">
+                  <span 
+                    v-for="src in msg.sources" 
+                    :key="src"
+                    class="text-[11px] px-3 py-1 bg-surface-100 text-surface-500 rounded-full hover:bg-surface-200 transition-colors cursor-pointer"
+                  >📚 {{ src }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 加载中 -->
+          <div v-if="streaming" class="flex gap-4">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-lg shadow-brand-200/50">
+              <svg class="w-5 h-5 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg>
             </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm text-surface-800 truncate group-hover:text-brand-600 transition-colors">{{ item.title }}</p>
-              <p class="text-xs text-surface-400 mt-0.5">{{ item.category }} · {{ item.time }}</p>
+            <div class="flex items-center gap-1.5 pt-3">
+              <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
+              <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
+              <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
             </div>
-            <span class="text-[10px] px-2 py-0.5 rounded-full" :class="item.tagClass">{{ item.tag }}</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- 托马斯回旋喵 -->
-      <div class="bg-white rounded-2xl border border-surface-100 p-6">
-        <div class="flex items-center gap-3 mb-5">
-          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="text-sm font-semibold text-surface-900">托马斯回旋喵</h3>
-            <p class="text-xs text-surface-400">AI 智能助手</p>
-          </div>
-        </div>
-        <div class="bg-brand-50 rounded-xl p-4 mb-4">
-          <p class="text-sm text-surface-700">你好！我是托马斯回旋喵，你的智能知识库助手。有什么问题可以随时问我 🐱</p>
-        </div>
-        <div class="relative">
-          <input
-            type="text"
-            placeholder="问我任何问题..."
-            class="w-full h-10 px-4 pr-10 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-all"
-          />
-          <button class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-brand-500 hover:bg-brand-600 flex items-center justify-center transition-colors">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- 输入区域 -->
+    <div class="border-t border-surface-100 bg-white p-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="flex items-end gap-3 bg-surface-50 border border-surface-200 rounded-2xl px-4 py-3 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition-all shadow-sm">
+          <textarea 
+            ref="inputRef"
+            v-model="inputText"
+            @keydown.enter.exact.prevent="sendMessage"
+            rows="1"
+            class="flex-1 bg-transparent text-sm text-surface-900 placeholder-surface-400 resize-none outline-none max-h-32 py-1"
+            placeholder="输入你的问题，按 Enter 发送..."
+          ></textarea>
+          <button 
+            @click="sendMessage"
+            :disabled="!inputText.trim() || streaming"
+            class="w-10 h-10 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white flex items-center justify-center shrink-0 hover:from-brand-400 hover:to-brand-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-brand-200/30"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
           </button>
         </div>
-      </div>
-    </div>
-
-    <!-- 快捷操作 -->
-    <div class="bg-white rounded-2xl border border-surface-100 p-6">
-      <h3 class="text-sm font-semibold text-surface-900 mb-5">快捷操作</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <button
-          v-for="action in quickActions"
-          :key="action.label"
-          class="flex items-center gap-3 p-4 rounded-xl border border-surface-100 hover:border-brand-200 hover:bg-brand-50/50 transition-all duration-200 group"
-        >
-          <div :class="['w-9 h-9 rounded-xl flex items-center justify-center', action.bgClass]">
-            <svg class="w-4 h-4" :class="action.iconClass" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="action.icon" />
-            </svg>
-          </div>
-          <span class="text-sm text-surface-600 group-hover:text-brand-600 transition-colors">{{ action.label }}</span>
-        </button>
+        <p class="text-[11px] text-surface-400 mt-2 text-center">内容由 AI 生成，仅供参考 · 托马斯回旋喵</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, nextTick, reactive } from 'vue'
 
-const recentDocs = [
-  { id: 1, title: 'FastAPI 最佳实践与架构指南', category: '技术文档', time: '10 分钟前', tag: '已发布', tagClass: 'bg-emerald-50 text-emerald-600' },
-  { id: 2, title: 'SQLAlchemy ORM 查询优化策略', category: '技术文档', time: '1 小时前', tag: '已发布', tagClass: 'bg-emerald-50 text-emerald-600' },
-  { id: 3, title: 'Docker 容器化部署规范', category: '运维手册', time: '3 小时前', tag: '审核中', tagClass: 'bg-amber-50 text-amber-600' },
-  { id: 4, title: 'Vue3 组件设计模式总结', category: '前端知识', time: '昨天', tag: '已发布', tagClass: 'bg-emerald-50 text-emerald-600' },
-  { id: 5, title: 'Redis 缓存策略与常见问题', category: '技术文档', time: '2 天前', tag: '草稿', tagClass: 'bg-surface-100 text-surface-500' },
+interface Message {
+  role: 'user' | 'assistant'
+  content: string
+  sources?: string[]
+}
+
+const inputText = ref('')
+const streaming = ref(false)
+const messagesRef = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLTextAreaElement | null>(null)
+
+const messages = reactive<Message[]>([])
+
+const suggestions = [
+  '介绍一下 AgenticOps 知识库的功能',
+  '如何创建一个新的知识文档？',
+  'FastAPI 最佳实践是什么？',
+  '帮我总结一下最近的技术文档',
 ]
 
-const statCards = [
-  { label: '知识文档', value: '1,284', bgClass: 'bg-brand-50', iconClass: 'text-brand-500', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z', trend: '+24 本周新增', trendClass: 'text-brand-500' },
-  { label: 'AI 问答次数', value: '3,672', bgClass: 'bg-pink-50', iconClass: 'text-pink-500', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z', trend: '+156 今日', trendClass: 'text-emerald-500' },
-  { label: '活跃用户', value: '86', bgClass: 'bg-emerald-50', iconClass: 'text-emerald-500', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', trend: '在线', trendClass: 'text-emerald-500' },
-  { label: '知识分类', value: '42', bgClass: 'bg-amber-50', iconClass: 'text-amber-500', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', trend: '已整理', trendClass: 'text-surface-400' },
-]
+function clearChat() {
+  messages.length = 0
+}
 
-const quickActions = [
-  { label: '新建知识文档', bgClass: 'bg-brand-50', iconClass: 'text-brand-500', icon: 'M12 4v16m8-8H4' },
-  { label: 'AI 智能问答', bgClass: 'bg-pink-50', iconClass: 'text-pink-500', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-  { label: '导入外部知识', bgClass: 'bg-emerald-50', iconClass: 'text-emerald-500', icon: 'M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12' },
-  { label: '管理用户权限', bgClass: 'bg-amber-50', iconClass: 'text-amber-500', icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-]
+function sendQuick(q: string) {
+  inputText.value = q
+  sendMessage()
+}
+
+async function sendMessage() {
+  const text = inputText.value.trim()
+  if (!text || streaming.value) return
+
+  messages.push({ role: 'user', content: text })
+  inputText.value = ''
+  scrollToBottom()
+
+  streaming.value = true
+
+  try {
+    // 模拟 API 调用
+    await new Promise(r => setTimeout(r, 1500))
+    
+    const mockReply = generateReply(text)
+    messages.push(mockReply)
+  } catch (e) {
+    messages.push({
+      role: 'assistant',
+      content: '抱歉，服务暂时不可用，请稍后重试。',
+    })
+  }
+
+  streaming.value = false
+  scrollToBottom()
+}
+
+function generateReply(question: string): Message {
+  const replies: Record<string, Message> = {
+    '介绍一下 AgenticOps 知识库的功能': {
+      role: 'assistant',
+      content: 'AgenticOps 知识库平台是一个基于 AI 的智能知识管理系统，主要功能包括：\n\n1. **知识文档管理** - 支持创建、编辑、分类管理各类技术文档\n2. **AI 智能问答** - 基于知识库内容，使用 RAG 技术进行精准问答\n3. **权限控制** - 细粒度的用户、角色、菜单权限管理\n4. **知识检索** - 支持全文搜索和语义检索\n\n你可以通过左侧菜单访问各个功能模块。',
+      sources: ['系统介绍文档', '功能概览']
+    },
+    '如何创建一个新的知识文档？': {
+      role: 'assistant',
+      content: '创建知识文档的步骤：\n\n1. 点击「新建知识文档」按钮\n2. 填写文档标题和内容\n3. 选择知识分类\n4. 点击保存即可\n\n文档创建后会自动进行向量化处理，可用于 AI 问答检索。',
+      sources: ['用户操作手册']
+    },
+    'FastAPI 最佳实践是什么？': {
+      role: 'assistant',
+      content: '根据知识库中的 FastAPI 文档，最佳实践包括：\n\n1. **项目结构** - 按功能模块拆分，使用清晰的目录结构\n2. **依赖注入** - 充分利用 FastAPI 的 Depends 机制\n3. **异步优先** - 数据库操作使用 async/await\n4. **Pydantic 模型** - 使用 Pydantic v2 进行数据验证\n5. **错误处理** - 统一异常处理和错误响应格式',
+      sources: ['FastAPI 最佳实践', '技术文档 v2.1']
+    },
+  }
+
+  return replies[question] || {
+    role: 'assistant',
+    content: `关于「${question}」，我已从知识库中检索到相关信息。\n\n这是一个基于阿里云通义千问大模型的智能问答系统，能够结合知识库内容为你提供精准回答。你可以继续提问，我会尽力帮助你。`,
+    sources: ['知识库检索结果']
+  }
+}
+
+function scrollToBottom() {
+  nextTick(() => {
+    if (messagesRef.value) {
+      messagesRef.value.scrollTop = messagesRef.value.scrollHeight
+    }
+  })
+}
 </script>
