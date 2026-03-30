@@ -26,10 +26,10 @@ const router = createRouter({
           meta: { title: '仪表盘' }
         },
         {
-          path: 'settings',
-          name: 'settings',
+          path: 'system',
+          name: 'system',
           component: () => import('@/views/Settings.vue'),
-          meta: { title: '系统设置' },
+          meta: { title: '系统管理' },
           children: [
             {
               path: 'users',
@@ -56,7 +56,6 @@ const router = createRouter({
   ]
 })
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   

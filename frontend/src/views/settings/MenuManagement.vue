@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-gray-800">菜单管理</h2>
+      <h2 class="text-xl font-bold text-surface-900">菜单管理</h2>
       <button 
         @click="showAddModal = true"
-        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+        class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center"
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -14,30 +14,30 @@
     </div>
 
     <!-- 菜单列表 -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-surface-100 overflow-hidden">
       <div class="p-4">
         <div v-if="menuTree.length === 0" class="p-12 text-center">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="mx-auto h-12 w-12 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">没有菜单</h3>
-          <p class="mt-1 text-sm text-gray-500">开始添加第一个菜单吧。</p>
+          <h3 class="mt-2 text-sm font-medium text-surface-900">没有菜单</h3>
+          <p class="mt-1 text-sm text-surface-400">开始添加第一个菜单吧。</p>
         </div>
         
         <div v-else class="space-y-2">
           <div 
             v-for="menu in menuTree" 
             :key="menu.id"
-            class="border border-gray-200 rounded-lg overflow-hidden"
+            class="border border-surface-200 rounded-lg overflow-hidden"
           >
             <div 
-              class="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+              class="flex items-center justify-between p-4 bg-surface-50 hover:bg-surface-100 transition-colors"
             >
               <div class="flex items-center flex-1">
                 <button 
                   v-if="menu.children && menu.children.length > 0"
                   @click="toggleExpand(menu.id)"
-                  class="mr-2 p-1 hover:bg-gray-200 rounded"
+                  class="mr-2 p-1 hover:bg-surface-200 rounded"
                 >
                   <svg 
                     :class="['w-4 h-4 transition-transform', expandedMenus.has(menu.id) ? 'rotate-90' : '']"
@@ -49,13 +49,13 @@
                 <div v-else class="w-6"></div>
                 
                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                  <span class="text-purple-600 font-medium">{{ menu.name.charAt(0) }}</span>
+                  <span class="text-brand-600 font-medium">{{ menu.name.charAt(0) }}</span>
                 </div>
                 
                 <div class="flex-1">
                   <div class="flex items-center">
-                    <span class="font-medium text-gray-800">{{ menu.name }}</span>
-                    <span class="ml-2 px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded">{{ menu.code }}</span>
+                    <span class="font-medium text-surface-900">{{ menu.name }}</span>
+                    <span class="ml-2 px-2 py-0.5 text-xs bg-surface-200 text-surface-600 rounded">{{ menu.code }}</span>
                     <span 
                       :class="[
                         'ml-2 px-2 py-0.5 text-xs rounded',
@@ -65,7 +65,7 @@
                       {{ menu.type === 'directory' ? '目录' : '菜单' }}
                     </span>
                   </div>
-                  <div class="text-sm text-gray-500 mt-1">
+                  <div class="text-sm text-surface-400 mt-1">
                     路径: {{ menu.path || '-' }} | 组件: {{ menu.component || '-' }}
                   </div>
                 </div>
@@ -84,7 +84,7 @@
                 <div class="flex space-x-2">
                   <button 
                     @click="addChildMenu(menu.id)"
-                    class="p-2 text-gray-500 hover:bg-gray-200 rounded-lg transition-colors"
+                    class="p-2 text-surface-400 hover:bg-surface-200 rounded-lg transition-colors"
                     title="添加子菜单"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@
                   </button>
                   <button 
                     @click="editMenu(menu)"
-                    class="p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
+                    class="p-2 text-brand-600 hover:bg-purple-100 rounded-lg transition-colors"
                     title="编辑"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,11 +114,11 @@
             </div>
             
             <!-- 子菜单 -->
-            <div v-if="expandedMenus.has(menu.id) && menu.children && menu.children.length > 0" class="border-t border-gray-200">
+            <div v-if="expandedMenus.has(menu.id) && menu.children && menu.children.length > 0" class="border-t border-surface-200">
               <div 
                 v-for="child in menu.children" 
                 :key="child.id"
-                class="flex items-center justify-between p-4 pl-16 bg-white hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                class="flex items-center justify-between p-4 pl-16 bg-white hover:bg-surface-50 border-b border-surface-100 last:border-b-0"
               >
                 <div class="flex items-center flex-1">
                   <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -127,13 +127,13 @@
                   
                   <div class="flex-1">
                     <div class="flex items-center">
-                      <span class="font-medium text-gray-700">{{ child.name }}</span>
-                      <span class="ml-2 px-2 py-0.5 text-xs bg-gray-200 text-gray-600 rounded">{{ child.code }}</span>
+                      <span class="font-medium text-surface-700">{{ child.name }}</span>
+                      <span class="ml-2 px-2 py-0.5 text-xs bg-surface-200 text-surface-600 rounded">{{ child.code }}</span>
                       <span class="ml-2 px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded">
                         {{ child.type === 'button' ? '按钮' : '菜单' }}
                       </span>
                     </div>
-                    <div class="text-sm text-gray-500 mt-1">
+                    <div class="text-sm text-surface-400 mt-1">
                       路径: {{ child.path || '-' }}
                     </div>
                   </div>
@@ -152,7 +152,7 @@
                   <div class="flex space-x-2">
                     <button 
                       @click="editMenu(child)"
-                      class="p-2 text-purple-600 hover:bg-purple-100 rounded-lg transition-colors"
+                      class="p-2 text-brand-600 hover:bg-purple-100 rounded-lg transition-colors"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -178,39 +178,39 @@
     <!-- 添加/编辑菜单模态框 -->
     <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closeModal">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
-          <h3 class="text-lg font-semibold text-gray-800">
+        <div class="px-6 py-4 border-b border-surface-200 sticky top-0 bg-white">
+          <h3 class="text-lg font-semibold text-surface-900">
             {{ showEditModal ? '编辑菜单' : (parentId ? '添加子菜单' : '添加菜单') }}
           </h3>
         </div>
         
         <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">菜单名称</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">菜单名称</label>
             <input 
               v-model="formData.name"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">菜单代码</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">菜单代码</label>
             <input 
               v-model="formData.code"
               type="text"
               required
               :disabled="showEditModal"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 disabled:bg-surface-100"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">类型</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">类型</label>
             <select 
               v-model="formData.type"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option value="menu">菜单</option>
               <option value="directory">目录</option>
@@ -219,49 +219,49 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">路由路径</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">路由路径</label>
             <input 
               v-model="formData.path"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="/example"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">组件路径</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">组件路径</label>
             <input 
               v-model="formData.component"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="@/views/example.vue"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">图标</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">图标</label>
             <input 
               v-model="formData.icon"
               type="text"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
               placeholder="IconName"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">排序</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">排序</label>
             <input 
               v-model.number="formData.sort_order"
               type="number"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           
           <div v-if="showEditModal">
-            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">状态</label>
             <select 
               v-model="formData.status"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option :value="true">正常</option>
               <option :value="false">禁用</option>
@@ -269,11 +269,11 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">描述</label>
             <textarea 
               v-model="formData.description"
               rows="2"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             ></textarea>
           </div>
           
@@ -281,14 +281,14 @@
             <button 
               type="button"
               @click="closeModal"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              class="px-4 py-2 text-surface-700 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
             >
               取消
             </button>
             <button 
               type="submit"
               :disabled="loading"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+              class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-50"
             >
               {{ loading ? '保存中...' : '保存' }}
             </button>

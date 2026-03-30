@@ -1,10 +1,10 @@
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-xl font-bold text-gray-800">角色管理</h2>
+      <h2 class="text-xl font-bold text-surface-900">角色管理</h2>
       <button 
         @click="showAddModal = true"
-        class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+        class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors flex items-center"
       >
         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -18,18 +18,18 @@
       <div 
         v-for="role in roles" 
         :key="role.id"
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow"
+        class="bg-white rounded-xl shadow-sm border border-surface-100 p-6 hover:shadow-md transition-shadow"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center">
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-gray-800">{{ role.name }}</h3>
-              <p class="text-sm text-gray-500">{{ role.code }}</p>
+              <h3 class="text-lg font-semibold text-surface-900">{{ role.name }}</h3>
+              <p class="text-sm text-surface-400">{{ role.code }}</p>
             </div>
           </div>
           <span 
@@ -42,16 +42,16 @@
           </span>
         </div>
         
-        <p class="text-sm text-gray-600 mb-4">{{ role.description || '暂无描述' }}</p>
+        <p class="text-sm text-surface-600 mb-4">{{ role.description || '暂无描述' }}</p>
         
-        <div class="flex items-center justify-between pt-4 border-t border-gray-100">
-          <span class="text-xs text-gray-400">
+        <div class="flex items-center justify-between pt-4 border-t border-surface-100">
+          <span class="text-xs text-surface-400">
             排序: {{ role.sort_order }}
           </span>
           <div class="flex space-x-2">
             <button 
               @click="editRole(role)"
-              class="px-3 py-1 text-sm text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+              class="px-3 py-1 text-sm text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
             >
               编辑
             </button>
@@ -67,66 +67,66 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-if="roles.length === 0" class="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-100">
-      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-if="roles.length === 0" class="bg-white rounded-xl shadow-sm p-12 text-center border border-surface-100">
+      <svg class="mx-auto h-12 w-12 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
       </svg>
-      <h3 class="mt-2 text-sm font-medium text-gray-900">没有角色</h3>
-      <p class="mt-1 text-sm text-gray-500">开始添加第一个角色吧。</p>
+      <h3 class="mt-2 text-sm font-medium text-surface-900">没有角色</h3>
+      <p class="mt-1 text-sm text-surface-400">开始添加第一个角色吧。</p>
     </div>
 
     <!-- 添加/编辑角色模态框 -->
     <div v-if="showAddModal || showEditModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" @click.self="closeModal">
       <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4">
-        <div class="px-6 py-4 border-b border-gray-200">
-          <h3 class="text-lg font-semibold text-gray-800">{{ showEditModal ? '编辑角色' : '添加角色' }}</h3>
+        <div class="px-6 py-4 border-b border-surface-200">
+          <h3 class="text-lg font-semibold text-surface-900">{{ showEditModal ? '编辑角色' : '添加角色' }}</h3>
         </div>
         
         <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">角色名称</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">角色名称</label>
             <input 
               v-model="formData.name"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">角色代码</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">角色代码</label>
             <input 
               v-model="formData.code"
               type="text"
               required
               :disabled="showEditModal"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 disabled:bg-surface-100"
             />
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">描述</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">描述</label>
             <textarea 
               v-model="formData.description"
               rows="3"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             ></textarea>
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">排序</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">排序</label>
             <input 
               v-model.number="formData.sort_order"
               type="number"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             />
           </div>
           
           <div v-if="showEditModal">
-            <label class="block text-sm font-medium text-gray-700 mb-1">状态</label>
+            <label class="block text-sm font-medium text-surface-700 mb-1">状态</label>
             <select 
               v-model="formData.status"
-              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              class="w-full px-4 py-2 border border-surface-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400"
             >
               <option :value="true">正常</option>
               <option :value="false">禁用</option>
@@ -137,14 +137,14 @@
             <button 
               type="button"
               @click="closeModal"
-              class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              class="px-4 py-2 text-surface-700 bg-surface-100 rounded-lg hover:bg-surface-200 transition-colors"
             >
               取消
             </button>
             <button 
               type="submit"
               :disabled="loading"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+              class="px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors disabled:opacity-50"
             >
               {{ loading ? '保存中...' : '保存' }}
             </button>
