@@ -6,6 +6,7 @@ from app.schemas.system.role import RoleCreate, RoleUpdate, RoleResponse
 from app.schemas.system.user import UserResponse
 from app.api.auth.auth import get_current_user
 from app.crud.system import role as role_crud
+from app.core.log_decorator import log_operation
 
 
 router = APIRouter(prefix="/roles", tags=["角色管理"])
@@ -64,6 +65,7 @@ async def get_role_menu_ids(
 
 
 @router.put("/{role_id}/menus")
+@log_operation(module="角色管理", action="更新角色权限", description="更新角色关联的菜单")
 async def update_role_menus(
     role_id: int,
     menu_ids: List[int],
@@ -80,6 +82,7 @@ async def update_role_menus(
 
 
 @router.post("/", response_model=RoleResponse, status_code=status.HTTP_201_CREATED)
+@log_operation(module="角色管理", action="创建角色", description="创建新角色")
 async def create_role(
     role_in: RoleCreate,
     current_user: UserResponse = Depends(get_current_user),
@@ -100,6 +103,7 @@ async def create_role(
 
 
 @router.put("/{role_id}", response_model=RoleResponse)
+@log_operation(module="角色管理", action="更新角色", description="更新角色信息")
 async def update_role(
     role_id: int,
     role_update: RoleUpdate,
@@ -118,6 +122,7 @@ async def update_role(
 
 
 @router.delete("/{role_id}")
+@log_operation(module="角色管理", action="删除角色", description="删除角色")
 async def delete_role(
     role_id: int,
     current_user: UserResponse = Depends(get_current_user),

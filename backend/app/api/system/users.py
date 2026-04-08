@@ -5,6 +5,7 @@ from app.db.database import get_db
 from app.schemas.system.user import UserCreate, UserResponse, UserUpdate
 from app.api.auth.auth import get_current_user
 from app.crud.system import user as user_crud
+from app.core.log_decorator import log_operation
 
 router = APIRouter(prefix="/users", tags=["用户管理"])
 
@@ -35,6 +36,7 @@ async def get_user(
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@log_operation(module="用户管理", action="创建用户", description="创建新用户")
 async def create_user(
     user_in: UserCreate,
     current_user: UserResponse = Depends(get_current_user),
@@ -58,6 +60,7 @@ async def create_user(
 
 
 @router.put("/{user_id}", response_model=UserResponse)
+@log_operation(module="用户管理", action="更新用户", description="更新用户信息")
 async def update_user(
     user_id: int,
     user_update: UserUpdate,
@@ -78,6 +81,7 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
+@log_operation(module="用户管理", action="删除用户", description="删除用户")
 async def delete_user(
     user_id: int,
     current_user: UserResponse = Depends(get_current_user),
@@ -101,6 +105,7 @@ async def delete_user(
 
 
 @router.post("/{user_id}/reset-password")
+@log_operation(module="用户管理", action="重置密码", description="重置用户密码")
 async def reset_password(
     user_id: int,
     password_data: dict,

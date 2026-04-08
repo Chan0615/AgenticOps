@@ -8,6 +8,7 @@ from app.schemas.system.user import UserCreate, UserResponse, UserUpdate
 from app.schemas.common.auth import UserLogin, TokenResponse, RefreshTokenRequest
 from app.crud.system import user as user_crud
 from app.core.security import create_tokens, decode_token, verify_password, get_password_hash
+from app.core.log_decorator import log_operation
 
 router = APIRouter(prefix="/auth", tags=["认证"])
 
@@ -47,6 +48,7 @@ async def get_current_user(
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+@log_operation(module="认证模块", action="用户注册", description="新用户注册")
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     """用户注册"""
     # 检查用户名是否存在
@@ -76,6 +78,7 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
+@log_operation(module="认证模块", action="用户登录", description="用户登录系统")
 async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
     """用户登录"""
     user = await user_crud.authenticate_user(db, user_in.username, user_in.password)
@@ -98,6 +101,7 @@ async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
+@log_operation(module="认证模块", action="刷新令牌", description="刷新访问令牌")
 async def refresh_token(request: RefreshTokenRequest, db: AsyncSession = Depends(get_db)):
     """刷新令牌"""
     payload = decode_token(request.refresh_token)
@@ -135,6 +139,7 @@ async def get_me(current_user: UserResponse = Depends(get_current_user)):
 
 
 @router.put("/me", response_model=UserResponse)
+@log_operation(module="认证模块", action="更新个人信息", description="更新当前用户信息")
 async def update_me(
     user_update: UserUpdate,
     current_user: UserResponse = Depends(get_current_user),
@@ -146,6 +151,7 @@ async def update_me(
 
 
 @router.post("/change-password")
+@log_operation(module="认证模块", action="修改密码", description="用户修改登录密码")
 async def change_password(
     old_password: str,
     new_password: str,

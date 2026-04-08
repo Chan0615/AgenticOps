@@ -6,6 +6,8 @@ from app.core.config import settings
 from app.api.auth import router as auth_router
 from app.api.agent import router as agent_router
 from app.api.system import users_router, roles_router, menus_router
+from app.api.server import server_router
+from app.api.common.logs import router as logs_router
 
 
 @asynccontextmanager
@@ -38,6 +40,8 @@ app.include_router(users_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(menus_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
+app.include_router(server_router, prefix="/api")
+app.include_router(logs_router, prefix="/api")
 
 
 @app.get("/")

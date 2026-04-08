@@ -22,6 +22,7 @@ from app.crud.agent import knowledge as kb_crud
 from app.crud.agent import document as doc_crud
 from app.crud.agent import conversation as conv_crud
 from app.services.rag_agent import chat, chat_stream
+from app.core.log_decorator import log_operation
 
 router = APIRouter(prefix="/rag", tags=["Agent RAG"])
 
@@ -39,6 +40,7 @@ async def list_kbs(
 
 
 @router.post("/knowledge-bases", response_model=KnowledgeBaseResponse, status_code=201)
+@log_operation(module="知识库管理", action="创建知识库", description="创建新知识库")
 async def create_kb(
     data: KnowledgeBaseCreate,
     current_user: UserResponse = Depends(get_current_user),
@@ -61,6 +63,7 @@ async def get_kb(
 
 
 @router.put("/knowledge-bases/{kb_id}", response_model=KnowledgeBaseResponse)
+@log_operation(module="知识库管理", action="更新知识库", description="更新知识库信息")
 async def update_kb(
     kb_id: int,
     data: KnowledgeBaseUpdate,
@@ -74,6 +77,7 @@ async def update_kb(
 
 
 @router.delete("/knowledge-bases/{kb_id}")
+@log_operation(module="知识库管理", action="删除知识库", description="删除知识库及所有文档")
 async def delete_kb(
     kb_id: int,
     current_user: UserResponse = Depends(get_current_user),
@@ -102,6 +106,7 @@ async def list_docs(
     response_model=DocumentResponse,
     status_code=201,
 )
+@log_operation(module="知识库管理", action="上传文档", description="上传文档到知识库")
 async def create_doc(
     kb_id: int,
     data: DocumentCreate,
@@ -118,6 +123,7 @@ async def create_doc(
 
 
 @router.delete("/documents/{doc_id}")
+@log_operation(module="知识库管理", action="删除文档", description="删除文档")
 async def delete_doc(
     doc_id: int,
     current_user: UserResponse = Depends(get_current_user),
@@ -134,6 +140,7 @@ async def delete_doc(
 
 # ============ 对话 ============
 @router.post("/chat")
+@log_operation(module="AI对话", action="发起对话", description="AI 智能问答")
 async def chat_endpoint(
     req: ChatRequest,
     current_user: UserResponse = Depends(get_current_user),
@@ -191,6 +198,7 @@ async def get_conversation(
 
 
 @router.delete("/conversations/{conv_id}")
+@log_operation(module="AI对话", action="删除对话", description="删除对话记录")
 async def delete_conversation(
     conv_id: int,
     current_user: UserResponse = Depends(get_current_user),

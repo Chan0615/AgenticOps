@@ -6,6 +6,7 @@ from app.schemas.system.menu import MenuCreate, MenuUpdate, MenuResponse
 from app.schemas.system.user import UserResponse
 from app.api.auth.auth import get_current_user
 from app.crud.system import menu as menu_crud
+from app.core.log_decorator import log_operation
 
 router = APIRouter(prefix="/menus", tags=["菜单管理"])
 
@@ -59,6 +60,7 @@ async def get_menu(
 
 
 @router.post("/", response_model=MenuResponse, status_code=status.HTTP_201_CREATED)
+@log_operation(module="菜单管理", action="创建菜单", description="创建新菜单")
 async def create_menu(
     menu_in: MenuCreate,
     current_user: UserResponse = Depends(get_current_user),
@@ -82,6 +84,7 @@ async def create_menu(
 
 
 @router.put("/{menu_id}", response_model=MenuResponse)
+@log_operation(module="菜单管理", action="更新菜单", description="更新菜单信息")
 async def update_menu(
     menu_id: int,
     menu_update: MenuUpdate,
@@ -101,6 +104,7 @@ async def update_menu(
 
 
 @router.delete("/{menu_id}")
+@log_operation(module="菜单管理", action="删除菜单", description="删除菜单")
 async def delete_menu(
     menu_id: int,
     current_user: UserResponse = Depends(get_current_user),

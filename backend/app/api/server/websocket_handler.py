@@ -4,7 +4,6 @@ import asyncio
 import json
 import logging
 import websockets
-from websockets.server import serve
 from typing import Optional
 from app.services.ssh_service import SSHConnection
 
@@ -14,8 +13,8 @@ logger = logging.getLogger(__name__)
 active_connections: dict[str, SSHConnection] = {}
 
 
-async def ssh_websocket_handler(websocket, path):
-    """处理 WebSocket SSH 连接"""
+async def ssh_websocket_handler(websocket):
+    """处理 WebSocket SSH 连接（新版 websockets API）"""
     connection_id = None
     
     try:
@@ -99,5 +98,11 @@ async def read_ssh_output(channel, websocket):
 def start_websocket_server(host: str = "0.0.0.0", port: int = 8765):
     """启动 WebSocket 服务器"""
     logger.info(f"WebSocket SSH 服务器启动: ws://{host}:{port}")
-    server = serve(ssh_websocket_handler, host, port)
-    server.serve_forever()
+    
+    # 使用新版 websockets API
+    async def main():
+        async with websockets.serve(ssh_websocket_handler, host, port) as server:
+            logger.info(f"WebSocket 服务器运行中: ws://{host}:{port}")
+            await asyncio.Future()  # 永久运行
+    
+    asyncio.run(main())
