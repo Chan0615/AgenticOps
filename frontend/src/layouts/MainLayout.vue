@@ -15,7 +15,7 @@
           </svg>
         </div>
         <div>
-          <h1 class="text-sm font-bold text-surface-900 tracking-wide">AgenticOps</h1>
+          <h1 class="text-sm font-bold text-surface-900 tracking-wide">CHAN AgenticOps</h1>
           <p class="text-[10px] text-surface-400">智能知识库平台</p>
         </div>
       </div>
@@ -185,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { menuApi } from '@/api/system/menu'
@@ -205,8 +205,21 @@ const userInitial = computed(() => authStore.user?.username?.charAt(0).toUpperCa
 
 const currentTitle = computed(() => {
   const meta = route.meta as Record<string, any>
-  return meta?.title || '知识库'
+  return meta?.title || 'CHAN AgenticOps'
 })
+
+// 监听路由变化，更新浏览器标题
+watch(
+  () => route.meta.title,
+  (newTitle) => {
+    if (newTitle) {
+      document.title = `${newTitle} - CHAN AgenticOps`
+    } else {
+      document.title = 'CHAN AgenticOps'
+    }
+  },
+  { immediate: true }
+)
 
 function toggleGroup(id: number) {
   expandedGroups[id] = !expandedGroups[id]

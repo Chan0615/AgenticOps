@@ -46,7 +46,7 @@ def _get(*keys: str, default: Any = None) -> Any:
 # ============================================================
 # 应用配置
 # ============================================================
-APP_NAME: str = _get("app", "name", default="AgenticOps")
+APP_NAME: str = _get("app", "name", default="CHAN AgenticOps")
 DEBUG: bool = _get("app", "debug", default=True)
 VERSION: str = _get("app", "version", default="1.0.0")
 
