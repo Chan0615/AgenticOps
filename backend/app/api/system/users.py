@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from app.db.database import get_db
 from app.schemas.system.user import UserCreate, UserResponse, UserUpdate
-from app.api.common.auth import get_current_user
+from app.api.auth.auth import get_current_user
 from app.crud.system import user as user_crud
 
 router = APIRouter(prefix="/users", tags=["用户管理"])

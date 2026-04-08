@@ -118,3 +118,24 @@ def get_enabled_ai_providers() -> list[str]:
     """获取所有已启用的 AI provider 名称"""
     ai_cfg = _get("ai", default={})
     return [name for name, cfg in ai_cfg.items() if cfg.get("enabled")]
+
+
+# ============================================================
+# Settings 对象（兼容旧代码）
+# ============================================================
+class Settings:
+    """配置对象（兼容使用 settings.XXX 的代码）"""
+    APP_NAME = APP_NAME
+    DEBUG = DEBUG
+    VERSION = VERSION
+    DATABASE_URL = DATABASE_URL
+    REDIS_URL = REDIS_URL
+    REDIS_CACHE_PREFIX = REDIS_CACHE_PREFIX
+    SECRET_KEY = SECRET_KEY
+    ALGORITHM = ALGORITHM
+    ACCESS_TOKEN_EXPIRE_MINUTES = ACCESS_TOKEN_EXPIRE_MINUTES
+    REFRESH_TOKEN_EXPIRE_DAYS = REFRESH_TOKEN_EXPIRE_DAYS
+    BACKEND_CORS_ORIGINS = BACKEND_CORS_ORIGINS
+
+
+settings = Settings()

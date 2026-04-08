@@ -4,7 +4,7 @@ from typing import List
 from app.db.database import get_db
 from app.schemas.system.menu import MenuCreate, MenuUpdate, MenuResponse
 from app.schemas.system.user import UserResponse
-from app.api.common.auth import get_current_user
+from app.api.auth.auth import get_current_user
 from app.crud.system import menu as menu_crud
 
 router = APIRouter(prefix="/menus", tags=["菜单管理"])

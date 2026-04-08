@@ -1,6 +1,14 @@
-# AgenticOps 前端
+# AgenticOps 前端应用
 
-基于 Vue 3 的现代化管理后台前端。
+基于 Vue 3 的现代化智能客服管理平台前端。
+
+## ✨ 核心特性
+
+- 🎨 响应式设计，支持多端适配
+- 🔐 完整的权限路由控制
+- 💬 实时智能对话界面
+- 📚 知识库可视化管理
+- 🚀 基于 Vite 的极速开发体验
 
 ## 技术栈
 
@@ -13,39 +21,50 @@
 - **类型**: TypeScript 5.3
 - **图标**: Lucide Vue Next
 
-## 项目结构
+## 📁 项目结构
 
 ```
 frontend/
 ├── src/
-│   ├── api/              # API 接口
-│   │   ├── index.ts      # Axios 实例
-│   │   └── system/       # 系统模块 API
-│   │       ├── index.ts   # 导出
-│   │       ├── types.ts   # 类型定义
-│   │       ├── auth.ts    # 认证接口
-│   │       ├── user.ts    # 用户接口
-│   │       ├── role.ts    # 角色接口
-│   │       └── menu.ts    # 菜单接口
+│   ├── api/              # API 接口层
+│   │   ├── index.ts      # Axios 实例配置
+│   │   ├── agent/        # Agent 相关接口
+│   │   │   └── index.ts  # RAG 对话接口
+│   │   └── system/       # 系统管理接口
+│   │       ├── auth.ts   # 认证接口
+│   │       ├── user.ts   # 用户接口
+│   │       ├── role.ts   # 角色接口
+│   │       ├── menu.ts   # 菜单接口
+│   │       └── types.ts  # 类型定义
 │   ├── assets/           # 静态资源
 │   ├── components/       # 公共组件
 │   ├── layouts/          # 布局组件
-│   │   └── MainLayout.vue # 主布局
+│   │   ├── MainLayout.vue    # 主布局
+│   │   └── BlankLayout.vue   # 空白布局
 │   ├── router/           # 路由配置
-│   │   └── index.ts      # 路由定义
+│   │   └── index.ts      # 路由定义与守卫
 │   ├── stores/           # Pinia 状态管理
 │   │   └── auth.ts       # 认证状态
-│   ├── style.css         # 全局样式
 │   ├── views/            # 页面组件
 │   │   ├── Login.vue     # 登录页面
-│   │   ├── Dashboard.vue  # 仪表盘
-│   │   ├── Settings.vue   # 设置容器
-│   │   └── settings/      # 设置子页面
+│   │   ├── Dashboard.vue # 仪表盘
+│   │   ├── Chat.vue      # 智能对话
+│   │   ├── Settings.vue  # 设置容器
+│   │   ├── knowledge/    # 知识库管理
+│   │   │   └── KnowledgeBase.vue
+│   │   ├── rag/          # RAG 功能
+│   │   │   ├── Chat.vue  # RAG 对话
+│   │   │   └── KnowledgeBase.vue
+│   │   └── settings/     # 系统设置
 │   │       ├── UserManagement.vue
 │   │       ├── RoleManagement.vue
-│   │       └── MenuManagement.vue
+│   │       ├── MenuManagement.vue
+│   │       └── Profile.vue
 │   ├── App.vue           # 根组件
-│   └── main.ts           # 入口文件
+│   ├── main.ts           # 入口文件
+│   └── style.css         # 全局样式
+├── public/               # 公共静态资源
+│   └── favicon.svg
 ├── index.html            # HTML 模板
 ├── package.json          # 依赖配置
 ├── tsconfig.json         # TypeScript 配置
@@ -77,16 +96,20 @@ npm run dev
 npm run build
 ```
 
-## 页面路由
+## 🗺️ 页面路由
 
-| 路径 | 页面 | 描述 |
-|------|------|------|
-| /login | Login | 登录页面 |
-| / | MainLayout | 主布局（需登录） |
-| /dashboard | Dashboard | 仪表盘 |
-| /settings/users | UserManagement | 用户管理 |
-| /settings/roles | RoleManagement | 角色管理 |
-| /settings/menus | MenuManagement | 菜单管理 |
+| 路径 | 页面 | 描述 | 权限 |
+|------|------|------|------|
+| /login | Login | 登录页面 | 公开 |
+| / | MainLayout | 主布局（需登录） | 登录 |
+| /dashboard | Dashboard | 仪表盘 | 登录 |
+| /chat | Chat | 智能对话 | 登录 |
+| /knowledge | KnowledgeBase | 知识库管理 | 登录 |
+| /rag/chat | RAG Chat | RAG 对话 | 登录 |
+| /settings/users | UserManagement | 用户管理 | 管理员 |
+| /settings/roles | RoleManagement | 角色管理 | 管理员 |
+| /settings/menus | MenuManagement | 菜单管理 | 管理员 |
+| /settings/profile | Profile | 个人资料 | 登录 |
 
 ## 登录页面
 
@@ -200,28 +223,33 @@ authStore.fetchUser()           // 获取用户信息
 authStore.updateProfile(data)   // 更新资料
 ```
 
-## 开发指南
+## 💡 开发指南
 
 ### 添加新页面
 
 1. 在 `src/views/` 创建页面组件
 2. 在 `src/router/index.ts` 添加路由
-3. 在侧边栏添加导航链接
+3. 在 `src/api/` 创建对应的 API 接口
+4. 在主布局侧边栏添加导航链接
 
 ### 添加新 API
 
-1. 在 `src/api/system/` 创建 API 文件
-2. 定义类型和接口
-3. 在 `src/api/system/index.ts` 导出
+1. 在 `src/api/` 创建 API 文件
+2. 定义 TypeScript 类型和接口函数
+3. 使用统一的 Axios 实例（`src/api/index.ts`）
+4. 处理错误拦截和 token 刷新
 
 ### 使用 TailwindCSS
 
-组件类名遵循 TailwindCSS 规范：
+组件类名遵循 TailwindCSS 原子类规范：
 
 ```vue
-<div class="p-4 bg-white rounded-lg shadow-sm">
-  <h1 class="text-xl font-bold text-gray-800">标题</h1>
-</div>
+<template>
+  <div class="p-4 bg-white rounded-lg shadow-sm">
+    <h1 class="text-xl font-bold text-gray-800">标题</h1>
+    <p class="mt-2 text-gray-600">内容描述</p>
+  </div>
+</template>
 ```
 
 ## 依赖列表
@@ -255,18 +283,45 @@ authStore.updateProfile(data)   // 更新资料
 }
 ```
 
-## 环境变量
+## 🔧 环境变量
+
+创建 `.env` 文件：
 
 ```env
+# API 基础路径
 VITE_API_BASE_URL=/api
+
+# 其他环境变量
+VITE_APP_TITLE=AgenticOps
 ```
 
-## 生产部署
+## 🚀 生产部署
+
+### 构建
 
 ```bash
-# 构建
 npm run build
+```
 
-# 构建产物在 dist/ 目录
-# 可使用任意静态文件服务器部署
+构建产物在 `dist/` 目录。
+
+### Nginx 配置示例
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+    root /path/to/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api {
+        proxy_pass http://backend:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
 ```

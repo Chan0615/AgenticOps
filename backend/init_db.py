@@ -48,7 +48,8 @@ async def create_tables(force_reset: bool = False):
     """创建所有表"""
     print("[2/4] 创建数据表 ...")
     from app.db.database import Base
-    from app.models.models import User, Role, UserRole, Menu, RoleMenu  # noqa: F401
+    # 只导入系统管理模块和知识库模块的模型
+    from app.models.models import User, Role, UserRole, Menu, RoleMenu, KnowledgeDocument, DocumentChunk  # noqa: F401
 
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:

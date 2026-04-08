@@ -10,18 +10,18 @@ app:
 
 mysql:
   default:
-    host: localhost
+    host: 10.225.138.121
     port: 3306
     user: root
-    password: "your_password"
-    database: agenticops
+    password: "CAr8RvRA"
+    database: kefu_ai
 
 redis:
   default:
-    host: localhost
-    port: 6379
-    password: ""
-    db: 0
+    host: 10.225.138.125
+    port: 6579
+    password: "leadton@qwe"
+    db: 20
     cache_prefix: agenticops
 
 jwt:
@@ -45,3 +45,21 @@ ai:
     api_key: ""
     base_url: "https://api.deepseek.com/v1"
     model: "deepseek-chat"
+
+saltstack:
+  fuchunyun:
+    url: http://10.66.108.97
+    salt_name: saltapi
+    salt_pass: "0yNqiv2lcR0LNRc8@"
+  aliyun:
+    url: http://10.136.74.9
+    salt_name: saltapi
+    salt_pass: "0yNqiv2lcR0LNRc8@"
+  binjiang:
+    url: http://10.225.141.64
+    salt_name: saltapi
+    salt_pass: "0yNqiv2lcR0LNRc8@"
+  aliyunyc:
+    url: http://10.200.255.63
+    salt_name: saltapi
+    salt_pass: "0yNqiv2lcR0LNRc8@"

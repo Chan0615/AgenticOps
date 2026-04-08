@@ -173,3 +173,16 @@ class DocumentChunk(Base):
     created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
     
     document = relationship("KnowledgeDocument", back_populates="chunks")
+
+
+# ============================================================
+# Agent RAG 模块模型（可选，需要时取消注释）
+# ============================================================
+# 如果需要使用 Agent 功能，请取消以下导入注释：
+# from app.models.agent import (
+#     KnowledgeBase,
+#     Document,
+#     DocumentChunk as AgentDocumentChunk,
+#     Conversation,
+#     ConversationMessage
+# )

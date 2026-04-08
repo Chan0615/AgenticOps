@@ -1,6 +1,14 @@
-# AgenticOps 后端
+# AgenticOps 后端服务
 
-基于 FastAPI 的异步 RESTful API 服务。
+基于 FastAPI 的异步 RESTful API 服务，提供智能客服平台后端能力。
+
+## ✨ 核心特性
+
+- 🔐 JWT 认证与权限管理
+- 📚 RAG 知识库与向量检索
+- 🖥️ Saltstack 多环境运维集成
+- ⚡ 全异步架构（FastAPI + SQLAlchemy + aiomysql）
+- 🎯 模块化设计（api/crud/schemas/services 分层）
 
 ## 技术栈
 
@@ -11,32 +19,57 @@
 - **认证**: JWT (python-jose)
 - **密码加密**: bcrypt (passlib)
 
-## 项目结构
+## 📁 项目结构
 
 ```
 backend/
 ├── app/
-│   ├── api/              # API 路由
+│   ├── api/              # API 路由层
+│   │   ├── agent/        # Agent 模块（RAG 对话）
+│   │   │   └── rag.py    # RAG 对话接口
 │   │   ├── common/       # 通用模块
-│   │   │   └── auth.py   # 认证相关
+│   │   │   ├── auth.py   # 认证相关
+│   │   │   ├── knowledge.py  # 知识库接口
+│   │   │   └── rag.py    # RAG 通用接口
 │   │   └── system/       # 系统管理模块
 │   │       ├── users.py  # 用户管理
 │   │       ├── roles.py  # 角色管理
 │   │       └── menus.py  # 菜单管理
 │   ├── core/             # 核心配置
-│   │   ├── config.py     # 配置管理
-│   │   └── security.py   # 安全工具
-│   ├── crud/             # 数据库操作
+│   │   ├── config.py     # YAML 配置加载器
+│   │   └── security.py   # 安全工具（JWT、密码）
+│   ├── crud/             # 数据库操作层
+│   │   ├── agent/        # Agent 相关 CRUD
+│   │   │   ├── conversation.py  # 对话记录
+│   │   │   ├── document.py      # 文档管理
+│   │   │   └── knowledge.py     # 知识库
+│   │   ├── knowledge/    # 知识库 CRUD
 │   │   └── system/       # 系统 CRUD
+│   │       ├── user.py
+│   │       ├── role.py
+│   │       └── menu.py
 │   ├── db/               # 数据库配置
 │   │   └── database.py   # 数据库连接
-│   ├── models/           # 数据模型
-│   │   └── models.py     # SQLAlchemy 模型
-│   └── schemas/          # Pydantic 模型
-│       ├── common/       # 通用 Schema
-│       └── system/       # 系统 Schema
-├── main.py               # 应用入口
-└── requirements.txt      # 依赖列表
+│   ├── models/           # SQLAlchemy 数据模型
+│   │   ├── models.py     # 系统模型
+│   │   └── agent.py      # Agent 模型
+│   ├── rag/              # RAG 核心逻辑
+│   │   ├── agents.py     # Agent 实现
+│   │   └── tools.py      # RAG 工具集
+│   ├── schemas/          # Pydantic 数据验证
+│   │   ├── agent/        # Agent Schema
+│   │   ├── common/       # 通用 Schema
+│   │   └── system/       # 系统 Schema
+│   ├── services/         # 业务逻辑层
+│   │   └── rag_agent.py  # RAG Agent 服务
+│   └── main.py           # FastAPI 应用入口
+├── uploads/              # 文件上传目录
+│   └── knowledge/        # 知识库文档
+├── vector_db/            # 向量数据库存储
+├── config.yaml.example   # 配置文件示例
+├── init_db.py            # 数据库初始化脚本
+├── requirements.txt      # Python 依赖
+└── main.py               # 启动入口
 ```
 
 ## 快速开始
@@ -50,38 +83,69 @@ pip install -r requirements.txt
 
 ### 2. 配置环境
 
-创建 `.env` 文件：
+复制并编辑配置文件：
 
-```env
-# 应用配置
-APP_NAME=AgenticOps
-DEBUG=True
-SECRET_KEY=your-secret-key-change-in-production
+```bash
+cp config.yaml.example config.yaml
+```
 
-# 数据库配置
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=password
-MYSQL_DATABASE=agenticops
+编辑 `config.yaml`：
+
+```yaml
+# MySQL 配置
+mysql:
+  default:
+    host: 10.225.138.121
+    port: 3306
+    user: root
+    password: "your_password"
+    database: kefu_ai
 
 # Redis 配置
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_DB=0
+redis:
+  default:
+    host: 10.225.138.125
+    port: 6579
+    password: "your_redis_password"
+    db: 20
 
 # JWT 配置
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-REFRESH_TOKEN_EXPIRE_DAYS=7
+jwt:
+  secret_key: "your-secret-key-change-in-production"
+  algorithm: HS256
+  access_token_expire_minutes: 30
+  refresh_token_expire_days: 7
 
-# CORS 配置
-BACKEND_CORS_ORIGINS=["http://localhost:3000","http://localhost:5173"]
+# Saltstack 多环境配置
+saltstack:
+  fuchunyun:
+    url: http://10.66.108.97
+    salt_name: saltapi
+    salt_pass: "your_salt_password"
+  aliyun:
+    url: http://10.136.74.9
+    salt_name: saltapi
+    salt_pass: "your_salt_password"
+
+# AI 模型配置
+ai:
+  openai:
+    enabled: false
+    api_key: "your_api_key"
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-4o"
 ```
 
 ### 3. 创建数据库
 
 ```sql
-CREATE DATABASE agenticops CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE kefu_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+### 4. 初始化数据库
+
+```bash
+python init_db.py
 ```
 
 ### 4. 启动服务
@@ -100,9 +164,9 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
-## API 端点
+## 📡 API 端点
 
-### 认证模块 (common)
+### 认证模块 (/api/auth)
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | POST | /api/auth/register | 用户注册 |
@@ -112,7 +176,7 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 | PUT | /api/auth/me | 更新当前用户 |
 | POST | /api/auth/change-password | 修改密码 |
 
-### 用户管理 (system)
+### 用户管理 (/api/users)
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/users/ | 获取用户列表 |
@@ -121,7 +185,7 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 | PUT | /api/users/{id} | 更新用户 |
 | DELETE | /api/users/{id} | 删除用户 |
 
-### 角色管理 (system)
+### 角色管理 (/api/roles)
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/roles/ | 获取角色列表 |
@@ -130,7 +194,7 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 | PUT | /api/roles/{id} | 更新角色 |
 | DELETE | /api/roles/{id} | 删除角色 |
 
-### 菜单管理 (system)
+### 菜单管理 (/api/menus)
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/menus/ | 获取菜单树 |
@@ -139,6 +203,19 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 | POST | /api/menus/ | 创建菜单 |
 | PUT | /api/menus/{id} | 更新菜单 |
 | DELETE | /api/menus/{id} | 删除菜单 |
+
+### RAG 知识库 (/api/knowledge)
+| 方法 | 端点 | 描述 |
+|------|------|------|
+| POST | /api/knowledge/upload | 上传文档 |
+| GET | /api/knowledge/list | 获取知识库列表 |
+| DELETE | /api/knowledge/{id} | 删除文档 |
+
+### Agent 对话 (/api/agent)
+| 方法 | 端点 | 描述 |
+|------|------|------|
+| POST | /api/agent/chat | 发起对话 |
+| GET | /api/agent/conversations | 获取对话历史 |
 
 ## 数据模型
 
@@ -180,21 +257,46 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 | type | string | 类型（menu/directory/button） |
 | status | bool | 状态 |
 
-## 开发指南
+## 🏗️ 架构设计
+
+### 分层架构
+
+```
+请求流程：
+API 路由 (api/) 
+  ↓
+业务逻辑 (services/)
+  ↓
+数据操作 (crud/)
+  ↓
+数据模型 (models/)
+  ↓
+数据库 (MySQL/Redis)
+```
+
+### 配置管理
+
+- 使用 YAML 配置文件 (`config.yaml`)
+- 支持多环境配置（MySQL/Redis/Saltstack）
+- 配置加载器：`app/core/config.py`
+
+## 👨‍💻 开发指南
 
 ### 添加新模块
 
-1. 创建路由：`app/api/模块名/xxx.py`
-2. 创建 CRUD：`app/crud/模块名/xxx.py`
-3. 创建 Schema：`app/schemas/模块名/xxx.py`
-4. 在 `app/main.py` 中注册路由
+1. **创建路由**：`app/api/模块名/xxx.py`
+2. **创建 CRUD**：`app/crud/模块名/xxx.py`
+3. **创建 Schema**：`app/schemas/模块名/xxx.py`
+4. **业务逻辑**（可选）：`app/services/xxx.py`
+5. **注册路由**：在 `app/main.py` 中添加路由
 
 ### 代码规范
 
 - 使用 Python type hints
-- 遵循 PEP 8
+- 遵循 PEP 8 规范
 - 所有异步函数使用 `async/await`
 - 使用 Pydantic 进行数据验证
+- 错误处理使用 HTTPException
 
 ## 依赖列表
 
