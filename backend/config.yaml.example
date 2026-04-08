@@ -1,10 +1,10 @@
 # ============================
-# AgenticOps 配置文件（示例）
+# CHAN AgenticOps 配置文件（示例）
 # 复制为 config.yaml 后填入实际值
 # ============================
 
 app:
-  name: AgenticOps
+  name: CHAN AgenticOps
   debug: true
   version: "1.0.0"
 
@@ -47,19 +47,23 @@ ai:
     model: "deepseek-chat"
 
 saltstack:
+  # 富春云环境
   fuchunyun:
     url: http://10.66.108.97
     salt_name: saltapi
-    salt_pass: "0yNqiv2lcR0LNRc8@"
+    salt_pass: "your_salt_password"
+  # 阿里云环境
   aliyun:
     url: http://10.136.74.9
     salt_name: saltapi
-    salt_pass: "0yNqiv2lcR0LNRc8@"
+    salt_pass: "your_salt_password"
+  # 滨江环境
   binjiang:
     url: http://10.225.141.64
     salt_name: saltapi
-    salt_pass: "0yNqiv2lcR0LNRc8@"
+    salt_pass: "your_salt_password"
+  # 阿里云压测环境
   aliyunyc:
     url: http://10.200.255.63
     salt_name: saltapi
-    salt_pass: "0yNqiv2lcR0LNRc8@"
+    salt_pass: "your_salt_password"

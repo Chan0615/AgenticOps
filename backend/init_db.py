@@ -139,6 +139,16 @@ async def seed_data():
                 "description": "知识库文档管理",
             },
             {
+                "name": "服务器管理",
+                "code": "server",
+                "path": "/server",
+                "icon": "Server",
+                "type": "menu",
+                "sort_order": 2,
+                "parent_id": None,
+                "description": "服务器管理模块",
+            },
+            {
                 "name": "系统管理",
                 "code": "system",
                 "path": "/system",

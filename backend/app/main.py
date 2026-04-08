@@ -6,6 +6,7 @@ from app.core import config
 from app.api.auth import auth_router
 from app.api.agent import rag_router
 from app.api.system import users_router, roles_router, menus_router
+from app.api.server import server_router
 
 
 @asynccontextmanager
@@ -38,6 +39,7 @@ app.include_router(users_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(menus_router, prefix="/api")
 app.include_router(rag_router, prefix="/api")
+app.include_router(server_router, prefix="/api")
 
 
 @app.get("/")

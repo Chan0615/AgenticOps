@@ -1,14 +1,16 @@
-# AgenticOps 智能客服平台
+# CHAN AgenticOps 智能管理平台
 
-基于 FastAPI + Vue3 + MySQL + Redis + Saltstack 的智能客服管理平台，支持 RAG 知识库问答、多环境运维管理。
+基于 FastAPI + Vue3 + MySQL + Redis 的智能管理平台，支持 RAG 知识库问答、服务器运维管理、Web SSH 终端等功能。
 
 ## ✨ 核心特性
 
 - 🔐 **完整的权限系统**：用户、角色、菜单三级权限管理
 - 🤖 **RAG 知识库**：基于向量数据库的智能问答系统
 - 📚 **文档管理**：支持 PDF 等文档上传与向量化处理
-- 🖥️ **多环境运维**：Saltstack 多集群管理（富春云、阿里云、滨江等）
-- 🎨 **现代化界面**：响应式设计，流畅的交互体验
+- 🖥️ **服务器管理**：SaltStack 批量管理 + Paramiko SSH 单台管理
+- 🔧 **Web SSH 终端**：浏览器中直接远程连接服务器
+- 💬 **自然语言运维**：AI 驱动的智能命令执行
+- 🎨 **现代化界面**：Arco Design Pro 风格，流畅的交互体验
 - ⚡ **高性能架构**：异步 FastAPI + SQLAlchemy + Redis 缓存
 
 ## 🛠️ 技术栈
@@ -25,19 +27,26 @@
 
 ### 前端
 - **框架**: Vue 3.4+ (Composition API)
+- **UI 库**: Arco Design Vue
 - **构建工具**: Vite 5.0
 - **路由**: Vue Router 4.2
 - **状态管理**: Pinia 2.1
 - **样式**: TailwindCSS 3.4
 - **HTTP 客户端**: Axios 1.6
 - **类型系统**: TypeScript 5.3
-- **图标**: Lucide Vue Next
+- **终端组件**: xterm.js (Web SSH)
 
 ### AI & RAG
 - **向量检索**: FAISS
 - **文档解析**: LangChain
 - **模型集成**: 支持 OpenAI、DeepSeek 等多模型
 - **智能对话**: 基于知识库的 RAG 问答
+
+### 服务器管理
+- **批量管理**: SaltStack API 集成（支持多环境）
+- **SSH 连接**: Paramiko 实现单台服务器管理
+- **Web 终端**: WebSocket + xterm.js 实现交互式终端
+- **自然语言**: AI 驱动的命令生成与执行
 
 ## 📁 项目结构
 
@@ -47,46 +56,46 @@ AgenticOps/
 │   ├── app/
 │   │   ├── api/               # API 路由层
 │   │   │   ├── agent/         # Agent 模块（RAG 对话）
-│   │   │   ├── common/        # 通用模块（认证、知识库）
+│   │   │   ├── auth/          # 认证模块
+│   │   │   ├── server/        # 服务器管理（SaltStack + SSH）
 │   │   │   └── system/        # 系统管理（用户、角色、菜单）
 │   │   ├── core/              # 核心配置
 │   │   │   ├── config.py      # YAML 配置加载器
 │   │   │   └── security.py    # 安全工具（JWT、密码）
 │   │   ├── crud/              # 数据库操作层
 │   │   │   ├── agent/         # Agent 相关 CRUD
-│   │   │   ├── knowledge/     # 知识库 CRUD
 │   │   │   └── system/        # 系统管理 CRUD
 │   │   ├── db/                # 数据库连接
 │   │   ├── models/            # SQLAlchemy 数据模型
+│   │   │   ├── models.py      # 系统管理模型
+│   │   │   ├── agent.py       # Agent RAG 模型
+│   │   │   └── server.py      # 服务器管理模型
 │   │   ├── rag/               # RAG 核心逻辑
-│   │   │   ├── agents.py      # Agent 实现
-│   │   │   └── tools.py       # RAG 工具集
 │   │   ├── schemas/           # Pydantic 数据验证
-│   │   │   ├── agent/         # Agent 相关 Schema
-│   │   │   ├── common/        # 通用 Schema
-│   │   │   └── system/        # 系统管理 Schema
-│   │   ├── services/          # 业务逻辑层
-│   │   └── main.py            # FastAPI 应用入口
+│   │   └── services/          # 业务逻辑层
+│   │       ├── rag_agent.py   # RAG Agent 服务
+│   │       ├── salt_service.py# SaltStack 服务
+│   │       └── ssh_service.py # SSH 连接服务
 │   ├── uploads/               # 文件上传目录
-│   │   └── knowledge/         # 知识库文档存储
 │   ├── vector_db/             # 向量数据库存储
 │   ├── config.yaml.example    # 配置文件示例
 │   ├── init_db.py             # 数据库初始化脚本
-│   ├── requirements.txt       # Python 依赖
-│   └── main.py                # 启动入口
+│   └── requirements.txt       # Python 依赖
 ├── frontend/                   # 前端应用
 │   ├── src/
 │   │   ├── api/               # API 接口层
 │   │   │   ├── agent/         # Agent 相关接口
+│   │   │   ├── server/        # 服务器管理接口
 │   │   │   └── system/        # 系统管理接口
+│   │   ├── components/        # 公共组件
+│   │   │   └── SSHTerminal.vue# Web SSH 终端组件
 │   │   ├── layouts/           # 布局组件
 │   │   ├── router/            # 路由配置
 │   │   ├── stores/            # Pinia 状态管理
 │   │   └── views/             # 页面组件
-│   │       ├── knowledge/     # 知识库管理
 │   │       ├── rag/           # RAG 对话界面
+│   │       ├── server/        # 服务器管理
 │   │       └── settings/      # 系统设置
-│   ├── public/                # 静态资源
 │   └── package.json
 └── README.md                  # 项目说明
 ```
@@ -116,11 +125,21 @@ cp config.yaml.example config.yaml
 # 4. 初始化数据库
 python init_db.py
 
-# 5. 启动服务
+# 5. 启动 FastAPI 服务
 python main.py
 # 或使用 uvicorn
 uvicorn app.main:app --reload --port 8000
+
+# 6. 启动 WebSocket SSH 服务器（新终端窗口）
+python -m app.api.server.websocket_handler
+# 或使用以下方式
+python -c "from app.api.server.websocket_handler import start_websocket_server; start_websocket_server()"
 ```
+
+**说明**：
+- FastAPI 服务运行在 `http://localhost:8000`
+- WebSocket SSH 服务器运行在 `ws://localhost:8765`
+- Web SSH 终端功能需要同时启动这两个服务
 
 ### 前端启动
 
@@ -193,14 +212,16 @@ ai:
 - **菜单管理**：动态菜单树、路由配置、权限控制
 - **RAG 知识库**：文档上传、向量化存储、智能检索
 - **智能对话**：基于知识库的问答系统、对话历史
-- **多环境支持**：Saltstack 多集群管理
+- **服务器管理**：SaltStack 批量管理 + SSH 单台管理
+- **Web SSH 终端**：浏览器交互式终端（xterm.js）
+- **多环境支持**：SaltStack 多集群管理（富春云、阿里云、滨江等）
 
 ### 🚧 开发中
 - 权限粒度优化（按钮级权限）
 - 操作日志审计
 - 数据可视化仪表盘
-- 批量文档处理优化
-- Saltstack 运维功能集成
+- AI 自然语言运维（智能命令生成）
+- 服务器监控告警
 
 ## 📖 API 文档
 
@@ -222,9 +243,18 @@ ai:
 - `GET/POST/PUT/DELETE /api/menus/*` - 菜单管理
 
 #### Agent & RAG
-- `POST /api/agent/chat` - 智能对话
-- `POST /api/knowledge/upload` - 文档上传
-- `GET /api/knowledge/list` - 知识库列表
+- `POST /api/rag/knowledge-bases` - 创建知识库
+- `POST /api/rag/chat` - 智能对话
+- `POST /api/rag/chat/stream` - 流式对话
+- `GET /api/rag/conversations` - 对话列表
+
+#### 服务器管理
+- `POST /api/server/salt/{env}/execute` - 执行 Salt 命令
+- `GET /api/server/salt/{env}/minions` - 获取 Minion 列表
+- `POST /api/server/salt/{env}/ping` - 测试 Minion 连接
+- `POST /api/server/salt/{env}/command` - 执行 Shell 命令
+- `POST /api/server/ssh/execute` - SSH 执行命令
+- `WebSocket ws://localhost:8765` - SSH 终端连接
 
 ## 🛡️ 部署
 

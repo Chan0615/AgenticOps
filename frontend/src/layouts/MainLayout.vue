@@ -104,7 +104,7 @@
     <!-- 右侧 -->
     <div class="flex-1 flex flex-col min-h-screen min-w-0">
       <!-- 顶栏 -->
-      <header class="h-16 shrink-0 bg-white/80 backdrop-blur-md border-b border-surface-100 flex items-center justify-between px-6">
+      <header class="h-16 shrink-0 bg-white/80 backdrop-blur-md border-b border-surface-100 flex items-center justify-between px-6" style="z-index: 50;">
         <div class="flex items-center gap-4">
           <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg hover:bg-surface-100 text-surface-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@
           </button>
           <div>
             <h2 class="text-sm font-semibold text-surface-900">{{ currentTitle }}</h2>
-            <p class="text-xs text-surface-400">托马斯回旋喵 · 智能知识库</p>
+            <p class="text-xs text-surface-400">CHAN AgenticOps</p>
           </div>
         </div>
 
@@ -133,7 +133,7 @@
               </svg>
             </button>
 
-            <div v-if="userMenuOpen" @click.stop class="absolute right-0 mt-2 w-64 bg-white border border-surface-200 rounded-2xl shadow-xl py-2 z-50 animate-fade-in">
+            <div v-if="userMenuOpen" @click.stop class="absolute right-0 mt-2 w-64 bg-white border border-surface-200 rounded-2xl shadow-xl py-2 z-[60] animate-fade-in">
               <!-- 用户信息卡片 -->
               <div class="px-4 py-4 border-b border-surface-100">
                 <div class="flex items-center gap-3">

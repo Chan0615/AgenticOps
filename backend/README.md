@@ -18,6 +18,9 @@
 - **缓存**: Redis
 - **认证**: JWT (python-jose)
 - **密码加密**: bcrypt (passlib)
+- **WebSocket**: websockets 库
+- **SSH 连接**: Paramiko
+- **运维集成**: Saltstack API
 
 ## 📁 项目结构
 
@@ -151,12 +154,22 @@ python init_db.py
 ### 4. 启动服务
 
 ```bash
-# 开发模式
+# 开发模式 - FastAPI 服务
 uvicorn app.main:app --reload --port 8000
 
 # 生产模式
 gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
+
+# 启动 WebSocket SSH 服务器（新终端窗口）
+python -m app.api.server.websocket_handler
+# 或
+python -c "from app.api.server.websocket_handler import start_websocket_server; start_websocket_server()"
 ```
+
+**说明**：
+- FastAPI 服务运行在 `http://localhost:8000`（RESTful API）
+- WebSocket SSH 服务器运行在 `ws://localhost:8765`（Web SSH 终端）
+- Web SSH 终端功能需要同时启动这两个服务
 
 ## API 文档
 
@@ -216,6 +229,23 @@ gunicorn app.main:app -w 4 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000
 |------|------|------|
 | POST | /api/agent/chat | 发起对话 |
 | GET | /api/agent/conversations | 获取对话历史 |
+
+### 服务器管理 (/api/server)
+| 方法 | 端点 | 描述 |
+|------|------|------|
+| POST | /api/server/salt/{env}/execute | 执行 Salt 命令 |
+| GET | /api/server/salt/{env}/minions | 获取 Minion 列表 |
+| POST | /api/server/salt/{env}/ping | 测试 Minion 连接 |
+| POST | /api/server/salt/{env}/command | 执行 Shell 命令 |
+| POST | /api/server/ssh/execute | SSH 执行命令 |
+
+### WebSocket SSH 终端 (ws://localhost:8765)
+| 动作 | 描述 |
+|------|------|
+| connect | 建立 SSH 连接（需提供 hostname, port, username, password） |
+| input | 发送命令输入到 SSH 终端 |
+| resize | 调整终端窗口大小 |
+| disconnect | 断开 SSH 连接 |
 
 ## 数据模型
 

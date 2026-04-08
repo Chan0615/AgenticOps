@@ -50,6 +50,12 @@ const router = createRouter({
           ]
         },
         {
+          path: 'server',
+          name: 'server',
+          component: () => import('@/views/server/ServerManagement.vue'),
+          meta: { title: '服务器管理' }
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('@/views/Settings.vue'),
