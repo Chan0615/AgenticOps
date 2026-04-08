@@ -23,7 +23,7 @@ from app.crud.agent import document as doc_crud
 from app.crud.agent import conversation as conv_crud
 from app.services.rag_agent import chat, chat_stream
 
-router = APIRouter(prefix="/agent", tags=["Agent RAG"])
+router = APIRouter(prefix="/rag", tags=["Agent RAG"])
 
 
 # ============ 知识库 ============

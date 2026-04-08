@@ -48,8 +48,15 @@ async def create_tables(force_reset: bool = False):
     """创建所有表"""
     print("[2/4] 创建数据表 ...")
     from app.db.database import Base
-    # 只导入系统管理模块和知识库模块的模型
-    from app.models.models import User, Role, UserRole, Menu, RoleMenu, KnowledgeDocument, DocumentChunk  # noqa: F401
+    # 导入系统管理模块和 Agent RAG 模块的模型
+    from app.models.models import User, Role, UserRole, Menu, RoleMenu  # noqa: F401
+    from app.models.agent import (  # noqa: F401
+        KnowledgeBase,
+        Document,
+        AgentDocumentChunk,
+        Conversation,
+        ConversationMessage
+    )
 
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:
@@ -117,7 +124,7 @@ async def seed_data():
                 "type": "menu",
                 "sort_order": 1,
                 "parent_code": "rag",
-                "component": "rag/chat/index",
+                "component": "rag/Chat",
                 "description": "智能问答",
             },
             {
@@ -128,7 +135,7 @@ async def seed_data():
                 "type": "menu",
                 "sort_order": 2,
                 "parent_code": "rag",
-                "component": "rag/knowledge/index",
+                "component": "rag/KnowledgeBase",
                 "description": "知识库文档管理",
             },
             {

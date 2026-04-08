@@ -3,9 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.db.database import init_db
 from app.api.auth import router as auth_router
-from app.api.knowledge import router as knowledge_router
 from app.api.agent import router as agent_router
 from app.api.system import users_router, roles_router, menus_router
 
@@ -39,7 +37,6 @@ app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(menus_router, prefix="/api")
-app.include_router(knowledge_router, prefix="/api")
 app.include_router(agent_router, prefix="/api")
 
 

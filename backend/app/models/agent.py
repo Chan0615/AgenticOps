@@ -58,12 +58,12 @@ class Document(Base):
 
     knowledge_base = relationship("KnowledgeBase", back_populates="documents")
     chunks = relationship(
-        "DocumentChunk", back_populates="document", cascade="all, delete-orphan"
+        "AgentDocumentChunk", back_populates="document", cascade="all, delete-orphan"
     )
 
 
-class DocumentChunk(Base):
-    """文档分块"""
+class AgentDocumentChunk(Base):
+    """Agent 文档分块"""
 
     __tablename__ = "agent_document_chunk"
 

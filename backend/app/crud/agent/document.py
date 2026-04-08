@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional, List
-from app.models.agent import Document, DocumentChunk
+from app.models.agent import Document, AgentDocumentChunk
 
 
 async def get_doc_list(
@@ -59,10 +59,10 @@ async def save_chunks(db: AsyncSession, doc_id: int, kb_id: int, chunks: list[st
     # 先删旧分块
     from sqlalchemy import delete
 
-    await db.execute(delete(DocumentChunk).where(DocumentChunk.doc_id == doc_id))
+    await db.execute(delete(AgentDocumentChunk).where(AgentDocumentChunk.doc_id == doc_id))
 
     for i, content in enumerate(chunks):
-        chunk = DocumentChunk(
+        chunk = AgentDocumentChunk(
             doc_id=doc_id, kb_id=kb_id, chunk_index=i, content=content
         )
         db.add(chunk)
@@ -77,12 +77,12 @@ async def save_chunks(db: AsyncSession, doc_id: int, kb_id: int, chunks: list[st
 
 async def search_chunks(
     db: AsyncSession, kb_id: int, query: str, top_k: int = 5
-) -> List[DocumentChunk]:
+) -> List[AgentDocumentChunk]:
     """简单文本搜索（后续替换为向量搜索）"""
     result = await db.execute(
-        select(DocumentChunk)
-        .where(DocumentChunk.kb_id == kb_id)
-        .where(DocumentChunk.content.contains(query))
+        select(AgentDocumentChunk)
+        .where(AgentDocumentChunk.kb_id == kb_id)
+        .where(AgentDocumentChunk.content.contains(query))
         .limit(top_k)
     )
     return result.scalars().all()
