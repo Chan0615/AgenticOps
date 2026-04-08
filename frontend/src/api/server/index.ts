@@ -30,6 +30,7 @@ export interface ServerCreate {
   private_key?: string
   os_type?: string
   group_id?: number
+  environment?: string  // 环境标识（与 group_id 二选一）
   salt_minion_id?: string
   tags?: Record<string, any>
 }
@@ -95,11 +96,6 @@ export async function deleteServer(serverId: number) {
 // 检测单个服务器连通性
 export async function checkConnectivity(serverId: number) {
   return axios.post<ConnectivityCheckResponse>(`${BASE_URL}/${serverId}/check-connectivity`)
-}
-
-// 批量检测所有服务器连通性
-export async function checkAllConnectivity() {
-  return axios.post(`${BASE_URL}/check-all-connectivity`)
 }
 
 // ============ 服务器分组 ============

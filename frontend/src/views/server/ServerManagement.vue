@@ -7,10 +7,6 @@
             <template #icon><icon-plus /></template>
             添加服务器
           </a-button>
-          <a-button @click="checkAllConnectivity" :loading="checkingAll">
-            <template #icon><icon-check-circle /></template>
-            批量检测连通性
-          </a-button>
           <a-button @click="loadServers">
             <template #icon><icon-refresh /></template>
             刷新
@@ -143,9 +139,9 @@
           </a-col>
           <a-col :span="12">
             <a-form-item label="环境" required>
-              <a-select v-model="serverForm.group_id" placeholder="选择环境">
-                <a-option v-for="group in serverGroups" :key="group.id" :value="group.id">
-                  {{ group.name }}
+              <a-select v-model="serverForm.environment" placeholder="选择环境">
+                <a-option v-for="env in environments" :key="env.value" :value="env.value">
+                  {{ env.label }}
                 </a-option>
               </a-select>
             </a-form-item>
@@ -275,7 +271,6 @@ import {
   updateServer,
   deleteServer,
   checkConnectivity,
-  checkAllConnectivity,
   getServerGroups,
   type Server,
   type ServerCreate,
@@ -324,7 +319,7 @@ const columns = [
 // 服务器表单
 const serverModalVisible = ref(false)
 const editingServer = ref<Server | null>(null)
-const serverForm = reactive<Partial<ServerCreate>>({
+const serverForm = reactive<Partial<ServerCreate> & { environment?: string }>({
   name: '',
   hostname: '',
   port: 22,
@@ -332,14 +327,13 @@ const serverForm = reactive<Partial<ServerCreate>>({
   password: '',
   private_key: '',
   os_type: 'linux',
-  group_id: undefined,
+  environment: undefined,
   salt_minion_id: '',
 })
 
 // 连通性测试
 const testingConnectivity = ref(false)
 const connectivityResult = ref<ConnectivityCheckResponse | null>(null)
-const checkingAll = ref(false)
 
 // SSH 终端
 const terminalVisible = ref(false)
@@ -429,7 +423,7 @@ function showEditServerModal(server: Server) {
     password: '',
     private_key: '',
     os_type: server.os_type,
-    group_id: server.group_id,
+    environment: server.group?.environment,
     salt_minion_id: server.salt_minion_id,
   })
   serverModalVisible.value = true
@@ -450,7 +444,7 @@ function resetServerForm() {
     password: '',
     private_key: '',
     os_type: 'linux',
-    group_id: undefined,
+    environment: undefined,
     salt_minion_id: '',
   })
 }
@@ -533,19 +527,6 @@ async function checkSingleConnectivity(server: Server) {
     Message.error(error.response?.data?.detail || '检测失败')
   } finally {
     server.checking = false
-  }
-}
-
-async function checkAllConnectivity() {
-  checkingAll.value = true
-  try {
-    const { data } = await checkAllConnectivity()
-    Message.success(`连通性检测完成，共检测 ${data.total} 台服务器`)
-    loadServers()
-  } catch (error: any) {
-    Message.error(error.response?.data?.detail || '批量检测失败')
-  } finally {
-    checkingAll.value = false
   }
 }
 

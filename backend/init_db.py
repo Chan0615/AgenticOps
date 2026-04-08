@@ -1,7 +1,10 @@
 """
 数据库初始化脚本
 使用方式: python init_db.py
-功能: 创建数据库、建表、初始化基础数据（管理员、角色、菜单）
+功能: 
+  - 创建数据库（如果不存在）
+  - 删除所有旧表并重新创建（回到项目最初状态）
+  - 初始化基础数据（管理员、角色、菜单）
 """
 
 import asyncio
@@ -57,8 +60,8 @@ async def create_tables(force_reset: bool = False):
         Conversation,
         ConversationMessage
     )
-    # 导入服务器管理模块的模型
-    from app.models.server import Server, ServerGroup  # noqa: F401
+    # 导入运维管理模块的模型（Ops）
+    from app.models.ops import Server, Script, ScheduledTask, TaskExecutionLog  # noqa: F401
     # 导入操作日志模块的模型
     from app.models.log import OperationLog  # noqa: F401
 
@@ -143,36 +146,58 @@ async def seed_data():
                 "description": "知识库文档管理",
             },
             {
-                "name": "服务器管理",
-                "code": "server",
-                "path": "/server",
-                "icon": "Server",
+                "name": "运维管理",
+                "code": "ops",
+                "path": "/ops",
+                "icon": "Tool",
                 "type": "directory",
                 "sort_order": 2,
                 "parent_id": None,
-                "description": "服务器管理模块",
+                "description": "运维管理模块",
             },
             {
                 "name": "服务器列表",
-                "code": "server:list",
-                "path": "/server",
+                "code": "ops:servers",
+                "path": "/ops/servers",
                 "icon": "Desktop",
                 "type": "menu",
                 "sort_order": 1,
-                "parent_code": "server",
-                "component": "server/ServerManagement",
+                "parent_code": "ops",
+                "component": "ops/ServerList",
                 "description": "服务器列表管理",
             },
             {
-                "name": "操作日志",
-                "code": "server:logs",
-                "path": "/server/logs",
-                "icon": "File",
+                "name": "脚本管理",
+                "code": "ops:scripts",
+                "path": "/ops/scripts",
+                "icon": "Code",
                 "type": "menu",
                 "sort_order": 2,
-                "parent_code": "server",
-                "component": "server/OperationLogs",
-                "description": "操作日志查看",
+                "parent_code": "ops",
+                "component": "ops/ScriptList",
+                "description": "脚本库管理",
+            },
+            {
+                "name": "定时任务",
+                "code": "ops:tasks",
+                "path": "/ops/tasks",
+                "icon": "ClockCircle",
+                "type": "menu",
+                "sort_order": 3,
+                "parent_code": "ops",
+                "component": "ops/TaskList",
+                "description": "定时任务管理",
+            },
+            {
+                "name": "执行日志",
+                "code": "ops:logs",
+                "path": "/ops/logs",
+                "icon": "File",
+                "type": "menu",
+                "sort_order": 4,
+                "parent_code": "ops",
+                "component": "ops/LogList",
+                "description": "任务执行日志",
             },
             {
                 "name": "系统管理",

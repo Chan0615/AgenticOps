@@ -70,6 +70,41 @@ const router = createRouter({
           ]
         },
         {
+          path: 'ops',
+          component: () => import('@/layouts/BlankLayout.vue'),
+          meta: { title: '运维管理' },
+          children: [
+            {
+              path: '',
+              redirect: '/ops/servers'
+            },
+            {
+              path: 'servers',
+              name: 'ops-servers',
+              component: () => import('@/views/ops/ServerList.vue'),
+              meta: { title: '服务器列表' }
+            },
+            {
+              path: 'scripts',
+              name: 'ops-scripts',
+              component: () => import('@/views/ops/ScriptList.vue'),
+              meta: { title: '脚本管理' }
+            },
+            {
+              path: 'tasks',
+              name: 'ops-tasks',
+              component: () => import('@/views/ops/TaskList.vue'),
+              meta: { title: '定时任务' }
+            },
+            {
+              path: 'logs',
+              name: 'ops-logs',
+              component: () => import('@/views/ops/LogList.vue'),
+              meta: { title: '执行日志' }
+            }
+          ]
+        },
+        {
           path: 'settings',
           name: 'settings',
           component: () => import('@/views/Settings.vue'),
