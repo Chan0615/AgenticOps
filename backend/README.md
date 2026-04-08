@@ -36,17 +36,16 @@ backend/
 │   │   ├── agent/        # Agent 模块（RAG 对话）
 │   │   ├── auth/         # 认证模块
 │   │   ├── common/       # 通用模块
-│   │   ├── ops/          # 运维管理模块 ⭐ 新增
+│   │   ├── ops/          # 运维管理模块 ⭐
 │   │   │   ├── __init__.py
 │   │   │   ├── servers.py    # 服务器管理
 │   │   │   ├── scripts.py    # 脚本管理
 │   │   │   ├── tasks.py      # 定时任务
 │   │   │   └── logs.py       # 执行日志
-│   │   ├── server/       # 服务器模块（旧版）
 │   │   └── system/       # 系统管理模块
 │   ├── core/             # 核心配置
 │   ├── crud/             # 数据库操作层
-│   │   ├── ops/          # 运维 CRUD ⭐ 新增
+│   │   ├── ops/          # 运维 CRUD ⭐
 │   │   │   ├── __init__.py
 │   │   │   ├── server.py     # 服务器 CRUD
 │   │   │   ├── script.py     # 脚本 CRUD
@@ -56,25 +55,26 @@ backend/
 │   ├── db/               # 数据库配置
 │   ├── models/           # SQLAlchemy 数据模型
 │   │   ├── models.py     # 系统模型
-│   │   └── ops.py        # 运维模型 ⭐ 新增
+│   │   ├── agent.py      # Agent 模型
+│   │   ├── log.py        # 日志模型
+│   │   └── ops.py        # 运维模型 ⭐
 │   ├── rag/              # RAG 核心逻辑
 │   ├── schemas/          # Pydantic 数据验证
-│   │   ├── server/       # 服务器 Schema
-│   │   ├── script/       # 脚本 Schema ⭐ 新增
-│   │   ├── task/         # 任务 Schema ⭐ 新增
-│   │   ├── log/          # 日志 Schema ⭐ 新增
+│   │   ├── server/       # 服务器 Schema（Ops 模块）
+│   │   ├── script/       # 脚本 Schema ⭐
+│   │   ├── task/         # 任务 Schema ⭐
+│   │   ├── log/          # 日志 Schema ⭐
 │   │   └── system/       # 系统 Schema
 │   ├── services/         # 业务逻辑层
 │   │   ├── ssh_service.py    # SSH 服务
 │   │   └── salt_service.py   # SaltStack 服务
-│   ├── tasks/            # Celery 任务 ⭐ 新增
+│   ├── tasks/            # Celery 任务 ⭐
 │   │   ├── __init__.py
 │   │   ├── salt_tasks.py     # SaltStack 任务
 │   │   ├── ssh_tasks.py      # SSH 任务
 │   │   └── scheduler.py      # 定时调度器
 │   └── main.py           # FastAPI 应用入口
-├── celery_app.py         # Celery 配置 ⭐ 新增
-├── init_ops_db.py        # Ops 数据库初始化 ⭐ 新增
+├── celery_app.py         # Celery 配置 ⭐
 ├── uploads/              # 文件上传目录
 ├── vector_db/            # 向量数据库存储
 ├── config.yaml.example   # 配置文件示例
@@ -156,11 +156,9 @@ CREATE DATABASE kefu_ai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ### 4. 初始化数据库
 
 ```bash
-# 初始化系统表
+# 初始化所有表（系统表 + Agent表 + 运维表）
+# 注意：会删除所有旧数据并重新创建，回到项目最初状态
 python init_db.py
-
-# 初始化运维模块表（Ops）
-python init_ops_db.py
 ```
 
 ### 5. 启动服务
@@ -248,16 +246,7 @@ python -m app.api.server.websocket_handler
 | POST | /api/agent/chat | 发起对话 |
 | GET | /api/agent/conversations | 获取对话历史 |
 
-### 服务器管理 (/api/server) - 旧版
-| 方法 | 端点 | 描述 |
-|------|------|------|
-| POST | /api/server/salt/{env}/execute | 执行 Salt 命令 |
-| GET | /api/server/salt/{env}/minions | 获取 Minion 列表 |
-| POST | /api/server/salt/{env}/ping | 测试 Minion 连接 |
-| POST | /api/server/salt/{env}/command | 执行 Shell 命令 |
-| POST | /api/server/ssh/execute | SSH 执行命令 |
-
-### 服务器管理 (/api/ops/servers) ⭐ 新增
+### 服务器管理 (/api/ops/servers) ⭐
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/ops/servers | 获取服务器列表 |
@@ -267,7 +256,7 @@ python -m app.api.server.websocket_handler
 | DELETE | /api/ops/servers/{id} | 删除服务器 |
 | POST | /api/ops/servers/test-connection | 测试连接 |
 
-### 脚本管理 (/api/ops/scripts) ⭐ 新增
+### 脚本管理 (/api/ops/scripts) ⭐
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/ops/scripts | 获取脚本列表 |
@@ -277,7 +266,7 @@ python -m app.api.server.websocket_handler
 | DELETE | /api/ops/scripts/{id} | 删除脚本 |
 | POST | /api/ops/scripts/test | 测试执行脚本 |
 
-### 定时任务 (/api/ops/tasks) ⭐ 新增
+### 定时任务 (/api/ops/tasks) ⭐
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/ops/tasks | 获取任务列表 |
@@ -288,7 +277,7 @@ python -m app.api.server.websocket_handler
 | POST | /api/ops/tasks/{id}/toggle | 切换启用状态 |
 | POST | /api/ops/tasks/trigger | 手动触发执行 |
 
-### 执行日志 (/api/ops/logs) ⭐ 新增
+### 执行日志 (/api/ops/logs) ⭐
 | 方法 | 端点 | 描述 |
 |------|------|------|
 | GET | /api/ops/logs/execution | 获取执行日志列表 |
@@ -344,7 +333,7 @@ python -m app.api.server.websocket_handler
 | type | string | 类型（menu/directory/button） |
 | status | bool | 状态 |
 
-### 运维表 ⭐ 新增
+### 运维表 ⭐
 
 #### 服务器 (ops_server)
 | 字段 | 类型 | 描述 |

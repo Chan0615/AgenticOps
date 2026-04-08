@@ -156,7 +156,7 @@
         </a-descriptions-item>
         <a-descriptions-item label="脚本类型">
           <a-tag :color="viewData.script_type === 'shell' ? 'green' : 'blue'">
-            {{ viewData.script_type.toUpperCase() }}
+            {{ (viewData.script_type || '').toUpperCase() }}
           </a-tag>
         </a-descriptions-item>
         <a-descriptions-item label="超时时间">
@@ -187,6 +187,7 @@ import {
   IconRefresh,
   IconPlus,
 } from '@arco-design/web-vue/es/icon'
+import { getScriptList, deleteScript } from '@/api/ops/script'
 
 interface Script {
   id: number
@@ -252,20 +253,20 @@ const viewData = ref<Script>({} as Script)
 const loadScripts = async () => {
   loading.value = true
   try {
-    // TODO: 调用 API
-    // const res = await getScriptList({
-    //   page: pagination.current,
-    //   page_size: pagination.pageSize,
-    //   ...searchParams,
-    // })
-    // scriptList.value = res.data
-    // pagination.total = res.total
-    
-    // 临时数据
+    const res = await getScriptList({
+      page: pagination.current,
+      page_size: pagination.pageSize,
+      ...searchParams,
+    })
+    scriptList.value = res.data || []
+    pagination.total = res.total || 0
+  } catch (error: any) {
+    console.error('加载脚本列表失败:', error)
+    if (error.response && error.response.status !== 401) {
+      Message.error('加载脚本列表失败: ' + (error.response?.data?.detail || error.message))
+    }
     scriptList.value = []
     pagination.total = 0
-  } catch (error) {
-    Message.error('加载脚本列表失败')
   } finally {
     loading.value = false
   }
@@ -323,8 +324,7 @@ const handleView = (record: Script) => {
 // 删除
 const handleDelete = async (id: number) => {
   try {
-    // TODO: 调用 API
-    // await deleteScript(id)
+    await deleteScript(id)
     Message.success('删除成功')
     loadScripts()
   } catch (error) {

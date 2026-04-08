@@ -169,6 +169,7 @@ import {
   IconPlus,
   IconQuestionCircle,
 } from '@arco-design/web-vue/es/icon'
+import { getTaskList, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
 
 interface Task {
   id: number
@@ -238,20 +239,20 @@ const formData = reactive<Partial<Task>>({
 const loadTasks = async () => {
   loading.value = true
   try {
-    // TODO: 调用 API
-    // const res = await getTaskList({
-    //   page: pagination.current,
-    //   page_size: pagination.pageSize,
-    //   ...searchParams,
-    // })
-    // taskList.value = res.data
-    // pagination.total = res.total
-    
-    // 临时数据
+    const res = await getTaskList({
+      page: pagination.current,
+      page_size: pagination.pageSize,
+      ...searchParams,
+    })
+    taskList.value = res.data || []
+    pagination.total = res.total || 0
+  } catch (error: any) {
+    console.error('加载任务列表失败:', error)
+    if (error.response && error.response.status !== 401) {
+      Message.error('加载任务列表失败: ' + (error.response?.data?.detail || error.message))
+    }
     taskList.value = []
     pagination.total = 0
-  } catch (error) {
-    Message.error('加载任务列表失败')
   } finally {
     loading.value = false
   }
@@ -303,9 +304,9 @@ const handleEdit = (record: Task) => {
 // 切换状态
 const handleToggle = async (record: Task) => {
   try {
-    // TODO: 调用 API
-    // await toggleTask(record.id)
+    await toggleTask(record.id)
     Message.success(record.enabled ? '任务已启用' : '任务已禁用')
+    loadTasks()
   } catch (error) {
     Message.error('操作失败')
     record.enabled = !record.enabled
@@ -315,9 +316,9 @@ const handleToggle = async (record: Task) => {
 // 手动触发
 const handleTrigger = async (record: Task) => {
   try {
-    // TODO: 调用 API
-    // await triggerTask(record.id)
+    await triggerTask(record.id)
     Message.success('任务已触发执行')
+    loadTasks()
   } catch (error) {
     Message.error('触发失败')
   }
@@ -326,8 +327,7 @@ const handleTrigger = async (record: Task) => {
 // 删除
 const handleDelete = async (id: number) => {
   try {
-    // TODO: 调用 API
-    // await deleteTask(id)
+    await deleteTask(id)
     Message.success('删除成功')
     loadTasks()
   } catch (error) {

@@ -82,25 +82,25 @@ const router = createRouter({
               path: 'servers',
               name: 'ops-servers',
               component: () => import('@/views/ops/ServerList.vue'),
-              meta: { title: '服务器列表' }
+              meta: { title: '服务器列表', keepAlive: false }
             },
             {
               path: 'scripts',
               name: 'ops-scripts',
               component: () => import('@/views/ops/ScriptList.vue'),
-              meta: { title: '脚本管理' }
+              meta: { title: '脚本管理', keepAlive: false }
             },
             {
               path: 'tasks',
               name: 'ops-tasks',
               component: () => import('@/views/ops/TaskList.vue'),
-              meta: { title: '定时任务' }
+              meta: { title: '定时任务', keepAlive: false }
             },
             {
               path: 'logs',
               name: 'ops-logs',
               component: () => import('@/views/ops/LogList.vue'),
-              meta: { title: '执行日志' }
+              meta: { title: '执行日志', keepAlive: false }
             }
           ]
         },

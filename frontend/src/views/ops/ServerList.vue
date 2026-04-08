@@ -269,10 +269,17 @@ const loadServers = async () => {
       ...searchParams,
     }
     const res = await getServerList(params)
-    serverList.value = res.data
-    pagination.total = res.total
-  } catch (error) {
-    Message.error('加载服务器列表失败')
+    // 响应拦截器已经返回 response.data，所以 res 就是 {code, message, data, total}
+    serverList.value = res.data || []
+    pagination.total = res.total || 0
+  } catch (error: any) {
+    console.error('加载服务器列表失败:', error)
+    // 只有在真正的错误时才显示提示
+    if (error.response && error.response.status !== 401) {
+      Message.error('加载服务器列表失败: ' + (error.response?.data?.detail || error.message))
+    }
+    serverList.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
