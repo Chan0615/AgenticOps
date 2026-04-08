@@ -11,6 +11,7 @@ from app.schemas.server.server import (
     ServerListResponse,
     ConnectionTestRequest,
 )
+from app.schemas.system.user import UserResponse
 from app.crud.ops import server as server_crud
 from app.api.auth.auth import get_current_user
 import logging
@@ -28,7 +29,7 @@ async def list_servers(
     environment: Optional[str] = Query(None, description="环境"),
     status: Optional[str] = Query(None, description="状态"),
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """获取服务器列表"""
     skip = (page - 1) * page_size
@@ -48,7 +49,7 @@ async def list_servers(
 async def get_server(
     server_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """获取服务器详情"""
     server = await server_crud.get_server(db, server_id)
@@ -61,11 +62,11 @@ async def get_server(
 async def create_server(
     server: ServerCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """创建服务器"""
     db_server = await server_crud.create_server(
-        db, server, created_by=current_user.get("username")
+        db, server, created_by=current_user.username
     )
     return db_server
 
@@ -75,7 +76,7 @@ async def update_server(
     server_id: int,
     server: ServerUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """更新服务器"""
     db_server = await server_crud.update_server(db, server_id, server)
@@ -88,7 +89,7 @@ async def update_server(
 async def delete_server(
     server_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """删除服务器"""
     success = await server_crud.delete_server(db, server_id)
@@ -101,7 +102,7 @@ async def delete_server(
 async def test_connection(
     request: ConnectionTestRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """测试服务器连接"""
     server = await server_crud.get_server(db, request.server_id)

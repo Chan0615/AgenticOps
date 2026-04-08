@@ -22,9 +22,10 @@
             allow-clear
             style="width: 150px"
           >
-            <a-option value="production">生产环境</a-option>
-            <a-option value="staging">预发布环境</a-option>
-            <a-option value="testing">测试环境</a-option>
+            <a-option value="fuchunyun">富春云</a-option>
+            <a-option value="aliyun">阿里云</a-option>
+            <a-option value="binjiang">滨江</a-option>
+            <a-option value="aliyunyc">阿里云压测</a-option>
           </a-select>
           
           <a-select
@@ -164,10 +165,11 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="环境">
-              <a-select v-model="formData.environment">
-                <a-option value="production">生产环境</a-option>
-                <a-option value="staging">预发布环境</a-option>
-                <a-option value="testing">测试环境</a-option>
+              <a-select v-model="formData.environment" placeholder="请选择环境">
+                <a-option value="fuchunyun">富春云</a-option>
+                <a-option value="aliyun">阿里云</a-option>
+                <a-option value="binjiang">滨江</a-option>
+                <a-option value="aliyunyc">阿里云压测</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -227,17 +229,16 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: 'ID', dataIndex: 'id', width: 80 },
-  { title: '服务器名称', dataIndex: 'name', width: 180 },
-  { title: 'IP地址', dataIndex: 'hostname', width: 150 },
-  { title: '端口', dataIndex: 'port', width: 80 },
-  { title: '用户名', dataIndex: 'username', width: 100 },
-  { title: '认证方式', slotName: 'auth_type', width: 100 },
-  { title: '环境', slotName: 'environment', width: 120 },
-  { title: '状态', slotName: 'status', width: 100 },
-  { title: '描述', dataIndex: 'description', ellipsis: true, tooltip: true },
-  { title: '创建时间', dataIndex: 'created_at', width: 180 },
-  { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
+      { title: '服务器名称', dataIndex: 'name', width: 150 },
+      { title: 'IP地址', dataIndex: 'hostname', width: 130 },
+      { title: '端口', dataIndex: 'port', width: 60 },
+      { title: '用户名', dataIndex: 'username', width: 80 },
+      { title: '认证方式', slotName: 'auth_type', width: 80 },
+      { title: '环境', slotName: 'environment', width: 100 },
+      { title: '状态', slotName: 'status', width: 80 },
+      { title: '描述', dataIndex: 'description', width: 120, ellipsis: true, tooltip: true },
+      { title: '创建时间', dataIndex: 'created_at', width: 130 },
+      { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
 ]
 
 // 模态框
@@ -254,7 +255,7 @@ const formData = reactive<Partial<Server>>({
   auth_type: 'password',
   password: '',
   private_key: '',
-  environment: 'production',
+  environment: 'fuchunyun',
   salt_minion_id: '',
   description: '',
 })
@@ -390,7 +391,7 @@ const resetForm = () => {
   formData.auth_type = 'password'
   formData.password = ''
   formData.private_key = ''
-  formData.environment = 'production'
+  formData.environment = 'fuchunyun'
   formData.salt_minion_id = ''
   formData.description = ''
 }
@@ -417,18 +418,20 @@ const getStatusText = (status: string) => {
 // 环境颜色
 const getEnvColor = (env: string) => {
   const colors: Record<string, string> = {
-    production: 'red',
-    staging: 'orange',
-    testing: 'blue',
+    fuchunyun: 'blue',
+    aliyun: 'orange',
+    binjiang: 'green',
+    aliyunyc: 'purple',
   }
   return colors[env] || 'gray'
 }
 
 const getEnvText = (env: string) => {
   const texts: Record<string, string> = {
-    production: '生产',
-    staging: '预发布',
-    testing: '测试',
+    fuchunyun: '富春云',
+    aliyun: '阿里云',
+    binjiang: '滨江',
+    aliyunyc: '阿里云压测',
   }
   return texts[env] || env
 }
