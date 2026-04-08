@@ -1,6 +1,6 @@
-import axios from 'axios'
+import api from '@/api'
 
-const BASE_URL = '/api/logs'
+const BASE_URL = '/logs'
 
 export interface OperationLog {
   id: number
@@ -35,10 +35,10 @@ export async function getOperationLogs(params?: {
   start_time?: string
   end_time?: string
 }) {
-  return axios.get<OperationLogListResponse>(BASE_URL, { params })
+  return api.get<OperationLogListResponse>(BASE_URL, { params })
 }
 
 // 获取操作日志详情
 export async function getOperationLog(logId: number) {
-  return axios.get<OperationLog>(`${BASE_URL}/${logId}`)
+  return api.get<OperationLog>(`${BASE_URL}/${logId}`)
 }

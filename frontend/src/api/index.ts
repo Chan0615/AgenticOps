@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useAuthStore } from '@/stores/auth'
+// import { useAuthStore } from '@/stores/auth'
 
 const api = axios.create({
   baseURL: '/api',
@@ -31,9 +31,15 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      const authStore = useAuthStore()
-      authStore.logout()
-      window.location.href = '/login'
+      // 只在登录页面以外的页面才跳转
+      if (window.location.pathname !== '/login') {
+        // 清除过期 token
+        localStorage.removeItem('token')
+        // 显示提示
+        console.warn('登录已过期，请重新登录')
+        // 跳转到登录页
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

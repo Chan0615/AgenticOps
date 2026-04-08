@@ -15,6 +15,7 @@ from app.core.log_decorator import log_operation
 router = APIRouter(prefix="/logs", tags=["操作日志"])
 
 
+@router.get("", response_model=OperationLogListResponse)
 @router.get("/", response_model=OperationLogListResponse)
 async def get_operation_logs(
     skip: int = Query(0, ge=0),

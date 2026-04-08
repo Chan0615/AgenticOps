@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arco Design Vue Skill"
+  short_description: "Build and update Arco Design Vue pages"
+  default_prompt: "Use this skill to implement or modify Vue 3 pages with Arco Design Vue and Arco Design Pro Vue conventions."

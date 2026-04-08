@@ -12,8 +12,7 @@ from app.api.common.logs import router as logs_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 启动时初始化数据库
-    await init_db()
+    # 启动时不自动初始化数据库（使用 init_db.py 手动初始化）
     yield
     # 关闭时执行清理（如果需要）
 

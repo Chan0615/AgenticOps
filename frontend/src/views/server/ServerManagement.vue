@@ -362,10 +362,13 @@ async function loadServers() {
       environment: selectedEnvironment.value || undefined,
       status: statusFilter.value,
     })
-    serverList.value = data.items
-    pagination.total = data.total
-  } catch (error) {
-    Message.error('加载服务器列表失败')
+    serverList.value = data.items || []
+    pagination.total = data.total || 0
+  } catch (error: any) {
+    console.error('加载服务器列表失败:', error)
+    Message.error(error.response?.data?.detail || '加载服务器列表失败')
+    serverList.value = []
+    pagination.total = 0
   } finally {
     loading.value = false
   }
@@ -374,9 +377,11 @@ async function loadServers() {
 async function loadServerGroups() {
   try {
     const { data } = await getServerGroups()
-    serverGroups.value = data
-  } catch (error) {
+    serverGroups.value = data || []
+  } catch (error: any) {
     console.error('加载服务器分组失败:', error)
+    // 不显示错误消息，因为分组是可选的
+    serverGroups.value = []
   }
 }
 

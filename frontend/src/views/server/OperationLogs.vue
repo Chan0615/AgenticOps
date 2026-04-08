@@ -9,7 +9,7 @@
       </template>
 
       <!-- 搜索栏 -->
-      <a-form layout="inline" class="search-form">
+      <a-form :model="{}" layout="inline" class="search-form">
         <a-form-item label="模块">
           <a-select
             v-model="filterModule"
@@ -214,7 +214,7 @@ async function loadLogs() {
       params.end_time = dateRange.value[1]
     }
 
-    const { data } = await getOperationLogs(params)
+    const data = await getOperationLogs(params)
     logList.value = data.items
     pagination.total = data.total
   } catch (error) {
