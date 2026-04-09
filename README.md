@@ -163,16 +163,16 @@ npm run dev
 # MySQL 数据库配置
 mysql:
   default:
-    host: 10.225.138.121
+    host: "your_mysql_host"
     port: 3306
     user: root
     password: "your_password"
-    database: kefu_ai
+    database: "your_database_name"
 
 # Redis 缓存配置
 redis:
   default:
-    host: 10.225.138.125
+    host: "your_redis_host"
     port: 6579
     password: "your_redis_password"
     db: 20
@@ -180,12 +180,12 @@ redis:
 # Saltstack 多环境配置
 saltstack:
   fuchunyun:
-    url: http://10.66.108.97
-    salt_name: saltapi
+    url: "your_salt_url"
+    salt_name: "your_salt_name"
     salt_pass: "your_salt_password"
   aliyun:
-    url: http://10.136.74.9
-    salt_name: saltapi
+    url: "your_salt_url"
+    salt_name: "your_salt_name"
     salt_pass: "your_salt_password"
   # ... 更多环境
 
@@ -206,23 +206,29 @@ ai:
 ## 📦 功能模块
 
 ### ✅ 已完成
-- **认证系统**：用户登录/注册、JWT 令牌、密码加密
-- **用户管理**：用户 CRUD、状态管理、角色分配
-- **角色管理**：角色权限、菜单关联、角色 CRUD
-- **菜单管理**：动态菜单树、路由配置、权限控制
-- **RAG 知识库**：文档上传、向量化存储、智能检索
-- **智能对话**：基于知识库的问答系统、对话历史
-- **服务器管理**：SaltStack 批量管理 + SSH 单台管理
-- **Web SSH 终端**：浏览器交互式终端（xterm.js）
-- **多环境支持**：SaltStack 多集群管理（富春云、阿里云、滨江等）
-- **界面优化**：移除冗余标题，优化服务器列表展示（隐藏ID，描述悬浮展示，固定操作栏）
+
+| 功能模块 | 说明 |
+|----------|------|
+| 认证系统 | 用户登录/注册、JWT 令牌、密码加密 |
+| 用户管理 | 用户 CRUD、状态管理、角色分配 |
+| 角色管理 | 角色权限、菜单关联、角色 CRUD |
+| 菜单管理 | 动态菜单树、路由配置、权限控制 |
+| RAG 知识库 | 文档上传、向量化存储、智能检索 |
+| 智能对话 | 基于知识库的问答系统、对话历史 |
+| 服务器管理 | SaltStack 批量管理 + SSH 单台管理 |
+| Web SSH 终端 | 浏览器交互式终端（xterm.js） |
+| 多环境支持 | SaltStack 多集群管理（富春云、阿里云、滨江等） |
+| 界面优化 | 移除冗余标题，优化服务器列表展示（隐藏ID，描述悬浮展示，固定操作栏） |
 
 ### 🚧 开发中
-- 权限粒度优化（按钮级权限）
-- 操作日志审计
-- 数据可视化仪表盘
-- AI 自然语言运维（智能命令生成）
-- 服务器监控告警
+
+| 功能模块 | 说明 |
+|----------|------|
+| 权限粒度优化 | 按钮级权限 |
+| 操作日志审计 | 系统操作日志记录与审计 |
+| 数据可视化仪表盘 | 系统监控数据可视化展示 |
+| AI 自然语言运维 | 智能命令生成与执行 |
+| 服务器监控告警 | 服务器状态监控与异常告警 |
 
 ## 📖 API 文档
 

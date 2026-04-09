@@ -88,19 +88,19 @@
         
         <template #actions="{ record }">
           <a-space>
-            <a-button type="text" size="small" @click="handleTest(record)">
+            <a-tag color="blue" @click="handleTest(record)" :hoverable="true">
               测试连接
-            </a-button>
-            <a-button type="text" size="small" @click="handleEdit(record)">
+            </a-tag>
+            <a-tag @click="handleEdit(record)" :hoverable="true">
               编辑
-            </a-button>
+            </a-tag>
             <a-popconfirm
               content="确定要删除该服务器吗？"
               @ok="handleDelete(record.id)"
             >
-              <a-button type="text" size="small" status="danger">
+              <a-tag color="red" size="small" @click="handleDelete(record.id)" :hoverable="true">
                 删除
-              </a-button>
+              </a-tag>
             </a-popconfirm>
           </a-space>
         </template>

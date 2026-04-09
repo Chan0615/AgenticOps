@@ -53,5 +53,5 @@ npm run dev
 - For production builds: npm run build in frontend, then deploy dist/ folder
 
 ## Frontend-Specific Notes
-- Server list table (`frontend/src/views/ops/ServerList.vue`): ID column removed, description column width constrained with ellipsis/tooltip for hover details, action column fixed to right with sufficient width to prevent squeezing
+- Server list table (`frontend/src/views/ops/ServerList.vue`): ID column removed, description column width constrained with ellipsis/tooltip for hover details, action column fixed to right with sufficient width and tag-based actions (blue for test, default for edit, red for delete)
 - Main layout (`frontend/src/layouts/MainLayout.vue`): Removed "智能知识库平台" subtitle from header
