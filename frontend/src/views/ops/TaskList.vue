@@ -52,8 +52,7 @@
         :data="taskList"
         :loading="loading"
         :pagination="pagination"
-        :scroll="{ x: 1600 }"
-        table-layout-fixed
+        :scroll="{ x: 'max-content' }"
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
@@ -298,16 +297,16 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: '任务', dataIndex: 'name', width: 170 },
-  { title: '脚本', slotName: 'script_info', width: 200 },
-  { title: '执行态', slotName: 'run_status', width: 100 },
-  { title: '上次执行', slotName: 'last_run_at', width: 170 },
-  { title: '下次执行', slotName: 'next_run_at', width: 170 },
-  { title: '目标主机', slotName: 'targets', width: 280 },
-  { title: 'Cron', dataIndex: 'cron_expression', width: 140 },
-  { title: '状态', slotName: 'enabled', width: 100 },
-  { title: '创建时间', slotName: 'created_at', width: 170 },
-  { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
+  { title: '任务', dataIndex: 'name' },
+  { title: '脚本', slotName: 'script_info' },
+  { title: '执行态', slotName: 'run_status' },
+  { title: '上次执行', slotName: 'last_run_at' },
+  { title: '下次执行', slotName: 'next_run_at' },
+  { title: '目标主机', slotName: 'targets' },
+  { title: 'Cron', dataIndex: 'cron_expression' },
+  { title: '状态', slotName: 'enabled' },
+  { title: '创建时间', slotName: 'created_at' },
+  { title: '操作', slotName: 'actions', width: 230, fixed: 'right' },
 ]
 
 // 模态框
