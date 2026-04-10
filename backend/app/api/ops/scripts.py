@@ -44,6 +44,40 @@ def _read_script_file(file_path: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _sanitize_storage_filename(
+    upload_file_name: str,
+    fallback_stem: str,
+    forced_ext: Optional[str] = None,
+) -> str:
+    raw_name = Path(upload_file_name or "").name
+    stem = Path(raw_name).stem or fallback_stem or "script"
+    suffix = forced_ext or Path(raw_name).suffix or ".sh"
+
+    safe_stem = "".join(
+        ch if ch.isalnum() or ch in {"-", "_", "."} else "_" for ch in stem
+    ).strip("._")
+    if not safe_stem:
+        safe_stem = "script"
+
+    if not suffix.startswith("."):
+        suffix = f".{suffix}"
+    safe_suffix = "".join(ch for ch in suffix if ch.isalnum() or ch in {".", "_", "-"})
+    if safe_suffix in {"", ".", ".."}:
+        safe_suffix = ".sh"
+
+    return f"{safe_stem}{safe_suffix}"
+
+
+def _build_storage_path(file_name: str) -> Path:
+    candidate = SCRIPT_STORAGE_DIR / file_name
+    if not candidate.exists():
+        return candidate
+
+    stem = Path(file_name).stem
+    suffix = Path(file_name).suffix
+    return SCRIPT_STORAGE_DIR / f"{stem}_{time.time_ns()}{suffix}"
+
+
 def _to_script_response(script, include_content: bool = False) -> ScriptResponse:
     file_path = script.content or ""
     return ScriptResponse(
@@ -54,6 +88,7 @@ def _to_script_response(script, include_content: bool = False) -> ScriptResponse
         parameters=script.parameters,
         timeout=script.timeout,
         file_path=file_path,
+        source_file_name=Path(file_path).name if file_path else None,
         content=_read_script_file(file_path) if include_content else "",
         created_by=script.created_by,
         created_at=script.created_at,
@@ -135,8 +170,12 @@ async def upload_script(
 
     SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
     ext = ".py" if (script_type or guessed_type) == "python" else ".sh"
-    safe_name = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in final_name)
-    target_path = SCRIPT_STORAGE_DIR / f"{safe_name}_{time.time_ns()}{ext}"
+    storage_file_name = _sanitize_storage_filename(
+        upload_file_name=file_name,
+        fallback_stem=final_name,
+        forced_ext=ext,
+    )
+    target_path = _build_storage_path(storage_file_name)
     target_path.write_text(content, encoding="utf-8")
 
     script_in = ScriptCreate(
@@ -175,8 +214,12 @@ async def replace_script_file(
 
     SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
     ext = ".py" if script.script_type == "python" else ".sh"
-    safe_name = "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in script.name)
-    target_path = SCRIPT_STORAGE_DIR / f"{safe_name}_{script.id}{ext}"
+    storage_file_name = _sanitize_storage_filename(
+        upload_file_name=file.filename or "",
+        fallback_stem=script.name,
+        forced_ext=ext,
+    )
+    target_path = _build_storage_path(storage_file_name)
     target_path.write_text(content, encoding="utf-8")
 
     updated = await script_crud.update_script(
@@ -259,8 +302,7 @@ async def distribute_script(
         raise HTTPException(status_code=404, detail="脚本不存在")
 
     suffix = ".py" if script.script_type == "python" else ".sh"
-    # 分发默认文件名使用脚本业务名称，避免存储文件名（如 *_1.py）泄露到目标主机。
-    default_file_name = f"{script.name}{suffix}"
+    default_file_name = Path(script.content or "").name or f"{script.name}{suffix}"
     raw_file_name = request.file_name or default_file_name
     safe_file_name = os.path.basename(raw_file_name)
     if not safe_file_name:
@@ -299,15 +341,30 @@ async def distribute_script(
             continue
 
         try:
-            salt_result = await salt_service.run_shell_command(
+            salt_result = await salt_service.run_command(
                 env_name=server.environment,
                 target=target,
-                command=push_cmd,
+                fun="cmd.run_all",
+                arg=[push_cmd],
             )
             ret = salt_result.get("return", []) if isinstance(salt_result, dict) else []
             ret_map = ret[0] if ret and isinstance(ret[0], dict) else {}
             output = ret_map.get(target)
-            ok = not isinstance(output, str) or "Traceback" not in output
+
+            retcode = None
+            stderr = ""
+            stdout = ""
+            if isinstance(output, dict):
+                retcode = output.get("retcode")
+                stderr = str(output.get("stderr") or "")
+                stdout = str(output.get("stdout") or "")
+                ok = retcode == 0
+            else:
+                output_text = str(output or "")
+                ok = bool(output) and "Traceback" not in output_text
+                stdout = output_text
+
+            error_message = stderr.strip() or stdout.strip() or "分发执行返回异常"
             if ok:
                 success_count += 1
             results.append(
@@ -316,8 +373,9 @@ async def distribute_script(
                     "server_name": server.name,
                     "target": target,
                     "success": ok,
-                    "message": "分发成功" if ok else "分发执行返回异常",
+                    "message": "分发成功" if ok else error_message,
                     "output": output,
+                    "retcode": retcode,
                     "remote_path": remote_path,
                 }
             )

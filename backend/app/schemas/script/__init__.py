@@ -33,6 +33,7 @@ class ScriptResponse(ScriptBase):
     """脚本响应 Schema"""
     id: int
     file_path: Optional[str] = None
+    source_file_name: Optional[str] = None
     content: Optional[str] = None
     created_by: Optional[str] = None
     created_at: datetime

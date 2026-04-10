@@ -254,6 +254,7 @@ interface Script {
   description?: string
   content?: string
   file_path?: string
+  source_file_name?: string
   script_type: string
   parameters?: any[]
   timeout: number
@@ -498,7 +499,7 @@ const openDistribute = async (record: Script) => {
   distributingScript.value = record
   distributeForm.server_ids = []
   distributeForm.target_directory = '/opt/scripts'
-  distributeForm.file_name = `${record.name}${record.script_type === 'python' ? '.py' : '.sh'}`
+  distributeForm.file_name = record.source_file_name || `${record.name}${record.script_type === 'python' ? '.py' : '.sh'}`
   distributeVisible.value = true
   await loadDistributeServers()
 }
@@ -542,7 +543,13 @@ const handleDistributeSubmit = async () => {
       target_directory: distributeForm.target_directory,
       file_name: distributeForm.file_name || undefined,
     })
-    Message.success(res.message || '脚本分发完成')
+    const failedResults = (res.data?.results || []).filter((item: any) => !item.success)
+    if (res.code === 200 && failedResults.length === 0) {
+      Message.success(res.message || '脚本分发完成')
+    } else {
+      const firstError = failedResults[0]?.message
+      Message.warning(firstError ? `${res.message}，失败原因：${firstError}` : (res.message || '脚本分发部分失败'))
+    }
     distributeVisible.value = false
   } catch (error: any) {
     Message.error(error.response?.data?.detail || '脚本分发失败')

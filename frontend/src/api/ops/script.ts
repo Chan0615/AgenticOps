@@ -9,6 +9,7 @@ export interface Script {
   description?: string
   content?: string
   file_path?: string
+  source_file_name?: string
   script_type: string
   parameters?: any[]
   timeout: number
