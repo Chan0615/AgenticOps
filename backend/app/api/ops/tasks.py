@@ -22,6 +22,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/ops/tasks", tags=["定时任务"])
 
 
+def _normalize_task_type(task_obj):
+    if getattr(task_obj, "task_type", None) != "salt":
+        task_obj.task_type = "salt"
+    return task_obj
+
+
 @router.get("", response_model=ScheduledTaskListResponse)
 async def list_tasks(
     page: int = Query(1, ge=1, description="页码"),
@@ -36,11 +42,12 @@ async def list_tasks(
     tasks, total = await task_crud.get_tasks(
         db, skip=skip, limit=page_size, name=name, enabled=enabled
     )
+    normalized_tasks = [_normalize_task_type(t) for t in tasks]
     
     return ScheduledTaskListResponse(
         code=200,
         message="success",
-        data=[ScheduledTaskResponse.model_validate(t) for t in tasks],
+        data=[ScheduledTaskResponse.model_validate(t) for t in normalized_tasks],
         total=total,
     )
 
@@ -55,6 +62,7 @@ async def get_task(
     task = await task_crud.get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+    task = _normalize_task_type(task)
     return task
 
 
@@ -136,22 +144,14 @@ async def trigger_task(
         raise HTTPException(status_code=404, detail="任务不存在")
     
     # TODO: 触发任务执行
-    # 1. 根据 task_type 选择执行方式 (salt/jumpserver)
+    # 1. 使用 SaltStack 方式执行
     # 2. 获取脚本内容或使用自定义命令
     # 3. 调用 Celery 任务
     # 4. 更新任务执行时间
-    
-    if task.task_type == "salt":
-        # 触发 Salt 任务
-        from app.tasks.salt_tasks import execute_salt_command
-        # execute_salt_command.delay(task.id, task.server_ids, task.command or "")
-        pass
-    elif task.task_type == "jumpserver":
-        # 触发 JumpServer 任务
-        from app.tasks.jumpserver_tasks import execute_jumpserver_command
-        # for server_id in task.server_ids:
-        #     execute_jumpserver_command.delay(task.id, server_id, task.command or "")
-        pass
+
+    from app.tasks.salt_tasks import execute_salt_command
+    # execute_salt_command.delay(task.id, task.server_ids, task.command or "")
+    pass
     
     # 更新执行时间
     await task_crud.update_task_execution_time(db, request.task_id)

@@ -52,7 +52,7 @@
         :data="taskList"
         :loading="loading"
         :pagination="pagination"
-        :scroll="{ x: 1280 }"
+        :scroll="{ x: 1600 }"
         table-layout-fixed
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
@@ -64,24 +64,47 @@
         </template>
         
         <template #task_type="{ record }">
-          <a-tag :color="record.task_type === 'salt' ? 'purple' : 'orange'">
-            {{ record.task_type === 'salt' ? 'SaltStack' : 'JumpServer' }}
+          <a-tag color="purple">SaltStack</a-tag>
+        </template>
+
+        <template #script_info="{ record }">
+          <span v-if="record.script_id">
+            {{ scriptNameMap[record.script_id] || `脚本#${record.script_id}` }}
+          </span>
+          <span v-else>-</span>
+        </template>
+
+        <template #run_status="{ record }">
+          <a-tag :color="getRunStatusColor(record)">
+            {{ getRunStatusText(record) }}
           </a-tag>
+        </template>
+
+        <template #targets="{ record }">
+          <a-space wrap size="mini">
+            <a-tag
+              v-for="target in getTaskTargets(record).slice(0, 2)"
+              :key="`${record.id}-${target.id}`"
+              color="arcoblue"
+            >
+              {{ target.envText }} / {{ target.name }}
+            </a-tag>
+            <a-tag v-if="getTaskTargets(record).length > 2" color="gray">
+              +{{ getTaskTargets(record).length - 2 }}
+            </a-tag>
+          </a-space>
         </template>
         
         <template #actions="{ record }">
           <a-space>
-            <a-tag color="blue" @click="handleTrigger(record)" :hoverable="true">
-              执行
+            <a-tag color="blue" :hoverable="true" @click="handleTrigger(record)">
+              测试
             </a-tag>
-            <a-tag @click="handleEdit(record)" :hoverable="true">
+            <a-tag :hoverable="true" @click="handleEdit(record)">
               编辑
             </a-tag>
-            <a-popconfirm
-              content="确定要删除该任务吗？"
-              @ok="handleDelete(record.id)"
-            >
-              <a-tag color="red" size="small" :hoverable="true">
+            <a-popconfirm content="确定要删除该任务吗？" @ok="handleDelete(record.id)">
+              <a-tag color="red" :hoverable="true">
                 删除
               </a-tag>
             </a-popconfirm>
@@ -106,9 +129,8 @@
         <a-row :gutter="16">
           <a-col :span="12">
             <a-form-item label="执行方式" required>
-              <a-select v-model="formData.task_type">
+              <a-select v-model="formData.task_type" disabled>
                 <a-option value="salt">SaltStack</a-option>
-                <a-option value="jumpserver">JumpServer</a-option>
               </a-select>
             </a-form-item>
           </a-col>
@@ -198,6 +220,7 @@ import {
 } from '@arco-design/web-vue/es/icon'
 import { getTaskList, createTask, updateTask, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
 import { getServerList, type Server } from '@/api/ops/server'
+import { getScriptList } from '@/api/ops/script'
 
 interface Task {
   id: number
@@ -206,7 +229,7 @@ interface Task {
   script_id?: number
   server_ids: number[]
   cron_expression: string
-  task_type: string
+  task_type: 'salt'
   command?: string
   enabled: boolean
   celery_task_id?: string
@@ -244,13 +267,15 @@ const pagination = reactive({
 // 表格列定义
 const columns = [
   { title: '任务名称', dataIndex: 'name', width: 180 },
-  { title: '执行方式', slotName: 'task_type', width: 120 },
-  { title: 'Cron表达式', dataIndex: 'cron_expression', width: 150 },
-  { title: '状态', slotName: 'enabled', width: 100 },
+  { title: '执行脚本', slotName: 'script_info', width: 220 },
+  { title: '执行状态', slotName: 'run_status', width: 110 },
   { title: '上次执行', dataIndex: 'last_run_at', width: 180 },
   { title: '下次执行', dataIndex: 'next_run_at', width: 180 },
+  { title: '执行环境/主机', slotName: 'targets', width: 320 },
+  { title: 'Cron表达式', dataIndex: 'cron_expression', width: 150 },
+  { title: '状态', slotName: 'enabled', width: 100 },
   { title: '创建时间', dataIndex: 'created_at', width: 180 },
-  { title: '操作', slotName: 'actions', width: 200 },
+  { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
 ]
 
 // 模态框
@@ -272,6 +297,7 @@ const formData = reactive<Partial<Task>>({
 const serverOptions = ref<TaskServerOption[]>([])
 const loadingServers = ref(false)
 const selectedEnvironment = ref('')
+const scriptNameMap = reactive<Record<number, string>>({})
 
 const environmentOptions = [
   { label: '富春云', value: 'fuchunyun' },
@@ -280,11 +306,48 @@ const environmentOptions = [
   { label: '阿里云压测', value: 'aliyunyc' },
 ]
 
+const envTextMap: Record<string, string> = {
+  fuchunyun: '富春云',
+  aliyun: '阿里云',
+  binjiang: '滨江',
+  aliyunyc: '阿里云压测',
+}
+
 const filteredServerOptions = computed(() => {
   if (formData.task_type !== 'salt') return serverOptions.value
   if (!selectedEnvironment.value) return []
   return serverOptions.value.filter(s => s.environment === selectedEnvironment.value)
 })
+
+const getTaskTargets = (task: Task) => {
+  return (task.server_ids || []).map((id) => {
+    const server = serverOptions.value.find((s) => s.id === id)
+    if (!server) {
+      return {
+        id,
+        name: `主机#${id}`,
+        envText: '未知环境',
+      }
+    }
+    return {
+      id,
+      name: server.name,
+      envText: envTextMap[server.environment] || server.environment,
+    }
+  })
+}
+
+const getRunStatusText = (task: Task) => {
+  if (!task.enabled) return '已停用'
+  if (task.last_run_at) return '已执行'
+  return '待执行'
+}
+
+const getRunStatusColor = (task: Task) => {
+  if (!task.enabled) return 'gray'
+  if (task.last_run_at) return 'green'
+  return 'orange'
+}
 
 const loadServerOptions = async () => {
   loadingServers.value = true
@@ -313,6 +376,25 @@ const loadServerOptions = async () => {
     serverOptions.value = []
   } finally {
     loadingServers.value = false
+  }
+}
+
+const loadScriptOptions = async () => {
+  try {
+    const pageSize = 100
+    let page = 1
+
+    while (true) {
+      const res = await getScriptList({ page, page_size: pageSize })
+      const items = res.data || []
+      items.forEach((s) => {
+        scriptNameMap[s.id] = s.name
+      })
+      if (!items.length || items.length < pageSize) break
+      page += 1
+    }
+  } catch (error) {
+    console.error('加载脚本列表失败:', error)
   }
 }
 
@@ -486,6 +568,8 @@ const resetForm = () => {
 }
 
 onMounted(() => {
+  loadServerOptions()
+  loadScriptOptions()
   loadTasks()
 })
 </script>

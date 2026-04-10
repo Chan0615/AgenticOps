@@ -77,7 +77,7 @@ class ScheduledTask(Base):
     )
     server_ids = Column(JSON, nullable=False, comment="目标服务器ID列表")
     cron_expression = Column(String(100), nullable=False, comment="Cron表达式")
-    task_type = Column(String(20), default="salt", comment="执行方式: salt/jumpserver")
+    task_type = Column(String(20), default="salt", comment="执行方式: salt")
     command = Column(Text, nullable=True, comment="自定义命令(不使用脚本时)")
     enabled = Column(Boolean, default=True, comment="是否启用")
     celery_task_id = Column(String(255), nullable=True, comment="Celery定时任务ID")

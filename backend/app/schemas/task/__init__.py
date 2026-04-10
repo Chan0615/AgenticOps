@@ -1,7 +1,7 @@
 """定时任务相关 Schema"""
 
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 
 
@@ -12,7 +12,7 @@ class ScheduledTaskBase(BaseModel):
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: List[int] = Field(..., description="目标服务器ID列表", min_length=1)
     cron_expression: str = Field(..., description="Cron表达式", max_length=100)
-    task_type: str = Field(default="salt", description="执行方式: salt/jumpserver")
+    task_type: Literal["salt"] = Field(default="salt", description="执行方式: salt")
     command: Optional[str] = Field(None, description="自定义命令(不使用脚本时)")
     enabled: bool = Field(default=True, description="是否启用")
 
@@ -29,7 +29,7 @@ class ScheduledTaskUpdate(BaseModel):
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: Optional[List[int]] = Field(None, description="目标服务器ID列表")
     cron_expression: Optional[str] = Field(None, description="Cron表达式", max_length=100)
-    task_type: Optional[str] = Field(None, description="执行方式: salt/jumpserver")
+    task_type: Optional[Literal["salt"]] = Field(None, description="执行方式: salt")
     command: Optional[str] = Field(None, description="自定义命令(不使用脚本时)")
     enabled: Optional[bool] = Field(None, description="是否启用")
 

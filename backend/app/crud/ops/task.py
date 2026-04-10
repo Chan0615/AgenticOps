@@ -51,8 +51,10 @@ async def create_task(
     db: AsyncSession, task: ScheduledTaskCreate, created_by: str = None
 ) -> ScheduledTask:
     """创建定时任务"""
+    payload = task.model_dump()
+    payload["task_type"] = "salt"
     db_task = ScheduledTask(
-        **task.model_dump(),
+        **payload,
         created_by=created_by,
     )
     
@@ -80,6 +82,8 @@ async def update_task(
         return None
     
     update_data = task.model_dump(exclude_unset=True)
+    if "task_type" in update_data:
+        update_data["task_type"] = "salt"
     for field, value in update_data.items():
         setattr(db_task, field, value)
     
