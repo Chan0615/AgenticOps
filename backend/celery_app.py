@@ -1,7 +1,13 @@
 """Celery 应用配置"""
 
+import asyncio
+import sys
+
 from celery import Celery
 from app.core import config
+
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # 获取 Redis 配置
 redis_config = config._get("redis", default={}).get("default", {})

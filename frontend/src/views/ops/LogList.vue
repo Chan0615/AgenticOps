@@ -125,6 +125,7 @@ import {
   IconSearch,
   IconRefresh,
 } from '@arco-design/web-vue/es/icon'
+import { getExecutionLogs, getExecutionLogDetail } from '@/api/ops/log'
 
 interface ExecutionLog {
   id: number
@@ -180,25 +181,22 @@ const detailData = ref<ExecutionLog>({} as ExecutionLog)
 const loadLogs = async () => {
   loading.value = true
   try {
-    // TODO: 调用 API
-    // const params = {
-    //   page: pagination.current,
-    //   page_size: pagination.pageSize,
-    //   ...searchParams,
-    // }
-    // if (dateRange.value) {
-    //   params.start_time = dateRange.value[0]
-    //   params.end_time = dateRange.value[1]
-    // }
-    // const res = await getExecutionLogs(params)
-    // logList.value = res.data
-    // pagination.total = res.total
-    
-    // 临时数据
-    logList.value = []
-    pagination.total = 0
-  } catch (error) {
-    Message.error('加载日志列表失败')
+    const params: Record<string, any> = {
+      page: pagination.current,
+      page_size: pagination.pageSize,
+    }
+    if (searchParams.status) params.status = searchParams.status
+    if (searchParams.task_id) params.task_id = Number(searchParams.task_id)
+    if (dateRange.value && dateRange.value[0] && dateRange.value[1]) {
+      params.start_time = dateRange.value[0]
+      params.end_time = dateRange.value[1]
+    }
+
+    const res = await getExecutionLogs(params)
+    logList.value = res.data || []
+    pagination.total = res.total || 0
+  } catch (error: any) {
+    Message.error(error.response?.data?.detail || '加载日志列表失败')
   } finally {
     loading.value = false
   }
@@ -232,9 +230,14 @@ const handlePageSizeChange = (pageSize: number) => {
 }
 
 // 查看详情
-const handleView = (record: ExecutionLog) => {
-  detailData.value = record
-  detailVisible.value = true
+const handleView = async (record: ExecutionLog) => {
+  try {
+    const detail = await getExecutionLogDetail(record.id)
+    detailData.value = detail
+    detailVisible.value = true
+  } catch (error: any) {
+    Message.error(error.response?.data?.detail || '加载日志详情失败')
+  }
 }
 
 // 状态颜色

@@ -281,12 +281,12 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: '脚本名称', dataIndex: 'name', width: 220 },
+  { title: '脚本', dataIndex: 'name', width: 200 },
   { title: '类型', slotName: 'script_type', width: 100 },
-  { title: '超时时间', slotName: 'timeout', width: 100 },
+  { title: '超时', slotName: 'timeout', width: 90 },
   { title: '描述', dataIndex: 'description', width: 260, ellipsis: true, tooltip: true },
-  { title: '创建人', dataIndex: 'created_by', width: 100 },
-  { title: '创建时间', dataIndex: 'created_at', width: 200 },
+  { title: '创建人', dataIndex: 'created_by', width: 90 },
+  { title: '创建', dataIndex: 'created_at', width: 170 },
   { title: '操作', slotName: 'actions', width: 220 },
 ]
 

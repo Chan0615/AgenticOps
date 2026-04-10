@@ -18,6 +18,8 @@
 
 ## Runtime Topology
 - FastAPI serves REST on `http://localhost:8000`; docs at `/docs`.
+- Celery worker (`celery -A celery_app worker --loglevel=info -Q salt,scheduler`) executes Salt tasks.
+- Celery beat (`celery -A celery_app beat --loglevel=info`) scans enabled cron tasks every minute.
 - Paramiko direct SSH is removed from Ops flows; `/api/ops/servers/test-connection` now validates through JumpServer REST API.
 - Legacy local WebSocket SSH handler remains only as a deprecation stub and returns an error message.
 

@@ -205,14 +205,14 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-      { title: '服务器名称', dataIndex: 'name', width: 150 },
-      { title: 'IP地址', dataIndex: 'hostname', width: 130 },
+      { title: '主机', dataIndex: 'name', width: 150 },
+      { title: 'IP', dataIndex: 'hostname', width: 130 },
       { title: '端口', dataIndex: 'port', width: 60 },
-      { title: '用户名', dataIndex: 'username', width: 80 },
+      { title: '用户', dataIndex: 'username', width: 80 },
       { title: '环境', slotName: 'environment', width: 100 },
       { title: '状态', slotName: 'status', width: 80 },
       { title: '描述', dataIndex: 'description', width: 220, ellipsis: true, tooltip: true },
-      { title: '创建时间', dataIndex: 'created_at', width: 180 },
+      { title: '创建', dataIndex: 'created_at', width: 170 },
       { title: '操作', slotName: 'actions', width: 200 },
 ]
 

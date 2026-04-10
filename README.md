@@ -126,20 +126,20 @@ cp config.yaml.example config.yaml
 python init_db.py
 
 # 5. 启动 FastAPI 服务
-python main.py
-# 或使用 uvicorn
 uvicorn app.main:app --reload --port 8000
 
-# 6. 启动 WebSocket SSH 服务器（新终端窗口）
-python -m app.api.server.websocket_handler
-# 或使用以下方式
-python -c "from app.api.server.websocket_handler import start_websocket_server; start_websocket_server()"
+# 6. 启动 Celery Worker（新终端窗口）
+# Windows 建议加 -P solo
+celery -A celery_app worker --loglevel=info -Q salt,scheduler -P solo
+
+# 7. 启动 Celery Beat（新终端窗口）
+celery -A celery_app beat --loglevel=info
 ```
 
 **说明**：
 - FastAPI 服务运行在 `http://localhost:8000`
-- WebSocket SSH 服务器运行在 `ws://localhost:8765`
-- Web SSH 终端功能需要同时启动这两个服务
+- 定时任务与手动触发依赖 Celery Worker + Beat
+- 任务执行结果会写入 `ops_task_execution_log`
 
 ### 前端启动
 

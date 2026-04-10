@@ -6,7 +6,6 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ops import ScheduledTask
 from app.schemas.task import ScheduledTaskCreate, ScheduledTaskUpdate
-from app.tasks.scheduler import should_execute_task
 import logging
 
 logger = logging.getLogger(__name__)

@@ -266,15 +266,15 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: '任务名称', dataIndex: 'name', width: 180 },
-  { title: '执行脚本', slotName: 'script_info', width: 220 },
-  { title: '执行状态', slotName: 'run_status', width: 110 },
-  { title: '上次执行', dataIndex: 'last_run_at', width: 180 },
-  { title: '下次执行', dataIndex: 'next_run_at', width: 180 },
-  { title: '执行环境/主机', slotName: 'targets', width: 320 },
-  { title: 'Cron表达式', dataIndex: 'cron_expression', width: 150 },
+  { title: '任务', dataIndex: 'name', width: 170 },
+  { title: '脚本', slotName: 'script_info', width: 200 },
+  { title: '执行态', slotName: 'run_status', width: 100 },
+  { title: '上次执行', dataIndex: 'last_run_at', width: 170 },
+  { title: '下次执行', dataIndex: 'next_run_at', width: 170 },
+  { title: '目标主机', slotName: 'targets', width: 280 },
+  { title: 'Cron', dataIndex: 'cron_expression', width: 140 },
   { title: '状态', slotName: 'enabled', width: 100 },
-  { title: '创建时间', dataIndex: 'created_at', width: 180 },
+  { title: '创建时间', dataIndex: 'created_at', width: 170 },
   { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
 ]
 

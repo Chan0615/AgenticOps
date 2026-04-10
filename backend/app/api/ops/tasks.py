@@ -143,16 +143,12 @@ async def trigger_task(
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
     
-    # TODO: 触发任务执行
-    # 1. 使用 SaltStack 方式执行
-    # 2. 获取脚本内容或使用自定义命令
-    # 3. 调用 Celery 任务
-    # 4. 更新任务执行时间
-
     from app.tasks.salt_tasks import execute_salt_command
-    # execute_salt_command.delay(task.id, task.server_ids, task.command or "")
-    pass
-    
+
+    async_result = execute_salt_command.delay(task.id, task.server_ids or [], task.command or "")
+    task.celery_task_id = async_result.id
+    await db.commit()
+     
     # 更新执行时间
     await task_crud.update_task_execution_time(db, request.task_id)
     
@@ -161,5 +157,6 @@ async def trigger_task(
         "message": "任务已触发",
         "data": {
             "task_id": request.task_id,
+            "celery_task_id": async_result.id,
         },
     }
