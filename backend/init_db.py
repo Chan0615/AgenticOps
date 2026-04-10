@@ -90,6 +90,19 @@ async def create_tables(force_reset: bool = False):
             print(f"      已清空旧数据表 {len(table_names)} 张")
         await conn.run_sync(Base.metadata.create_all)
 
+        # 兼容老库：补充 ops_scheduled_task.updated_by 字段
+        result = await conn.execute(
+            text("SHOW COLUMNS FROM ops_scheduled_task LIKE 'updated_by'")
+        )
+        if result.first() is None:
+            await conn.execute(
+                text(
+                    "ALTER TABLE ops_scheduled_task "
+                    "ADD COLUMN updated_by VARCHAR(50) NULL COMMENT '修改人' AFTER created_by"
+                )
+            )
+            print("      已新增字段: ops_scheduled_task.updated_by")
+
         # 为高频日志查询补齐索引（兼容已有库的增量初始化）
         result = await conn.execute(text("SHOW INDEX FROM ops_task_execution_log"))
         existing_indexes = {row[2] for row in result.fetchall()}

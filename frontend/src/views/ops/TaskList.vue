@@ -109,6 +109,9 @@
         
         <template #actions="{ record }">
           <a-space>
+            <a-tag color="purple" :hoverable="true" @click="handleShowDetail(record)">
+              详情
+            </a-tag>
             <a-tag color="blue" :hoverable="true" @click="handleTrigger(record)">
               测试
             </a-tag>
@@ -233,6 +236,47 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <a-modal
+      v-model:visible="detailVisible"
+      title="任务详情"
+      width="760px"
+      :footer="false"
+    >
+      <a-descriptions :column="2" bordered>
+        <a-descriptions-item label="任务名称">{{ detailData?.name || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="执行方式">SaltStack</a-descriptions-item>
+        <a-descriptions-item label="脚本">
+          <span v-if="detailData?.script_id">{{ scriptNameMap[detailData.script_id] || `脚本#${detailData.script_id}` }}</span>
+          <span v-else-if="detailData?.command">内联命令</span>
+          <span v-else>-</span>
+        </a-descriptions-item>
+        <a-descriptions-item label="状态">
+          <a-tag :color="detailData?.enabled ? 'green' : 'red'">{{ detailData?.enabled ? '已启用' : '已禁用' }}</a-tag>
+        </a-descriptions-item>
+        <a-descriptions-item label="Cron表达式">{{ detailData?.cron_expression || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="执行态">
+          {{ detailData ? getRunStatusText(detailData) : '-' }}
+        </a-descriptions-item>
+        <a-descriptions-item label="创建人">{{ detailData?.created_by || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="修改人">{{ detailData?.updated_by || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="创建时间">{{ formatDateTime(detailData?.created_at) }}</a-descriptions-item>
+        <a-descriptions-item label="更新时间">{{ formatDateTime(detailData?.updated_at) }}</a-descriptions-item>
+        <a-descriptions-item label="上次执行">{{ formatDateTime(detailData?.last_run_at) }}</a-descriptions-item>
+        <a-descriptions-item label="下次执行">{{ formatDateTime(detailData?.next_run_at) }}</a-descriptions-item>
+        <a-descriptions-item label="目标主机" :span="2">
+          <a-space wrap>
+            <a-tag v-for="target in detailTargets" :key="target.id" color="arcoblue">
+              {{ target.envText }} / {{ target.name }}
+            </a-tag>
+          </a-space>
+        </a-descriptions-item>
+        <a-descriptions-item label="描述" :span="2">{{ detailData?.description || '-' }}</a-descriptions-item>
+        <a-descriptions-item label="执行命令" :span="2">
+          <pre class="task-command-pre">{{ detailData?.command || '-' }}</pre>
+        </a-descriptions-item>
+      </a-descriptions>
+    </a-modal>
   </div>
 </template>
 
@@ -246,7 +290,7 @@ import {
   IconPlus,
   IconQuestionCircle,
 } from '@arco-design/web-vue/es/icon'
-import { getTaskList, createTask, updateTask, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
+import { getTaskList, getTaskDetail, createTask, updateTask, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
 import { getServerList, type Server } from '@/api/ops/server'
 import { getScriptList } from '@/api/ops/script'
 import { formatDateTime } from '@/utils/datetime'
@@ -267,6 +311,7 @@ interface Task {
   last_run_at?: string
   next_run_at?: string
   created_by?: string
+  updated_by?: string
   created_at: string
   updated_at: string
 }
@@ -314,6 +359,8 @@ const modalVisible = ref(false)
 const modalTitle = ref('创建任务')
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
+const detailVisible = ref(false)
+const detailData = ref<Task | null>(null)
 
 const formData = reactive<Partial<Task>>({
   name: '',
@@ -368,6 +415,11 @@ const getTaskTargets = (task: Task) => {
     }
   })
 }
+
+const detailTargets = computed(() => {
+  if (!detailData.value) return []
+  return getTaskTargets(detailData.value)
+})
 
 const getRunStatusText = (task: Task) => {
   if (!task.enabled) return '已停用'
@@ -549,6 +601,16 @@ const handleViewLogs = (record: Task) => {
   })
 }
 
+const handleShowDetail = async (record: Task) => {
+  detailVisible.value = true
+  try {
+    const data = await getTaskDetail(record.id)
+    detailData.value = data
+  } catch {
+    detailData.value = record
+  }
+}
+
 // 删除
 const handleDelete = async (id: number) => {
   try {
@@ -638,6 +700,15 @@ onMounted(() => {
 
 .task-list-container :deep(.arco-table-cell) {
   vertical-align: middle;
+}
+
+.task-command-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 12px;
+  color: #334155;
 }
 
 </style>

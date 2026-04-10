@@ -55,6 +55,7 @@ async def create_task(
     db_task = ScheduledTask(
         **payload,
         created_by=created_by,
+        updated_by=created_by,
     )
     
     # 计算下次执行时间
@@ -73,7 +74,7 @@ async def create_task(
 
 
 async def update_task(
-    db: AsyncSession, task_id: int, task: ScheduledTaskUpdate
+    db: AsyncSession, task_id: int, task: ScheduledTaskUpdate, updated_by: str = None
 ) -> Optional[ScheduledTask]:
     """更新定时任务"""
     db_task = await get_task(db, task_id)
@@ -85,6 +86,8 @@ async def update_task(
         update_data["task_type"] = "salt"
     for field, value in update_data.items():
         setattr(db_task, field, value)
+    if updated_by:
+        db_task.updated_by = updated_by
     
     # 如果更新了 Cron 表达式,重新计算下次执行时间
     if "cron_expression" in update_data:
@@ -112,13 +115,17 @@ async def delete_task(db: AsyncSession, task_id: int) -> bool:
     return True
 
 
-async def toggle_task_enabled(db: AsyncSession, task_id: int) -> Optional[ScheduledTask]:
+async def toggle_task_enabled(
+    db: AsyncSession, task_id: int, updated_by: str = None
+) -> Optional[ScheduledTask]:
     """切换任务启用状态"""
     db_task = await get_task(db, task_id)
     if not db_task:
         return None
     
     db_task.enabled = not db_task.enabled
+    if updated_by:
+        db_task.updated_by = updated_by
     await db.commit()
     await db.refresh(db_task)
     return db_task

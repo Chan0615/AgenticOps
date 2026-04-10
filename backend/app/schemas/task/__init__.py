@@ -41,6 +41,7 @@ class ScheduledTaskResponse(ScheduledTaskBase):
     last_run_at: Optional[datetime] = None
     next_run_at: Optional[datetime] = None
     created_by: Optional[str] = None
+    updated_by: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

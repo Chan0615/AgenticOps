@@ -102,7 +102,9 @@ async def update_task(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """更新定时任务"""
-    db_task = await task_crud.update_task(db, task_id, task)
+    db_task = await task_crud.update_task(
+        db, task_id, task, updated_by=current_user.username
+    )
     if not db_task:
         raise HTTPException(status_code=404, detail="任务不存在")
     return db_task
@@ -130,7 +132,9 @@ async def toggle_task(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """切换任务启用状态"""
-    db_task = await task_crud.toggle_task_enabled(db, task_id)
+    db_task = await task_crud.toggle_task_enabled(
+        db, task_id, updated_by=current_user.username
+    )
     if not db_task:
         raise HTTPException(status_code=404, detail="任务不存在")
     

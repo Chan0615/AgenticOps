@@ -84,6 +84,7 @@ class ScheduledTask(Base):
     last_run_at = Column(DateTime, nullable=True, comment="上次执行时间")
     next_run_at = Column(DateTime, nullable=True, comment="下次执行时间")
     created_by = Column(String(50), nullable=True, comment="创建人")
+    updated_by = Column(String(50), nullable=True, comment="修改人")
     created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
     updated_at = Column(
         DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间"
