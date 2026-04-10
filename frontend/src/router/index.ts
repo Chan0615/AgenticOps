@@ -26,6 +26,12 @@ const router = createRouter({
           meta: { title: '仪表盘' }
         },
         {
+          path: 'assistant',
+          name: 'assistant',
+          component: () => import('@/views/assistant/SystemAssistant.vue'),
+          meta: { title: 'AI助手' }
+        },
+        {
           path: 'rag',
           component: () => import('@/layouts/BlankLayout.vue'),
           meta: { title: 'RAG知识库' },

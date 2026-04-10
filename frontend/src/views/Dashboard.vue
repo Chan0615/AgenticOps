@@ -25,11 +25,12 @@
       <section class="min-h-0 grid grid-rows-[auto_1fr] gap-4">
         <div class="bg-white rounded-2xl border border-surface-200 p-4">
           <h3 class="text-sm font-semibold text-surface-900">快捷入口</h3>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mt-3">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 mt-3">
             <router-link to="/ops/tasks" class="quick-card">任务中心</router-link>
             <router-link to="/ops/logs" class="quick-card">执行日志</router-link>
             <router-link to="/rag/knowledge" class="quick-card">知识库管理</router-link>
             <router-link to="/ops/servers" class="quick-card">服务器列表</router-link>
+            <router-link to="/assistant" class="quick-card">AI助手</router-link>
           </div>
         </div>
 
