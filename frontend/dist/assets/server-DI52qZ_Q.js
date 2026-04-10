@@ -1,1 +1,0 @@
-import{H as r}from"./index-Chb1n1sd.js";const o=e=>r.get("/ops/servers",{params:e}),n=e=>r.post("/ops/servers",e),p=(e,s)=>r.put(`/ops/servers/${e}`,s),c=e=>r.delete(`/ops/servers/${e}`),v=e=>r.post("/ops/servers/test-connection",e);export{n as c,c as d,o as g,v as t,p as u};
