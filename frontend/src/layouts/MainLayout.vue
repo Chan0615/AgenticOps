@@ -175,9 +175,11 @@
 
       <!-- 内容区 -->
       <main class="flex-1 p-6 overflow-auto bg-surface-50">
-        <transition name="fade" mode="out-in">
-          <router-view :key="$route.path" />
-        </transition>
+        <router-view v-slot="{ Component }">
+          <transition name="fade" mode="out-in">
+            <component :is="Component" :key="$route.path" />
+          </transition>
+        </router-view>
       </main>
     </div>
   </div>

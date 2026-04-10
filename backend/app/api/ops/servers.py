@@ -14,6 +14,7 @@ from app.schemas.server.server import (
 from app.schemas.system.user import UserResponse
 from app.crud.ops import server as server_crud
 from app.api.auth.auth import get_current_user
+from app.core.log_decorator import log_operation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ async def get_server(
 
 
 @router.post("", response_model=ServerResponse)
+@log_operation(module="运维-服务器", action="创建服务器", description="创建服务器记录")
 async def create_server(
     server: ServerCreate,
     db: AsyncSession = Depends(get_db),
@@ -72,6 +74,7 @@ async def create_server(
 
 
 @router.put("/{server_id}", response_model=ServerResponse)
+@log_operation(module="运维-服务器", action="更新服务器", description="更新服务器信息")
 async def update_server(
     server_id: int,
     server: ServerUpdate,
@@ -86,6 +89,7 @@ async def update_server(
 
 
 @router.delete("/{server_id}")
+@log_operation(module="运维-服务器", action="删除服务器", description="删除服务器记录")
 async def delete_server(
     server_id: int,
     db: AsyncSession = Depends(get_db),
@@ -99,6 +103,7 @@ async def delete_server(
 
 
 @router.post("/test-connection")
+@log_operation(module="运维-服务器", action="测试连通性", description="测试服务器连通性")
 async def test_connection(
     request: ConnectionTestRequest,
     db: AsyncSession = Depends(get_db),
@@ -122,10 +127,15 @@ async def test_connection(
             "data": result,
         }
     elif request.test_type == "salt":
-        # TODO: 实现 Salt 连接测试
+        result = await server_crud.test_server_connection_salt(server)
+
+        new_status = "online" if result["success"] else "offline"
+        await server_crud.update_server_status(db, request.server_id, new_status)
+
         return {
-            "code": 200,
-            "message": "Salt连接测试待实现",
+            "code": 200 if result["success"] else 500,
+            "message": result["message"],
+            "data": result,
         }
     else:
         raise HTTPException(status_code=400, detail="不支持的测试类型")

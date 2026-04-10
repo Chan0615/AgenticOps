@@ -58,4 +58,4 @@ class ServerListResponse(BaseModel):
 class ConnectionTestRequest(BaseModel):
     """连接测试请求"""
     server_id: int = Field(..., description="服务器ID")
-    test_type: str = Field(default="jumpserver", description="测试类型: jumpserver/salt")
+    test_type: str = Field(default="salt", description="测试类型: salt/jumpserver")

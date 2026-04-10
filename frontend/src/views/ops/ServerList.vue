@@ -316,7 +316,7 @@ const handleTest = async (record: Server) => {
   try {
     const res = await testServerConnection({
       server_id: record.id,
-      test_type: 'jumpserver',
+      test_type: 'salt',
     })
     if (res.code === 200) {
       Message.success('连接测试成功')

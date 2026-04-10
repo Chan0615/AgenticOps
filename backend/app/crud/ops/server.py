@@ -116,3 +116,39 @@ async def test_server_connection(server: Server) -> dict:
             "success": False,
             "message": f"连接失败: {str(e)}",
         }
+
+
+async def test_server_connection_salt(server: Server) -> dict:
+    """测试服务器连接（SaltStack）"""
+    from app.services.salt_service import salt_service
+
+    env_name = server.environment
+    target = server.salt_minion_id or server.hostname
+
+    if not target:
+        return {
+            "success": False,
+            "message": "缺少 Salt Minion ID 或主机信息",
+        }
+
+    try:
+        result = await salt_service.test_ping(env_name=env_name, target=target)
+        returns = result.get("return", []) if isinstance(result, dict) else []
+        ping_map = returns[0] if returns and isinstance(returns[0], dict) else {}
+
+        is_connected = bool(ping_map.get(target))
+        if not is_connected and ping_map:
+            is_connected = any(bool(v) for v in ping_map.values())
+
+        return {
+            "success": is_connected,
+            "message": "Salt 连接成功" if is_connected else "Salt 连接失败",
+            "target": target,
+            "result": result,
+        }
+    except Exception as e:
+        logger.error(f"Salt 连接测试失败: {e}")
+        return {
+            "success": False,
+            "message": f"Salt连接失败: {str(e)}",
+        }

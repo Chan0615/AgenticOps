@@ -47,8 +47,11 @@ async def get_scripts(
 
 async def create_script(db: AsyncSession, script: ScriptCreate, created_by: str = None) -> Script:
     """创建脚本"""
+    payload = script.model_dump()
+    file_path = payload.pop("file_path")
     db_script = Script(
-        **script.model_dump(),
+        **payload,
+        content=file_path,
         created_by=created_by,
     )
     db.add(db_script)
@@ -64,6 +67,8 @@ async def update_script(db: AsyncSession, script_id: int, script: ScriptUpdate) 
         return None
     
     update_data = script.model_dump(exclude_unset=True)
+    if "file_path" in update_data:
+        update_data["content"] = update_data.pop("file_path")
     for field, value in update_data.items():
         setattr(db_script, field, value)
     

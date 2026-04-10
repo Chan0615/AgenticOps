@@ -28,21 +28,37 @@ class SaltService:
             raise ValueError(f"Salt 环境 '{env_name}' 不存在")
 
         url = f"{env_config['url']}/{endpoint.lstrip('/')}"
-        
-        # 登录获取 token
-        token = await self._login(env_name)
-        
+
         headers = {
-            "X-Auth-Token": token,
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
+
+        # /run 接口优先使用 eauth 直传认证，避免 token 在部分环境下失效
+        if method.upper() == "POST":
+            payload = data.copy() if data else {}
+            payload.setdefault("username", env_config["salt_name"])
+            payload.setdefault("password", env_config["salt_pass"])
+            payload.setdefault("eauth", "pam")
+
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method, url, json=payload, headers=headers
+                ) as response:
+                    if response.status < 200 or response.status >= 300:
+                        error_text = await response.text()
+                        raise Exception(f"Salt API 错误: {error_text}")
+                    return await response.json()
+
+        # GET 等场景使用 token
+        token = await self._login(env_name)
+        headers["X-Auth-Token"] = token
 
         async with aiohttp.ClientSession() as session:
             async with session.request(
                 method, url, json=data, headers=headers
             ) as response:
-                if response.status != 200:
+                if response.status < 200 or response.status >= 300:
                     error_text = await response.text()
                     raise Exception(f"Salt API 错误: {error_text}")
                 return await response.json()
@@ -60,7 +76,7 @@ class SaltService:
 
         async with aiohttp.ClientSession() as session:
             async with session.post(url, json=data) as response:
-                if response.status != 200:
+                if response.status < 200 or response.status >= 300:
                     raise Exception(f"Salt 登录失败")
                 result = await response.json()
                 return result["return"][0]["token"]

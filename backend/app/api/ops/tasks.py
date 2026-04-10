@@ -11,8 +11,10 @@ from app.schemas.task import (
     ScheduledTaskListResponse,
     TaskManualTriggerRequest,
 )
+from app.schemas.system.user import UserResponse
 from app.crud.ops import task as task_crud
 from app.api.auth.auth import get_current_user
+from app.core.log_decorator import log_operation
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,7 +29,7 @@ async def list_tasks(
     name: Optional[str] = Query(None, description="任务名称"),
     enabled: Optional[bool] = Query(None, description="是否启用"),
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """获取定时任务列表"""
     skip = (page - 1) * page_size
@@ -47,7 +49,7 @@ async def list_tasks(
 async def get_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """获取任务详情"""
     task = await task_crud.get_task(db, task_id)
@@ -57,24 +59,26 @@ async def get_task(
 
 
 @router.post("", response_model=ScheduledTaskResponse)
+@log_operation(module="运维-任务", action="创建任务", description="创建定时任务")
 async def create_task(
     task: ScheduledTaskCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """创建定时任务"""
     db_task = await task_crud.create_task(
-        db, task, created_by=current_user.get("username")
+        db, task, created_by=current_user.username
     )
     return db_task
 
 
 @router.put("/{task_id}", response_model=ScheduledTaskResponse)
+@log_operation(module="运维-任务", action="更新任务", description="更新定时任务")
 async def update_task(
     task_id: int,
     task: ScheduledTaskUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """更新定时任务"""
     db_task = await task_crud.update_task(db, task_id, task)
@@ -84,10 +88,11 @@ async def update_task(
 
 
 @router.delete("/{task_id}")
+@log_operation(module="运维-任务", action="删除任务", description="删除定时任务")
 async def delete_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """删除定时任务"""
     success = await task_crud.delete_task(db, task_id)
@@ -97,10 +102,11 @@ async def delete_task(
 
 
 @router.post("/{task_id}/toggle")
+@log_operation(module="运维-任务", action="切换任务状态", description="启用或禁用定时任务")
 async def toggle_task(
     task_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """切换任务启用状态"""
     db_task = await task_crud.toggle_task_enabled(db, task_id)
@@ -118,10 +124,11 @@ async def toggle_task(
 
 
 @router.post("/trigger")
+@log_operation(module="运维-任务", action="手动触发任务", description="手动执行定时任务")
 async def trigger_task(
     request: TaskManualTriggerRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     """手动触发任务执行"""
     task = await task_crud.get_task(db, request.task_id)

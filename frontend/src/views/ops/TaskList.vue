@@ -52,14 +52,22 @@
         :data="taskList"
         :loading="loading"
         :pagination="pagination"
+        :scroll="{ x: 1280 }"
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
         <template #enabled="{ record }">
-          <a-switch
-            v-model="record.enabled"
-            @change="handleToggle(record)"
-          />
+          <a-space>
+            <a-switch
+              v-model="record.enabled"
+              checked-text="启用"
+              unchecked-text="禁用"
+              @change="handleToggle(record)"
+            />
+            <a-tag :color="record.enabled ? 'green' : 'red'">
+              {{ record.enabled ? '已启用' : '已禁用' }}
+            </a-tag>
+          </a-space>
         </template>
         
         <template #task_type="{ record }">
@@ -70,19 +78,19 @@
         
         <template #actions="{ record }">
           <a-space>
-            <a-button type="text" size="small" @click="handleTrigger(record)">
+            <a-tag color="blue" @click="handleTrigger(record)" :hoverable="true">
               执行
-            </a-button>
-            <a-button type="text" size="small" @click="handleEdit(record)">
+            </a-tag>
+            <a-tag @click="handleEdit(record)" :hoverable="true">
               编辑
-            </a-button>
+            </a-tag>
             <a-popconfirm
               content="确定要删除该任务吗？"
               @ok="handleDelete(record.id)"
             >
-              <a-button type="text" size="small" status="danger">
+              <a-tag color="red" size="small" :hoverable="true">
                 删除
-              </a-button>
+              </a-tag>
             </a-popconfirm>
           </a-space>
         </template>
@@ -126,16 +134,31 @@
             </a-form-item>
           </a-col>
         </a-row>
+
+        <a-form-item v-if="formData.task_type === 'salt'" label="Salt 环境" required>
+          <a-select
+            v-model="selectedEnvironment"
+            placeholder="选择环境后加载该环境服务器"
+            allow-clear
+            @change="formData.server_ids = []"
+          >
+            <a-option v-for="env in environmentOptions" :key="env.value" :value="env.value">
+              {{ env.label }}
+            </a-option>
+          </a-select>
+        </a-form-item>
         
         <a-form-item label="目标服务器" required>
           <a-select
             v-model="formData.server_ids"
             multiple
-            placeholder="选择目标服务器"
+            :loading="loadingServers"
+            :disabled="formData.task_type === 'salt' && !selectedEnvironment"
+            :placeholder="formData.task_type === 'salt' && !selectedEnvironment ? '请先选择 Salt 环境' : '选择目标服务器'"
           >
-            <!-- TODO: 从服务器列表加载 -->
-            <a-option :value="1">服务器-01</a-option>
-            <a-option :value="2">服务器-02</a-option>
+            <a-option v-for="server in filteredServerOptions" :key="server.id" :value="server.id">
+              {{ server.name }} ({{ server.hostname }})
+            </a-option>
           </a-select>
         </a-form-item>
         
@@ -161,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import {
   IconSearch,
@@ -169,7 +192,8 @@ import {
   IconPlus,
   IconQuestionCircle,
 } from '@arco-design/web-vue/es/icon'
-import { getTaskList, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
+import { getTaskList, createTask, updateTask, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
+import { getServerList, type Server } from '@/api/ops/server'
 
 interface Task {
   id: number
@@ -187,6 +211,13 @@ interface Task {
   created_by?: string
   created_at: string
   updated_at: string
+}
+
+interface TaskServerOption {
+  id: number
+  name: string
+  hostname: string
+  environment: string
 }
 
 // 搜索参数
@@ -208,15 +239,14 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: 'ID', dataIndex: 'id', width: 80 },
   { title: '任务名称', dataIndex: 'name', width: 180 },
   { title: '执行方式', slotName: 'task_type', width: 120 },
   { title: 'Cron表达式', dataIndex: 'cron_expression', width: 150 },
-  { title: '状态', slotName: 'enabled', width: 100 },
+  { title: '状态', slotName: 'enabled', width: 180 },
   { title: '上次执行', dataIndex: 'last_run_at', width: 180 },
   { title: '下次执行', dataIndex: 'next_run_at', width: 180 },
   { title: '创建时间', dataIndex: 'created_at', width: 180 },
-  { title: '操作', slotName: 'actions', width: 180, fixed: 'right' },
+  { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
 ]
 
 // 模态框
@@ -235,15 +265,65 @@ const formData = reactive<Partial<Task>>({
   description: '',
 })
 
+const serverOptions = ref<TaskServerOption[]>([])
+const loadingServers = ref(false)
+const selectedEnvironment = ref('')
+
+const environmentOptions = [
+  { label: '富春云', value: 'fuchunyun' },
+  { label: '阿里云', value: 'aliyun' },
+  { label: '滨江', value: 'binjiang' },
+  { label: '阿里云压测', value: 'aliyunyc' },
+]
+
+const filteredServerOptions = computed(() => {
+  if (formData.task_type !== 'salt') return serverOptions.value
+  if (!selectedEnvironment.value) return []
+  return serverOptions.value.filter(s => s.environment === selectedEnvironment.value)
+})
+
+const loadServerOptions = async () => {
+  loadingServers.value = true
+  try {
+    const pageSize = 100
+    let page = 1
+    let total = 0
+    const allServers: Server[] = []
+
+    do {
+      const res = await getServerList({ page, page_size: pageSize })
+      const items = res.data || []
+      total = res.total || items.length
+      allServers.push(...items)
+      page += 1
+    } while (allServers.length < total)
+
+    serverOptions.value = allServers.map((s: Server) => ({
+      id: s.id,
+      name: s.name,
+      hostname: s.hostname,
+      environment: s.environment,
+    }))
+  } catch (error: any) {
+    Message.error(error.response?.data?.detail || '加载服务器列表失败')
+    serverOptions.value = []
+  } finally {
+    loadingServers.value = false
+  }
+}
+
 // 加载任务列表
 const loadTasks = async () => {
   loading.value = true
   try {
-    const res = await getTaskList({
+    const params: Record<string, any> = {
       page: pagination.current,
       page_size: pagination.pageSize,
-      ...searchParams,
-    })
+    }
+    if (searchParams.name) params.name = searchParams.name
+    if (typeof searchParams.enabled === 'boolean') params.enabled = searchParams.enabled
+
+    const res = await getTaskList(params)
     taskList.value = res.data || []
     pagination.total = res.total || 0
   } catch (error: any) {
@@ -290,14 +370,26 @@ const handleAdd = () => {
   modalTitle.value = '创建任务'
   resetForm()
   modalVisible.value = true
+  loadServerOptions()
 }
 
 // 编辑
-const handleEdit = (record: Task) => {
+const handleEdit = async (record: Task) => {
   isEdit.value = true
   editingId.value = record.id
   modalTitle.value = '编辑任务'
+  await loadServerOptions()
   Object.assign(formData, record)
+  if (record.task_type === 'salt' && record.server_ids?.length) {
+    const envSet = new Set(
+      record.server_ids
+        .map(id => serverOptions.value.find(s => s.id === id)?.environment)
+        .filter((v): v is string => !!v)
+    )
+    selectedEnvironment.value = envSet.size === 1 ? Array.from(envSet)[0] : ''
+  } else {
+    selectedEnvironment.value = ''
+  }
   modalVisible.value = true
 }
 
@@ -338,8 +430,32 @@ const handleDelete = async (id: number) => {
 // 提交
 const handleSubmit = async () => {
   try {
-    // TODO: 调用 API
-    Message.success(isEdit.value ? '更新成功（待实现API）' : '创建成功（待实现API）')
+    if (!formData.name || !formData.cron_expression || !formData.server_ids?.length) {
+      Message.warning('请填写任务名称、Cron表达式并选择目标服务器')
+      return
+    }
+    if (formData.task_type === 'salt' && !selectedEnvironment.value) {
+      Message.warning('SaltStack 任务请先选择环境')
+      return
+    }
+
+    const payload: Partial<Task> = {
+      name: formData.name,
+      description: formData.description,
+      server_ids: formData.server_ids,
+      cron_expression: formData.cron_expression,
+      task_type: formData.task_type,
+      command: formData.command,
+      enabled: formData.enabled,
+    }
+
+    if (isEdit.value && editingId.value) {
+      await updateTask(editingId.value, payload)
+      Message.success('更新成功')
+    } else {
+      await createTask(payload)
+      Message.success('创建成功')
+    }
     modalVisible.value = false
     loadTasks()
   } catch (error) {
@@ -362,6 +478,7 @@ const resetForm = () => {
   formData.command = ''
   formData.enabled = true
   formData.description = ''
+  selectedEnvironment.value = ''
 }
 
 onMounted(() => {
@@ -380,5 +497,9 @@ onMounted(() => {
 
 .action-bar {
   margin-bottom: 16px;
+}
+
+.task-list-container :deep(.arco-table-cell) {
+  vertical-align: middle;
 }
 </style>
