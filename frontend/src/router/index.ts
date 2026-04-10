@@ -50,24 +50,8 @@ const router = createRouter({
           ]
         },
         {
-          path: 'server',
-          name: 'server',
-          component: () => import('@/layouts/BlankLayout.vue'),
-          meta: { title: '服务器管理' },
-          children: [
-            {
-              path: '',
-              name: 'server-management',
-              component: () => import('@/views/server/ServerManagement.vue'),
-              meta: { title: '服务器管理' }
-            },
-            {
-              path: 'logs',
-              name: 'server-logs',
-              component: () => import('@/views/server/OperationLogs.vue'),
-              meta: { title: '操作日志' }
-            }
-          ]
+          path: 'server/:pathMatch(.*)*',
+          redirect: '/ops/servers'
         },
         {
           path: 'ops',

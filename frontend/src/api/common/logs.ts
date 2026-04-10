@@ -24,6 +24,7 @@ export interface OperationLog {
 export interface OperationLogListResponse {
   total: number
   items: OperationLog[]
+  data?: OperationLog[]
 }
 
 // 获取操作日志列表
@@ -35,10 +36,10 @@ export async function getOperationLogs(params?: {
   start_time?: string
   end_time?: string
 }) {
-  return api.get<OperationLogListResponse>(BASE_URL, { params })
+  return api.get<any, OperationLogListResponse>(BASE_URL, { params })
 }
 
 // 获取操作日志详情
 export async function getOperationLog(logId: number) {
-  return api.get<OperationLog>(`${BASE_URL}/${logId}`)
+  return api.get<any, OperationLog>(`${BASE_URL}/${logId}`)
 }

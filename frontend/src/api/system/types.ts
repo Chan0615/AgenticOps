@@ -87,6 +87,7 @@ export interface Role {
   description?: string
   status: boolean
   sort_order: number
+  menu_ids?: number[]
   created_at: string
   updated_at: string
 }

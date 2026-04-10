@@ -73,5 +73,5 @@ export const deleteServer = (id: number) => {
  * 测试服务器连接
  */
 export const testServerConnection = (data: { server_id: number; test_type: string }) => {
-  return request.post<any>('/ops/servers/test-connection', data)
+  return request.post<any, { code: number; message: string; data?: any }>('/ops/servers/test-connection', data)
 }

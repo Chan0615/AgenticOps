@@ -139,6 +139,7 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, reactive } from 'vue'
+import { agentApi } from '@/api/agent'
 
 interface Message {
   role: 'user' | 'assistant'

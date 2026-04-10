@@ -209,7 +209,7 @@
           <!-- 拖拽上传区域 -->
           <div 
             class="border-2 border-dashed border-surface-200 rounded-2xl p-8 text-center hover:border-brand-300 hover:bg-brand-50/30 transition-all cursor-pointer"
-            @click="$refs.fileInput.click()"
+            @click="openFilePicker"
             @dragover.prevent
             @drop.prevent="handleDrop"
           >
@@ -289,6 +289,7 @@ const searchQuery = ref('')
 const filterStatus = ref('')
 const showUploadModal = ref(false)
 const selectedFiles = ref<File[]>([])
+const fileInput = ref<HTMLInputElement | null>(null)
 const uploading = ref(false)
 const rebuilding = ref(false)
 
@@ -333,6 +334,10 @@ function handleDrop(e: DragEvent) {
   if (files) {
     selectedFiles.value.push(...Array.from(files))
   }
+}
+
+function openFilePicker() {
+  fileInput.value?.click()
 }
 
 function removeFile(index: number) {

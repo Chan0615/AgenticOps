@@ -249,7 +249,7 @@
           <div 
             v-if="!selectedFile"
             class="border-2 border-dashed border-surface-200 rounded-2xl p-6 text-center hover:border-brand-300 hover:bg-brand-50/30 transition-all cursor-pointer"
-            @click="$refs.fileInput.click()"
+            @click="openFilePicker"
             @dragover.prevent
             @drop.prevent="handleDrop"
           >
@@ -369,6 +369,7 @@ const searchQuery = ref('')
 const filterStatus = ref('')
 const showUploadModal = ref(false)
 const selectedFile = ref<File | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 const uploading = ref(false)
 const rebuilding = ref(false)
 const showChunkModal = ref(false)
@@ -411,7 +412,7 @@ const canUpload = computed(() => {
 // 获取文档列表
 async function fetchDocuments() {
   try {
-    const data = await api.get('/v1/common/knowledge/documents')
+    const data = await api.get<any, any[]>('/v1/common/knowledge/documents')
     documents.value = data.map((doc: any) => ({
       id: doc.id.toString(),
       name: doc.name,
@@ -454,6 +455,10 @@ function handleDrop(e: DragEvent) {
       uploadForm.value.name = files[0].name.replace(/\.[^/.]+$/, '')
     }
   }
+}
+
+function openFilePicker() {
+  fileInput.value?.click()
 }
 
 function removeFile() {
@@ -513,7 +518,7 @@ async function viewDoc(doc: Document) {
   
   if (doc.status === 'indexed' && doc.chunk_count > 0) {
     try {
-      const data = await api.get(`/v1/common/knowledge/documents/${doc.id}/chunks`)
+      const data = await api.get<any, Chunk[]>(`/v1/common/knowledge/documents/${doc.id}/chunks`)
       chunks.value = data
       showChunkModal.value = true
     } catch (error) {

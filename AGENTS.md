@@ -10,6 +10,7 @@
 - First-time setup order: copy `backend/config.yaml.example` -> create/edit `backend/config.yaml` -> install deps -> start services.
 - `backend/config.yaml` is gitignored; do not commit env-specific credentials.
 - Ops server connectivity now depends on JumpServer API config (`jumpserver.base_url`, auth fields, `org_id`) in `backend/config.yaml`.
+- For existing DBs upgraded from legacy UI, run `python backend/add_server_menu.py` once to migrate `/server/*` menu records to `/ops/*`.
 
 ## High-Risk Commands
 - `python backend/init_db.py` is destructive by default (`force_reset=True`): drops all tables, recreates schema, reseeds data.
@@ -24,8 +25,10 @@
 - Frontend API client (`frontend/src/api/index.ts`) uses `baseURL: '/api'`.
 - Vite proxy (`frontend/vite.config.ts`) forwards `/api` to `http://localhost:8000`; backend should stay on port 8000 in local dev unless proxy is updated.
 - Ops APIs are under `/api/ops/*` (`servers`, `scripts`, `tasks`, `logs`). Legacy `/api/logs` route returns a migration message.
+- Legacy frontend `/server/*` pages and `/api/server/*` client are removed; `/server/*` routes now redirect to `/ops/servers`.
 
 ## Verification Reality
 - No backend test suite or CI workflow is present in repo.
-- Frontend `npm run build` (`vue-tsc -b && vite build`) is the most reliable full check.
+- Frontend `npm run build` runs `vite build` and is the reliable packaging check.
+- Frontend type check is separate: `npm run typecheck` (`vue-tsc --noEmit`) and currently reports many existing type issues.
 - `npm run lint` exists, but no ESLint config file is committed; expect to add/configure ESLint before relying on lint output.
