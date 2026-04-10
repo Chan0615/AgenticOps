@@ -65,6 +65,8 @@
         :data="serverList"
         :loading="loading"
         :pagination="pagination"
+        :scroll="{ x: 1240 }"
+        table-layout-fixed
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
@@ -209,9 +211,9 @@ const columns = [
       { title: '用户名', dataIndex: 'username', width: 80 },
       { title: '环境', slotName: 'environment', width: 100 },
       { title: '状态', slotName: 'status', width: 80 },
-      { title: '描述', dataIndex: 'description', width: 120, ellipsis: true, tooltip: true },
-      { title: '创建时间', dataIndex: 'created_at', width: 130 },
-      { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
+      { title: '描述', dataIndex: 'description', width: 220, ellipsis: true, tooltip: true },
+      { title: '创建时间', dataIndex: 'created_at', width: 180 },
+      { title: '操作', slotName: 'actions', width: 200 },
 ]
 
 // 模态框
@@ -419,5 +421,11 @@ onMounted(() => {
 
 .action-bar {
   margin-bottom: 16px;
+}
+
+.server-list-container :deep(.arco-table-th),
+.server-list-container :deep(.arco-table-td) {
+  vertical-align: middle;
+  white-space: nowrap;
 }
 </style>

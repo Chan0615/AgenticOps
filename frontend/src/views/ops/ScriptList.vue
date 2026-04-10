@@ -53,6 +53,7 @@
         :loading="loading"
         :pagination="pagination"
         :scroll="{ x: 1200 }"
+        table-layout-fixed
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
@@ -286,7 +287,7 @@ const columns = [
   { title: '描述', dataIndex: 'description', width: 260, ellipsis: true, tooltip: true },
   { title: '创建人', dataIndex: 'created_by', width: 100 },
   { title: '创建时间', dataIndex: 'created_at', width: 200 },
-  { title: '操作', slotName: 'actions', width: 220, fixed: 'right' },
+  { title: '操作', slotName: 'actions', width: 220 },
 ]
 
 // 模态框
@@ -569,6 +570,12 @@ onMounted(() => {
 
 .action-bar {
   margin-bottom: 16px;
+}
+
+.script-list-container :deep(.arco-table-th),
+.script-list-container :deep(.arco-table-td) {
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .script-content {

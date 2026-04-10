@@ -53,21 +53,14 @@
         :loading="loading"
         :pagination="pagination"
         :scroll="{ x: 1280 }"
+        table-layout-fixed
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
         <template #enabled="{ record }">
-          <a-space>
-            <a-switch
-              v-model="record.enabled"
-              checked-text="启用"
-              unchecked-text="禁用"
-              @change="handleToggle(record)"
-            />
-            <a-tag :color="record.enabled ? 'green' : 'red'">
-              {{ record.enabled ? '已启用' : '已禁用' }}
-            </a-tag>
-          </a-space>
+          <a-tag :color="record.enabled ? 'green' : 'red'">
+            {{ record.enabled ? '已启用' : '已禁用' }}
+          </a-tag>
         </template>
         
         <template #task_type="{ record }">
@@ -134,6 +127,17 @@
             </a-form-item>
           </a-col>
         </a-row>
+
+        <a-form-item v-if="isEdit" label="任务状态">
+          <a-radio-group
+            :model-value="formData.enabled"
+            type="button"
+            @change="(val: string | number | boolean) => (formData.enabled = val === true)"
+          >
+            <a-radio :value="true">启用</a-radio>
+            <a-radio :value="false">禁用</a-radio>
+          </a-radio-group>
+        </a-form-item>
 
         <a-form-item v-if="formData.task_type === 'salt'" label="Salt 环境" required>
           <a-select
@@ -242,11 +246,11 @@ const columns = [
   { title: '任务名称', dataIndex: 'name', width: 180 },
   { title: '执行方式', slotName: 'task_type', width: 120 },
   { title: 'Cron表达式', dataIndex: 'cron_expression', width: 150 },
-  { title: '状态', slotName: 'enabled', width: 180 },
+  { title: '状态', slotName: 'enabled', width: 100 },
   { title: '上次执行', dataIndex: 'last_run_at', width: 180 },
   { title: '下次执行', dataIndex: 'next_run_at', width: 180 },
   { title: '创建时间', dataIndex: 'created_at', width: 180 },
-  { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
+  { title: '操作', slotName: 'actions', width: 200 },
 ]
 
 // 模态框
@@ -502,4 +506,5 @@ onMounted(() => {
 .task-list-container :deep(.arco-table-cell) {
   vertical-align: middle;
 }
+
 </style>
