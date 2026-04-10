@@ -71,6 +71,7 @@
           <span v-if="record.script_id">
             {{ scriptNameMap[record.script_id] || `脚本#${record.script_id}` }}
           </span>
+          <span v-else-if="record.command">内联命令</span>
           <span v-else>-</span>
         </template>
 
@@ -78,6 +79,18 @@
           <a-tag :color="getRunStatusColor(record)">
             {{ getRunStatusText(record) }}
           </a-tag>
+        </template>
+
+        <template #last_run_at="{ record }">
+          {{ formatDateTime(record.last_run_at) }}
+        </template>
+
+        <template #next_run_at="{ record }">
+          {{ formatDateTime(record.next_run_at) }}
+        </template>
+
+        <template #created_at="{ record }">
+          {{ formatDateTime(record.created_at) }}
         </template>
 
         <template #targets="{ record }">
@@ -99,6 +112,9 @@
           <a-space>
             <a-tag color="blue" :hoverable="true" @click="handleTrigger(record)">
               测试
+            </a-tag>
+            <a-tag color="arcoblue" :hoverable="true" @click="handleViewLogs(record)">
+              日志
             </a-tag>
             <a-tag :hoverable="true" @click="handleEdit(record)">
               编辑
@@ -187,6 +203,18 @@
             </a-option>
           </a-select>
         </a-form-item>
+
+        <a-form-item label="执行脚本（可选）">
+          <a-select
+            v-model="formData.script_id"
+            allow-clear
+            placeholder="选择已上传脚本（不选则使用下方执行命令）"
+          >
+            <a-option v-for="script in scriptOptions" :key="script.id" :value="script.id">
+              {{ script.name }}
+            </a-option>
+          </a-select>
+        </a-form-item>
         
         <a-form-item label="执行命令">
           <a-textarea
@@ -211,6 +239,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import {
   IconSearch,
@@ -221,6 +250,9 @@ import {
 import { getTaskList, createTask, updateTask, toggleTask, triggerTask, deleteTask } from '@/api/ops/task'
 import { getServerList, type Server } from '@/api/ops/server'
 import { getScriptList } from '@/api/ops/script'
+import { formatDateTime } from '@/utils/datetime'
+
+const router = useRouter()
 
 interface Task {
   id: number
@@ -269,12 +301,12 @@ const columns = [
   { title: '任务', dataIndex: 'name', width: 170 },
   { title: '脚本', slotName: 'script_info', width: 200 },
   { title: '执行态', slotName: 'run_status', width: 100 },
-  { title: '上次执行', dataIndex: 'last_run_at', width: 170 },
-  { title: '下次执行', dataIndex: 'next_run_at', width: 170 },
+  { title: '上次执行', slotName: 'last_run_at', width: 170 },
+  { title: '下次执行', slotName: 'next_run_at', width: 170 },
   { title: '目标主机', slotName: 'targets', width: 280 },
   { title: 'Cron', dataIndex: 'cron_expression', width: 140 },
   { title: '状态', slotName: 'enabled', width: 100 },
-  { title: '创建时间', dataIndex: 'created_at', width: 170 },
+  { title: '创建时间', slotName: 'created_at', width: 170 },
   { title: '操作', slotName: 'actions', width: 200, fixed: 'right' },
 ]
 
@@ -298,6 +330,7 @@ const serverOptions = ref<TaskServerOption[]>([])
 const loadingServers = ref(false)
 const selectedEnvironment = ref('')
 const scriptNameMap = reactive<Record<number, string>>({})
+const scriptOptions = ref<Array<{ id: number; name: string }>>([])
 
 const environmentOptions = [
   { label: '富春云', value: 'fuchunyun' },
@@ -383,18 +416,22 @@ const loadScriptOptions = async () => {
   try {
     const pageSize = 100
     let page = 1
+    const allScripts: Array<{ id: number; name: string }> = []
 
     while (true) {
       const res = await getScriptList({ page, page_size: pageSize })
       const items = res.data || []
       items.forEach((s) => {
         scriptNameMap[s.id] = s.name
+        allScripts.push({ id: s.id, name: s.name })
       })
       if (!items.length || items.length < pageSize) break
       page += 1
     }
+    scriptOptions.value = allScripts
   } catch (error) {
     console.error('加载脚本列表失败:', error)
+    scriptOptions.value = []
   }
 }
 
@@ -497,9 +534,20 @@ const handleTrigger = async (record: Task) => {
     await triggerTask(record.id)
     Message.success('任务已触发执行')
     loadTasks()
-  } catch (error) {
-    Message.error('触发失败')
+  } catch (error: any) {
+    Message.error(error.response?.data?.detail || '触发失败')
   }
+}
+
+const handleViewLogs = (record: Task) => {
+  router.push({
+    name: 'ops-logs',
+    query: {
+      task_id: String(record.id),
+      task_name: record.name || '',
+      recent_days: '0',
+    },
+  })
 }
 
 // 删除
@@ -528,6 +576,7 @@ const handleSubmit = async () => {
     const payload: Partial<Task> = {
       name: formData.name,
       description: formData.description,
+      script_id: formData.script_id,
       server_ids: formData.server_ids,
       cron_expression: formData.cron_expression,
       task_type: formData.task_type,
@@ -559,6 +608,7 @@ const handleCancel = () => {
 const resetForm = () => {
   formData.name = ''
   formData.task_type = 'salt'
+  formData.script_id = undefined
   formData.cron_expression = ''
   formData.server_ids = []
   formData.command = ''

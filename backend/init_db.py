@@ -89,6 +89,26 @@ async def create_tables(force_reset: bool = False):
             await conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
             print(f"      已清空旧数据表 {len(table_names)} 张")
         await conn.run_sync(Base.metadata.create_all)
+
+        # 为高频日志查询补齐索引（兼容已有库的增量初始化）
+        result = await conn.execute(text("SHOW INDEX FROM ops_task_execution_log"))
+        existing_indexes = {row[2] for row in result.fetchall()}
+        index_defs = {
+            "idx_ops_log_created_at": "created_at",
+            "idx_ops_log_status_created_at": "status, created_at",
+            "idx_ops_log_task_created_at": "task_id, created_at",
+            "idx_ops_log_server_created_at": "server_id, created_at",
+        }
+        for index_name, columns in index_defs.items():
+            if index_name in existing_indexes:
+                continue
+            await conn.execute(
+                text(
+                    f"ALTER TABLE ops_task_execution_log "
+                    f"ADD INDEX {index_name} ({columns})"
+                )
+            )
+            print(f"      已创建索引: {index_name}")
     await engine.dispose()
     print("      数据表创建完成")
 

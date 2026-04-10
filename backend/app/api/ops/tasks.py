@@ -15,6 +15,7 @@ from app.schemas.system.user import UserResponse
 from app.crud.ops import task as task_crud
 from app.api.auth.auth import get_current_user
 from app.core.log_decorator import log_operation
+from celery_app import celery_app
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,18 @@ def _normalize_task_type(task_obj):
     if getattr(task_obj, "task_type", None) != "salt":
         task_obj.task_type = "salt"
     return task_obj
+
+
+def _ensure_celery_worker_available() -> None:
+    try:
+        inspector = celery_app.control.inspect(timeout=1)
+        ping_result = inspector.ping() if inspector else None
+    except Exception as exc:
+        logger.error("Celery 连通性检查失败: %s", exc)
+        raise HTTPException(status_code=503, detail="Celery 服务不可用，请确认 Redis/Celery 已启动")
+
+    if not ping_result:
+        raise HTTPException(status_code=503, detail="未检测到可用 Celery Worker，请先启动 worker")
 
 
 @router.get("", response_model=ScheduledTaskListResponse)
@@ -142,10 +155,17 @@ async def trigger_task(
     task = await task_crud.get_task(db, request.task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
+
+    _ensure_celery_worker_available()
     
     from app.tasks.salt_tasks import execute_salt_command
 
-    async_result = execute_salt_command.delay(task.id, task.server_ids or [], task.command or "")
+    try:
+        async_result = execute_salt_command.delay(task.id, task.server_ids or [], task.command or "")
+    except Exception as exc:
+        logger.error("任务触发失败 task_id=%s: %s", task.id, exc)
+        raise HTTPException(status_code=503, detail="任务投递失败，Celery/Broker 不可用")
+
     task.celery_task_id = async_result.id
     await db.commit()
      

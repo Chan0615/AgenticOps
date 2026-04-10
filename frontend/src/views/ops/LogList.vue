@@ -22,10 +22,17 @@
           </a-select>
           
           <a-input
-            v-model="searchParams.task_id"
-            placeholder="任务ID"
+            v-model="searchParams.task_name"
+            placeholder="任务名称"
             allow-clear
-            style="width: 120px"
+            style="width: 180px"
+          />
+
+          <a-input
+            v-model="searchParams.server_keyword"
+            placeholder="服务器IP/名称"
+            allow-clear
+            style="width: 180px"
           />
           
           <a-button type="primary" @click="handleSearch">
@@ -49,6 +56,14 @@
         @page-change="handlePageChange"
         @page-size-change="handlePageSizeChange"
       >
+        <template #task_info="{ record }">
+          {{ formatTask(record) }}
+        </template>
+
+        <template #server_info="{ record }">
+          {{ record.server_ip || '-' }}
+        </template>
+
         <template #status="{ record }">
           <a-tag :color="getStatusColor(record.status)">
             {{ getStatusText(record.status) }}
@@ -60,6 +75,10 @@
             {{ record.duration.toFixed(2) }}秒
           </span>
           <span v-else>-</span>
+        </template>
+
+        <template #created_at="{ record }">
+          {{ formatDateTime(record.created_at) }}
         </template>
         
         <template #actions="{ record }">
@@ -78,14 +97,11 @@
       :footer="false"
     >
       <a-descriptions :column="2" bordered>
-        <a-descriptions-item label="日志ID">
-          {{ detailData.id }}
+        <a-descriptions-item label="任务">
+          {{ formatTask(detailData) }}
         </a-descriptions-item>
-        <a-descriptions-item label="任务ID">
-          {{ detailData.task_id || '-' }}
-        </a-descriptions-item>
-        <a-descriptions-item label="服务器ID">
-          {{ detailData.server_id || '-' }}
+        <a-descriptions-item label="服务器IP">
+          {{ detailData.server_ip || '-' }}
         </a-descriptions-item>
         <a-descriptions-item label="执行状态">
           <a-tag :color="getStatusColor(detailData.status)">
@@ -93,10 +109,10 @@
           </a-tag>
         </a-descriptions-item>
         <a-descriptions-item label="开始时间">
-          {{ detailData.started_at || '-' }}
+          {{ formatDateTime(detailData.started_at) }}
         </a-descriptions-item>
         <a-descriptions-item label="结束时间">
-          {{ detailData.finished_at || '-' }}
+          {{ formatDateTime(detailData.finished_at) }}
         </a-descriptions-item>
         <a-descriptions-item label="执行时长">
           {{ detailData.duration ? detailData.duration.toFixed(2) + '秒' : '-' }}
@@ -120,17 +136,23 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { Message } from '@arco-design/web-vue'
 import {
   IconSearch,
   IconRefresh,
 } from '@arco-design/web-vue/es/icon'
 import { getExecutionLogs, getExecutionLogDetail } from '@/api/ops/log'
+import { formatDateTime } from '@/utils/datetime'
+
+const route = useRoute()
 
 interface ExecutionLog {
   id: number
   task_id?: number
+  task_name?: string
   server_id?: number
+  server_ip?: string
   status: string
   command: string
   output?: string
@@ -146,6 +168,9 @@ interface ExecutionLog {
 const searchParams = reactive({
   status: '',
   task_id: '',
+  task_name: '',
+  server_keyword: '',
+  recent_days: '',
 })
 
 const dateRange = ref<[string, string] | undefined>()
@@ -163,13 +188,12 @@ const pagination = reactive({
 
 // 表格列定义
 const columns = [
-  { title: 'ID', dataIndex: 'id', width: 80 },
-  { title: '任务ID', dataIndex: 'task_id', width: 100 },
-  { title: '服务器ID', dataIndex: 'server_id', width: 100 },
+  { title: '任务', slotName: 'task_info', width: 220 },
+  { title: '服务器IP', slotName: 'server_info', width: 180 },
   { title: '状态', slotName: 'status', width: 100 },
   { title: '命令', dataIndex: 'command', ellipsis: true, tooltip: true },
   { title: '执行时长', slotName: 'duration', width: 120 },
-  { title: '创建时间', dataIndex: 'created_at', width: 180 },
+  { title: '创建时间', slotName: 'created_at', width: 180 },
   { title: '操作', slotName: 'actions', width: 120, fixed: 'right' },
 ]
 
@@ -187,6 +211,9 @@ const loadLogs = async () => {
     }
     if (searchParams.status) params.status = searchParams.status
     if (searchParams.task_id) params.task_id = Number(searchParams.task_id)
+    if (searchParams.task_name) params.task_name = searchParams.task_name
+    if (searchParams.server_keyword) params.server_keyword = searchParams.server_keyword
+    if (searchParams.recent_days) params.recent_days = Number(searchParams.recent_days)
     if (dateRange.value && dateRange.value[0] && dateRange.value[1]) {
       params.start_time = dateRange.value[0]
       params.end_time = dateRange.value[1]
@@ -212,9 +239,19 @@ const handleSearch = () => {
 const handleReset = () => {
   searchParams.status = ''
   searchParams.task_id = ''
+  searchParams.task_name = ''
+  searchParams.server_keyword = ''
+  searchParams.recent_days = ''
   dateRange.value = undefined
   pagination.current = 1
   loadLogs()
+}
+
+const formatTask = (record: ExecutionLog) => {
+  if (record.task_id && record.task_name) return `${record.task_name} · ID ${record.task_id}`
+  if (record.task_name) return record.task_name
+  if (record.task_id) return `任务 ID ${record.task_id}`
+  return '-'
 }
 
 // 分页
@@ -262,6 +299,20 @@ const getStatusText = (status: string) => {
 }
 
 onMounted(() => {
+  const queryTaskId = route.query.task_id
+  const queryTaskName = route.query.task_name
+  const queryRecentDays = route.query.recent_days
+
+  if (typeof queryTaskId === 'string' && queryTaskId.trim()) {
+    searchParams.task_id = queryTaskId.trim()
+  }
+  if (typeof queryTaskName === 'string' && queryTaskName.trim()) {
+    searchParams.task_name = queryTaskName.trim()
+  }
+  if (typeof queryRecentDays === 'string' && queryRecentDays.trim()) {
+    searchParams.recent_days = queryRecentDays.trim()
+  }
+
   loadLogs()
 })
 </script>

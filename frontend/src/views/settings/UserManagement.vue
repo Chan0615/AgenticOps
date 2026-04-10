@@ -276,6 +276,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { userApi } from '@/api/system/user'
 import type { User, UserUpdate } from '@/api/system/types'
+import { formatDateTime } from '@/utils/datetime'
 
 const authStore = useAuthStore()
 const currentUser = computed(() => authStore.user)
@@ -311,9 +312,7 @@ const filteredUsers = computed(() => {
   })
 })
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('zh-CN')
-}
+const formatDate = (dateString: string) => formatDateTime(dateString)
 
 function editUser(user: User) {
   editingUserId.value = user.id

@@ -3,7 +3,9 @@ import request from '@/api'
 export interface ExecutionLog {
   id: number
   task_id?: number
+  task_name?: string
   server_id?: number
+  server_ip?: string
   status: string
   command: string
   output?: string

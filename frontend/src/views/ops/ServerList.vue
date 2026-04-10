@@ -81,6 +81,10 @@
             {{ getEnvText(record.environment) }}
           </a-tag>
         </template>
+
+        <template #created_at="{ record }">
+          {{ formatDateTime(record.created_at) }}
+        </template>
         
         <template #actions="{ record }">
           <a-space>
@@ -184,6 +188,7 @@ import {
   testServerConnection,
   type Server,
 } from '@/api/ops/server'
+import { formatDateTime } from '@/utils/datetime'
 
 // 搜索参数
 const searchParams = reactive({
@@ -212,7 +217,7 @@ const columns = [
       { title: '环境', slotName: 'environment', width: 100 },
       { title: '状态', slotName: 'status', width: 80 },
       { title: '描述', dataIndex: 'description', width: 220, ellipsis: true, tooltip: true },
-      { title: '创建', dataIndex: 'created_at', width: 170 },
+      { title: '创建', slotName: 'created_at', width: 170 },
       { title: '操作', slotName: 'actions', width: 200 },
 ]
 

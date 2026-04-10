@@ -346,6 +346,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import api from '@/api'
+import { formatDateTime } from '@/utils/datetime'
 
 interface Document {
   id: string
@@ -421,7 +422,7 @@ async function fetchDocuments() {
       size: formatFileSize(doc.file_size),
       status: doc.status,
       chunk_count: doc.chunk_count,
-      uploadTime: new Date(doc.created_at).toLocaleString('zh-CN')
+      uploadTime: formatDateTime(doc.created_at)
     }))
     updateStats()
   } catch (error) {

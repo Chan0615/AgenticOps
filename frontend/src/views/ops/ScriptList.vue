@@ -66,6 +66,10 @@
         <template #timeout="{ record }">
           {{ record.timeout }}秒
         </template>
+
+        <template #created_at="{ record }">
+          {{ formatDateTime(record.created_at) }}
+        </template>
         
         <template #actions="{ record }">
           <a-space>
@@ -216,7 +220,7 @@
           {{ viewData.created_by || '-' }}
         </a-descriptions-item>
         <a-descriptions-item label="创建时间" :span="2">
-          {{ viewData.created_at }}
+          {{ formatDateTime(viewData.created_at) }}
         </a-descriptions-item>
         <a-descriptions-item label="描述" :span="2">
           {{ viewData.description || '-' }}
@@ -240,6 +244,7 @@ import {
 } from '@arco-design/web-vue/es/icon'
 import { getScriptList, getScriptDetail, deleteScript, updateScript, uploadScript, replaceScriptFile, distributeScript } from '@/api/ops/script'
 import { getServerList, type Server } from '@/api/ops/server'
+import { formatDateTime } from '@/utils/datetime'
 import hljs from 'highlight.js/lib/core'
 import python from 'highlight.js/lib/languages/python'
 import bash from 'highlight.js/lib/languages/bash'
@@ -287,7 +292,7 @@ const columns = [
   { title: '超时', slotName: 'timeout', width: 90 },
   { title: '描述', dataIndex: 'description', width: 260, ellipsis: true, tooltip: true },
   { title: '创建人', dataIndex: 'created_by', width: 90 },
-  { title: '创建', dataIndex: 'created_at', width: 170 },
+  { title: '创建', slotName: 'created_at', width: 170 },
   { title: '操作', slotName: 'actions', width: 220 },
 ]
 

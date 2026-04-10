@@ -192,9 +192,27 @@ def execute_salt_command(self, task_id: int, server_ids: list, command: str):
     try:
         logger.info("开始执行 Salt 任务: task_id=%s, servers=%s", task_id, server_ids)
         summaries = _run_async(_execute_salt_command_async(task_id, server_ids, command))
+        success_count = sum(1 for item in summaries if item.get("status") == "success")
+        failed_count = len(summaries) - success_count
+        if failed_count == 0:
+            task_status = "success"
+        elif success_count == 0:
+            task_status = "failed"
+        else:
+            task_status = "partial_failed"
+
+        logger.info(
+            "Salt 任务执行完成: task_id=%s, success=%s, failed=%s, status=%s",
+            task_id,
+            success_count,
+            failed_count,
+            task_status,
+        )
         return {
-            "status": "success",
+            "status": task_status,
             "task_id": task_id,
+            "success_count": success_count,
+            "failed_count": failed_count,
             "results": summaries,
         }
     except Exception as e:

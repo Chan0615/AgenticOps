@@ -4,6 +4,7 @@ import asyncio
 import sys
 
 from celery import Celery
+from celery.schedules import crontab
 from app.core import config
 
 if sys.platform.startswith("win"):
@@ -34,8 +35,26 @@ celery_app = Celery(
         "app.tasks.salt_tasks",
         "app.tasks.jumpserver_tasks",
         "app.tasks.scheduler",
+        "app.tasks.log_maintenance",
     ],
 )
+
+cleanup_enabled = bool(config._get("ops", "logs", "cleanup", "enabled", default=True))
+cleanup_hour = int(config._get("ops", "logs", "cleanup", "run_hour", default=3) or 3)
+cleanup_minute = int(config._get("ops", "logs", "cleanup", "run_minute", default=10) or 10)
+
+beat_schedule = {
+    "check-scheduled-tasks": {
+        "task": "app.tasks.scheduler.check_and_execute_tasks",
+        "schedule": 60.0,
+    },
+}
+
+if cleanup_enabled:
+    beat_schedule["archive-and-cleanup-execution-logs"] = {
+        "task": "app.tasks.log_maintenance.archive_and_cleanup_execution_logs",
+        "schedule": crontab(hour=cleanup_hour, minute=cleanup_minute),
+    }
 
 # Celery 配置
 celery_app.conf.update(
@@ -63,12 +82,7 @@ celery_app.conf.update(
     result_expires=86400,
     
     # 定时任务配置
-    beat_schedule={
-        "check-scheduled-tasks": {
-            "task": "app.tasks.scheduler.check_and_execute_tasks",
-            "schedule": 60.0,  # 每分钟检查一次
-        },
-    },
+    beat_schedule=beat_schedule,
 )
 
 # 任务路由

@@ -275,6 +275,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { formatDateTime } from '@/utils/datetime'
 
 interface Document {
   id: string
@@ -365,7 +366,7 @@ async function uploadFiles() {
       type: file.name.split('.').pop()?.toUpperCase() || 'UNKNOWN',
       size: formatFileSize(file.size),
       status: 'pending',
-      uploadTime: new Date().toLocaleString('zh-CN')
+      uploadTime: formatDateTime(new Date())
     })
   }
   

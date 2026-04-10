@@ -75,3 +75,21 @@ saltstack:
     url: http://10.200.255.63
     salt_name: saltapi
     salt_pass: "your_salt_password"
+
+ops:
+  logs:
+    # 日志列表默认只查最近N天；0表示不限制
+    default_recent_days: 30
+    cleanup:
+      enabled: true
+      # 每天执行归档清理的时间（24小时制）
+      run_hour: 3
+      run_minute: 10
+      # 在线日志保留天数
+      retention_days: 90
+      # 单批处理条数与最大批次数（避免单次任务过重）
+      batch_size: 2000
+      max_batches: 20
+      # 是否归档后再删除主表数据
+      archive_enabled: true
+      archive_table: ops_task_execution_log_archive

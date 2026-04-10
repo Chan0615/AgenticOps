@@ -16,6 +16,8 @@ class TaskExecutionLogBase(BaseModel):
 class TaskExecutionLogResponse(TaskExecutionLogBase):
     """任务执行日志响应 Schema"""
     id: int
+    task_name: Optional[str] = None
+    server_ip: Optional[str] = None
     output: Optional[str] = None
     error: Optional[str] = None
     exit_code: Optional[int] = None

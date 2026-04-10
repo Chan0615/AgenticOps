@@ -2,9 +2,10 @@
 
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
+from sqlalchemy.orm import joinedload, load_only
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.ops import TaskExecutionLog
+from app.models.ops import TaskExecutionLog, ScheduledTask, Server
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,11 @@ logger = logging.getLogger(__name__)
 
 async def get_execution_log(db: AsyncSession, log_id: int) -> Optional[TaskExecutionLog]:
     """根据ID获取执行日志"""
-    result = await db.execute(select(TaskExecutionLog).where(TaskExecutionLog.id == log_id))
+    result = await db.execute(
+        select(TaskExecutionLog)
+        .options(joinedload(TaskExecutionLog.task), joinedload(TaskExecutionLog.server))
+        .where(TaskExecutionLog.id == log_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -22,13 +27,40 @@ async def get_execution_logs(
     limit: int = 20,
     task_id: Optional[int] = None,
     server_id: Optional[int] = None,
+    task_name: Optional[str] = None,
+    server_keyword: Optional[str] = None,
     status: Optional[str] = None,
     start_time: Optional[datetime] = None,
     end_time: Optional[datetime] = None,
 ) -> tuple[List[TaskExecutionLog], int]:
     """获取执行日志列表"""
-    query = select(TaskExecutionLog)
-    count_query = select(func.count(TaskExecutionLog.id))
+    query = (
+        select(TaskExecutionLog)
+        .outerjoin(ScheduledTask, TaskExecutionLog.task_id == ScheduledTask.id)
+        .outerjoin(Server, TaskExecutionLog.server_id == Server.id)
+        .options(
+            load_only(
+                TaskExecutionLog.id,
+                TaskExecutionLog.task_id,
+                TaskExecutionLog.server_id,
+                TaskExecutionLog.status,
+                TaskExecutionLog.command,
+                TaskExecutionLog.exit_code,
+                TaskExecutionLog.started_at,
+                TaskExecutionLog.finished_at,
+                TaskExecutionLog.duration,
+                TaskExecutionLog.created_at,
+            ),
+            joinedload(TaskExecutionLog.task).load_only(ScheduledTask.id, ScheduledTask.name),
+            joinedload(TaskExecutionLog.server).load_only(Server.id, Server.hostname, Server.name),
+        )
+    )
+    count_query = (
+        select(func.count(TaskExecutionLog.id))
+        .select_from(TaskExecutionLog)
+        .outerjoin(ScheduledTask, TaskExecutionLog.task_id == ScheduledTask.id)
+        .outerjoin(Server, TaskExecutionLog.server_id == Server.id)
+    )
     
     if task_id:
         query = query.where(TaskExecutionLog.task_id == task_id)
@@ -37,6 +69,18 @@ async def get_execution_logs(
     if server_id:
         query = query.where(TaskExecutionLog.server_id == server_id)
         count_query = count_query.where(TaskExecutionLog.server_id == server_id)
+
+    if task_name:
+        query = query.where(ScheduledTask.name.ilike(f"%{task_name}%"))
+        count_query = count_query.where(ScheduledTask.name.ilike(f"%{task_name}%"))
+
+    if server_keyword:
+        server_filter = or_(
+            Server.hostname.ilike(f"%{server_keyword}%"),
+            Server.name.ilike(f"%{server_keyword}%"),
+        )
+        query = query.where(server_filter)
+        count_query = count_query.where(server_filter)
     
     if status:
         query = query.where(TaskExecutionLog.status == status)
