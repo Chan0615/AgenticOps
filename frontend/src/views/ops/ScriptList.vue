@@ -498,7 +498,7 @@ const openDistribute = async (record: Script) => {
   distributingScript.value = record
   distributeForm.server_ids = []
   distributeForm.target_directory = '/opt/scripts'
-  distributeForm.file_name = ''
+  distributeForm.file_name = `${record.name}${record.script_type === 'python' ? '.py' : '.sh'}`
   distributeVisible.value = true
   await loadDistributeServers()
 }

@@ -76,7 +76,26 @@ async def _resolve_command(db, task_id: int, command: str) -> str:
 
 async def _execute_salt_command_async(task_id: int, server_ids: list[int], command: str):
     async with AsyncSessionLocal() as db:
-        final_command = await _resolve_command(db, task_id, command)
+        try:
+            final_command = await _resolve_command(db, task_id, command)
+        except Exception as e:
+            now = datetime.now()
+            for sid in server_ids or [None]:
+                db.add(
+                    TaskExecutionLog(
+                        task_id=task_id,
+                        server_id=sid,
+                        status="failed",
+                        command=command or "",
+                        error=str(e),
+                        exit_code=1,
+                        started_at=now,
+                        finished_at=now,
+                        duration=0,
+                    )
+                )
+            await db.commit()
+            raise
 
         server_result = await db.execute(select(Server).where(Server.id.in_(server_ids)))
         servers = server_result.scalars().all()
@@ -90,7 +109,9 @@ async def _execute_salt_command_async(task_id: int, server_ids: list[int], comma
                 summaries.append(
                     {
                         "server_id": server.id,
-                        "server": server.name,
+                        "server": server.hostname,
+                        "server_name": server.name,
+                        "target": target,
                         "status": "failed",
                         "error": "缺少 salt_minion_id 或 hostname",
                     }

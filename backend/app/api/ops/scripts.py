@@ -259,13 +259,8 @@ async def distribute_script(
         raise HTTPException(status_code=404, detail="脚本不存在")
 
     suffix = ".py" if script.script_type == "python" else ".sh"
+    # 分发默认文件名使用脚本业务名称，避免存储文件名（如 *_1.py）泄露到目标主机。
     default_file_name = f"{script.name}{suffix}"
-    source_path = Path(script.content or "")
-    if source_path.name:
-        default_file_name = source_path.name
-        if not os.path.splitext(default_file_name)[1]:
-            default_file_name = f"{default_file_name}{suffix}"
-
     raw_file_name = request.file_name or default_file_name
     safe_file_name = os.path.basename(raw_file_name)
     if not safe_file_name:
