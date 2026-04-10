@@ -46,6 +46,14 @@ ai:
     base_url: "https://api.deepseek.com/v1"
     model: "deepseek-chat"
 
+jumpserver:
+  base_url: "https://jumpserver.example.com"
+  auth_mode: "private_token"  # private_token 或 password
+  private_token: ""
+  username: ""
+  password: ""
+  org_id: "00000000-0000-0000-0000-000000000002"
+
 saltstack:
   # 富春云环境
   fuchunyun:

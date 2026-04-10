@@ -26,7 +26,7 @@ celery_app = Celery(
     backend=result_backend,
     include=[
         "app.tasks.salt_tasks",
-        "app.tasks.ssh_tasks",
+        "app.tasks.jumpserver_tasks",
         "app.tasks.scheduler",
     ],
 )
@@ -68,7 +68,7 @@ celery_app.conf.update(
 # 任务路由
 celery_app.conf.task_routes = {
     "app.tasks.salt_tasks.*": {"queue": "salt"},
-    "app.tasks.ssh_tasks.*": {"queue": "ssh"},
+    "app.tasks.jumpserver_tasks.*": {"queue": "jumpserver"},
     "app.tasks.scheduler.*": {"queue": "scheduler"},
 }
 

@@ -9,7 +9,6 @@ export interface Server {
   hostname: string
   port: number
   username: string
-  auth_type: string
   salt_minion_id?: string
   environment: string
   tags?: string[]

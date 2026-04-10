@@ -68,12 +68,26 @@ async def create_tables(force_reset: bool = False):
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:
         if force_reset:
-            # 先删除有外键依赖的表，避免外键约束错误
             from sqlalchemy import text
+
             await conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
-            await conn.run_sync(Base.metadata.drop_all)
+
+            # 删除数据库中所有现有表（包括历史遗留表，如 server/server_group）
+            result = await conn.execute(
+                text(
+                    """
+                    SELECT table_name
+                    FROM information_schema.tables
+                    WHERE table_schema = DATABASE()
+                    """
+                )
+            )
+            table_names = [row[0] for row in result.fetchall()]
+            for table_name in table_names:
+                await conn.execute(text(f"DROP TABLE IF EXISTS `{table_name}`"))
+
             await conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
-            print("      已清空旧数据表")
+            print(f"      已清空旧数据表 {len(table_names)} 张")
         await conn.run_sync(Base.metadata.create_all)
     await engine.dispose()
     print("      数据表创建完成")

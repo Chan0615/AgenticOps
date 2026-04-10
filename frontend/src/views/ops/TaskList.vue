@@ -64,7 +64,7 @@
         
         <template #task_type="{ record }">
           <a-tag :color="record.task_type === 'salt' ? 'purple' : 'orange'">
-            {{ record.task_type === 'salt' ? 'SaltStack' : 'SSH' }}
+            {{ record.task_type === 'salt' ? 'SaltStack' : 'JumpServer' }}
           </a-tag>
         </template>
         
@@ -107,7 +107,7 @@
             <a-form-item label="执行方式" required>
               <a-select v-model="formData.task_type">
                 <a-option value="salt">SaltStack</a-option>
-                <a-option value="ssh">SSH</a-option>
+                <a-option value="jumpserver">JumpServer</a-option>
               </a-select>
             </a-form-item>
           </a-col>

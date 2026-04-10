@@ -104,30 +104,12 @@ async def update_server_status(db: AsyncSession, server_id: int, status: str) ->
 
 
 async def test_server_connection(server: Server) -> dict:
-    """测试服务器连接"""
-    from app.services.ssh_service import SSHConnection
-    
+    """测试服务器连接（JumpServer）"""
+    from app.services.jumpserver_service import jumpserver_service
+
     try:
-        ssh_conn = SSHConnection(
-            hostname=server.hostname,
-            port=server.port,
-            username=server.username,
-            password=server.password if server.auth_type == "password" else None,
-            private_key=server.private_key if server.auth_type == "key" else None,
-        )
-        
-        ssh_conn.connect()
-        
-        # 执行简单命令测试
-        result = ssh_conn.execute_command("echo 'Connection test successful'")
-        ssh_conn.close()
-        
-        return {
-            "success": True,
-            "message": "连接成功",
-            "response_time": None,  # TODO: 计算响应时间
-        }
-        
+        result = await jumpserver_service.test_asset_connectivity(server.hostname)
+        return result
     except Exception as e:
         logger.error(f"服务器连接测试失败: {e}")
         return {

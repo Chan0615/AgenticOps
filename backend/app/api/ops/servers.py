@@ -109,7 +109,7 @@ async def test_connection(
     if not server:
         raise HTTPException(status_code=404, detail="服务器不存在")
     
-    if request.test_type == "ssh":
+    if request.test_type == "jumpserver":
         result = await server_crud.test_server_connection(server)
         
         # 更新服务器状态

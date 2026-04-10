@@ -11,7 +11,6 @@ class ServerBase(BaseModel):
     hostname: str = Field(..., description="IP地址或域名", max_length=255)
     port: int = Field(default=22, description="SSH端口", ge=1, le=65535)
     username: str = Field(default="root", description="登录用户名", max_length=50)
-    auth_type: str = Field(default="password", description="认证方式: password/key")
     salt_minion_id: Optional[str] = Field(None, description="Salt Minion ID", max_length=100)
     environment: str = Field(default="production", description="环境: production/staging/testing")
     tags: Optional[List[str]] = Field(default=None, description="标签列表")
@@ -20,8 +19,7 @@ class ServerBase(BaseModel):
 
 class ServerCreate(ServerBase):
     """创建服务器 Schema"""
-    password: Optional[str] = Field(None, description="密码", max_length=500)
-    private_key: Optional[str] = Field(None, description="私钥内容")
+    pass
 
 
 class ServerUpdate(BaseModel):
@@ -30,9 +28,6 @@ class ServerUpdate(BaseModel):
     hostname: Optional[str] = Field(None, description="IP地址或域名", max_length=255)
     port: Optional[int] = Field(None, description="SSH端口", ge=1, le=65535)
     username: Optional[str] = Field(None, description="登录用户名", max_length=50)
-    password: Optional[str] = Field(None, description="密码", max_length=500)
-    private_key: Optional[str] = Field(None, description="私钥内容")
-    auth_type: Optional[str] = Field(None, description="认证方式: password/key")
     salt_minion_id: Optional[str] = Field(None, description="Salt Minion ID", max_length=100)
     environment: Optional[str] = Field(None, description="环境: production/staging/testing")
     tags: Optional[List[str]] = Field(None, description="标签列表")
@@ -63,4 +58,4 @@ class ServerListResponse(BaseModel):
 class ConnectionTestRequest(BaseModel):
     """连接测试请求"""
     server_id: int = Field(..., description="服务器ID")
-    test_type: str = Field(default="ssh", description="测试类型: ssh/salt")
+    test_type: str = Field(default="jumpserver", description="测试类型: jumpserver/salt")

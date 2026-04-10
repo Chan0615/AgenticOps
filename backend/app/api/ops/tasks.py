@@ -129,7 +129,7 @@ async def trigger_task(
         raise HTTPException(status_code=404, detail="任务不存在")
     
     # TODO: 触发任务执行
-    # 1. 根据 task_type 选择执行方式 (salt/ssh)
+    # 1. 根据 task_type 选择执行方式 (salt/jumpserver)
     # 2. 获取脚本内容或使用自定义命令
     # 3. 调用 Celery 任务
     # 4. 更新任务执行时间
@@ -139,11 +139,11 @@ async def trigger_task(
         from app.tasks.salt_tasks import execute_salt_command
         # execute_salt_command.delay(task.id, task.server_ids, task.command or "")
         pass
-    elif task.task_type == "ssh":
-        # 触发 SSH 任务
-        from app.tasks.ssh_tasks import execute_ssh_command
+    elif task.task_type == "jumpserver":
+        # 触发 JumpServer 任务
+        from app.tasks.jumpserver_tasks import execute_jumpserver_command
         # for server_id in task.server_ids:
-        #     execute_ssh_command.delay(task.id, server_id, task.command or "")
+        #     execute_jumpserver_command.delay(task.id, server_id, task.command or "")
         pass
     
     # 更新执行时间

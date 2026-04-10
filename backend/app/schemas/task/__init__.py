@@ -12,7 +12,7 @@ class ScheduledTaskBase(BaseModel):
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: List[int] = Field(..., description="目标服务器ID列表", min_length=1)
     cron_expression: str = Field(..., description="Cron表达式", max_length=100)
-    task_type: str = Field(default="salt", description="执行方式: salt/ssh")
+    task_type: str = Field(default="salt", description="执行方式: salt/jumpserver")
     command: Optional[str] = Field(None, description="自定义命令(不使用脚本时)")
     enabled: bool = Field(default=True, description="是否启用")
 
@@ -29,7 +29,7 @@ class ScheduledTaskUpdate(BaseModel):
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: Optional[List[int]] = Field(None, description="目标服务器ID列表")
     cron_expression: Optional[str] = Field(None, description="Cron表达式", max_length=100)
-    task_type: Optional[str] = Field(None, description="执行方式: salt/ssh")
+    task_type: Optional[str] = Field(None, description="执行方式: salt/jumpserver")
     command: Optional[str] = Field(None, description="自定义命令(不使用脚本时)")
     enabled: Optional[bool] = Field(None, description="是否启用")
 

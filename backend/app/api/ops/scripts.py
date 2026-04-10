@@ -111,7 +111,7 @@ async def test_script(
     # TODO: 实现脚本测试执行
     # 1. 获取服务器信息
     # 2. 替换脚本中的参数
-    # 3. 执行脚本 (SSH 或 Salt)
+    # 3. 执行脚本 (JumpServer 或 Salt)
     # 4. 返回执行结果
     
     return {

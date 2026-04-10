@@ -10,7 +10,7 @@ export interface ScheduledTask {
   script_id?: number
   server_ids: number[]
   cron_expression: string
-  task_type: string
+  task_type: string // salt | jumpserver
   command?: string
   enabled: boolean
   celery_task_id?: string

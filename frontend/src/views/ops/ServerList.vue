@@ -80,12 +80,6 @@
           </a-tag>
         </template>
         
-        <template #auth_type="{ record }">
-          <a-tag size="small">
-            {{ record.auth_type === 'password' ? '密码' : '密钥' }}
-          </a-tag>
-        </template>
-        
         <template #actions="{ record }">
           <a-space>
             <a-tag color="blue" @click="handleTest(record)" :hoverable="true">
@@ -135,32 +129,12 @@
               <a-input-number v-model="formData.port" :min="1" :max="65535" />
             </a-form-item>
           </a-col>
-          <a-col :span="8">
+          <a-col :span="16">
             <a-form-item label="登录用户名">
               <a-input v-model="formData.username" placeholder="root" />
             </a-form-item>
           </a-col>
-          <a-col :span="8">
-            <a-form-item label="认证方式">
-              <a-radio-group v-model="formData.auth_type">
-                <a-radio value="password">密码</a-radio>
-                <a-radio value="key">密钥</a-radio>
-              </a-radio-group>
-            </a-form-item>
-          </a-col>
         </a-row>
-        
-        <a-form-item v-if="formData.auth_type === 'password'" label="密码">
-          <a-input-password v-model="formData.password" placeholder="SSH登录密码" />
-        </a-form-item>
-        
-        <a-form-item v-else label="私钥内容">
-          <a-textarea
-            v-model="formData.private_key"
-            :auto-size="{ minRows: 3, maxRows: 6 }"
-            placeholder="SSH私钥内容"
-          />
-        </a-form-item>
         
         <a-row :gutter="16">
           <a-col :span="12">
@@ -233,7 +207,6 @@ const columns = [
       { title: 'IP地址', dataIndex: 'hostname', width: 130 },
       { title: '端口', dataIndex: 'port', width: 60 },
       { title: '用户名', dataIndex: 'username', width: 80 },
-      { title: '认证方式', slotName: 'auth_type', width: 80 },
       { title: '环境', slotName: 'environment', width: 100 },
       { title: '状态', slotName: 'status', width: 80 },
       { title: '描述', dataIndex: 'description', width: 120, ellipsis: true, tooltip: true },
@@ -252,9 +225,6 @@ const formData = reactive<Partial<Server>>({
   hostname: '',
   port: 22,
   username: 'root',
-  auth_type: 'password',
-  password: '',
-  private_key: '',
   environment: 'fuchunyun',
   salt_minion_id: '',
   description: '',
@@ -346,7 +316,7 @@ const handleTest = async (record: Server) => {
   try {
     const res = await testServerConnection({
       server_id: record.id,
-      test_type: 'ssh',
+      test_type: 'jumpserver',
     })
     if (res.code === 200) {
       Message.success('连接测试成功')
@@ -388,9 +358,6 @@ const resetForm = () => {
   formData.hostname = ''
   formData.port = 22
   formData.username = 'root'
-  formData.auth_type = 'password'
-  formData.password = ''
-  formData.private_key = ''
   formData.environment = 'fuchunyun'
   formData.salt_minion_id = ''
   formData.description = ''

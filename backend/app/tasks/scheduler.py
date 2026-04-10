@@ -5,7 +5,7 @@ from datetime import datetime
 from celery_app import celery_app
 from croniter import croniter
 from app.tasks.salt_tasks import execute_salt_command
-from app.tasks.ssh_tasks import execute_ssh_command
+from app.tasks.jumpserver_tasks import execute_jumpserver_command
 
 logger = logging.getLogger(__name__)
 

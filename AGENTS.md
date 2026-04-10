@@ -9,6 +9,7 @@
 - `backend/app/core/config.py` loads `backend/config.yaml` at import time and raises `FileNotFoundError` if missing.
 - First-time setup order: copy `backend/config.yaml.example` -> create/edit `backend/config.yaml` -> install deps -> start services.
 - `backend/config.yaml` is gitignored; do not commit env-specific credentials.
+- Ops server connectivity now depends on JumpServer API config (`jumpserver.base_url`, auth fields, `org_id`) in `backend/config.yaml`.
 
 ## High-Risk Commands
 - `python backend/init_db.py` is destructive by default (`force_reset=True`): drops all tables, recreates schema, reseeds data.
@@ -16,9 +17,8 @@
 
 ## Runtime Topology
 - FastAPI serves REST on `http://localhost:8000`; docs at `/docs`.
-- Web SSH is a separate websocket process on `ws://localhost:8765` (not mounted in FastAPI).
-- `python -m app.api.server.websocket_handler` does not start the websocket server by itself (module has no `__main__` runner).
-- Use: `python -c "from app.api.server.websocket_handler import start_websocket_server; start_websocket_server()"`.
+- Paramiko direct SSH is removed from Ops flows; `/api/ops/servers/test-connection` now validates through JumpServer REST API.
+- Legacy local WebSocket SSH handler remains only as a deprecation stub and returns an error message.
 
 ## Frontend/Backend Contract
 - Frontend API client (`frontend/src/api/index.ts`) uses `baseURL: '/api'`.
