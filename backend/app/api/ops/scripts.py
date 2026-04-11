@@ -1,8 +1,10 @@
 """脚本管理 API 路由"""
 
 import base64
+import difflib
 import os
 import time
+import shutil
 from pathlib import PurePosixPath
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,6 +19,11 @@ from app.schemas.script import (
     ScriptListResponse,
     ScriptTestRequest,
     ScriptDistributeRequest,
+    ScriptVersionResponse,
+    ScriptVersionDetailResponse,
+    ScriptVersionListResponse,
+    ScriptRollbackRequest,
+    ScriptVersionDiffResponse,
 )
 from app.schemas.system.user import UserResponse
 from app.crud.ops import script as script_crud
@@ -101,6 +108,25 @@ def _to_script_response(script, include_content: bool = False) -> ScriptResponse
         created_at=script.created_at,
         updated_at=script.updated_at,
     )
+
+
+def _to_script_version_response(version, include_content: bool = False) -> ScriptVersionResponse:
+    payload = {
+        "id": version.id,
+        "script_id": version.script_id,
+        "version_no": version.version_no,
+        "file_path": version.file_path,
+        "source_file_name": version.source_file_name,
+        "note": version.note,
+        "created_by": version.created_by,
+        "created_at": version.created_at,
+    }
+    if include_content:
+        return ScriptVersionDetailResponse(
+            **payload,
+            content=_read_script_file(version.file_path),
+        )
+    return ScriptVersionResponse(**payload)
 
 
 @router.get("", response_model=ScriptListResponse)
@@ -268,6 +294,7 @@ async def replace_script_file(
         db,
         script_id,
         ScriptUpdate(file_path=str(target_path)),
+        updated_by=current_user.username,
     )
     if not updated:
         raise HTTPException(status_code=404, detail="脚本不存在")
@@ -288,7 +315,12 @@ async def update_script(
 ):
     """更新脚本"""
     try:
-        db_script = await script_crud.update_script(db, script_id, script)
+        db_script = await script_crud.update_script(
+            db,
+            script_id,
+            script,
+            updated_by=current_user.username,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     if not db_script:
@@ -297,6 +329,124 @@ async def update_script(
     fresh_script = await script_crud.get_script(db, db_script.id)
     if not fresh_script:
         raise HTTPException(status_code=500, detail="脚本更新后读取失败")
+    return _to_script_response(fresh_script, include_content=True)
+
+
+@router.get("/{script_id}/versions", response_model=ScriptVersionListResponse)
+async def list_script_versions(
+    script_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    script = await script_crud.get_script(db, script_id)
+    if not script:
+        raise HTTPException(status_code=404, detail="脚本不存在")
+
+    versions = await script_crud.list_script_versions(db, script_id)
+    return ScriptVersionListResponse(
+        code=200,
+        message="success",
+        data=[_to_script_version_response(item, include_content=False) for item in versions],
+    )
+
+
+@router.get("/{script_id}/versions/compare", response_model=ScriptVersionDiffResponse)
+async def compare_script_versions(
+    script_id: int,
+    from_version_id: int = Query(..., description="起始版本ID"),
+    to_version_id: int = Query(..., description="目标版本ID"),
+    db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    if from_version_id == to_version_id:
+        raise HTTPException(status_code=400, detail="请选择两个不同版本进行对比")
+
+    from_version = await script_crud.get_script_version(db, script_id, from_version_id)
+    to_version = await script_crud.get_script_version(db, script_id, to_version_id)
+    if not from_version or not to_version:
+        raise HTTPException(status_code=404, detail="版本不存在")
+
+    from_lines = _read_script_file(from_version.file_path).splitlines()
+    to_lines = _read_script_file(to_version.file_path).splitlines()
+    diff_text = "\n".join(
+        difflib.unified_diff(
+            from_lines,
+            to_lines,
+            fromfile=f"v{from_version.version_no}",
+            tofile=f"v{to_version.version_no}",
+            lineterm="",
+        )
+    )
+
+    return ScriptVersionDiffResponse(
+        code=200,
+        message="success",
+        from_version_id=from_version_id,
+        to_version_id=to_version_id,
+        diff=diff_text,
+    )
+
+
+@router.get("/{script_id}/versions/{version_id}", response_model=ScriptVersionDetailResponse)
+async def get_script_version_detail(
+    script_id: int,
+    version_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    version = await script_crud.get_script_version(db, script_id, version_id)
+    if not version:
+        raise HTTPException(status_code=404, detail="版本不存在")
+    return _to_script_version_response(version, include_content=True)
+
+
+@router.post("/{script_id}/rollback", response_model=ScriptResponse)
+@log_operation(module="运维-脚本", action="回滚脚本版本", description="回滚到指定脚本版本")
+async def rollback_script(
+    script_id: int,
+    payload: ScriptRollbackRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    script = await script_crud.get_script(db, script_id)
+    if not script:
+        raise HTTPException(status_code=404, detail="脚本不存在")
+
+    version = await script_crud.get_script_version(db, script_id, payload.version_id)
+    if not version:
+        raise HTTPException(status_code=404, detail="目标版本不存在")
+
+    source_path = Path(version.file_path)
+    if not source_path.exists():
+        raise HTTPException(status_code=400, detail="目标版本文件不存在，无法回滚")
+
+    SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+    suffix = source_path.suffix or (".py" if script.script_type == "python" else ".sh")
+    storage_file_name = _sanitize_storage_filename(
+        upload_file_name=version.source_file_name or source_path.name,
+        fallback_stem=f"{script.name}_rollback_v{version.version_no}",
+        forced_ext=suffix,
+    )
+    target_path = _build_storage_path(storage_file_name)
+    shutil.copy2(source_path, target_path)
+
+    final_note = payload.note or f"回滚到 v{version.version_no}"
+    script_type = "python" if suffix.lower() == ".py" else "shell"
+    updated = await script_crud.rollback_script_to_file(
+        db,
+        script_id=script_id,
+        file_path=str(target_path),
+        source_file_name=version.source_file_name or source_path.name,
+        note=final_note,
+        updated_by=current_user.username,
+        script_type=script_type,
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="脚本不存在")
+
+    fresh_script = await script_crud.get_script(db, updated.id)
+    if not fresh_script:
+        raise HTTPException(status_code=500, detail="脚本回滚后读取失败")
     return _to_script_response(fresh_script, include_content=True)
 
 

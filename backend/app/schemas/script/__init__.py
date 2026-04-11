@@ -68,3 +68,42 @@ class ScriptDistributeRequest(BaseModel):
     server_ids: List[int] = Field(..., description="目标服务器ID列表", min_length=1)
     target_directory: str = Field(..., description="目标目录")
     file_name: Optional[str] = Field(None, description="目标文件名（可选）")
+
+
+class ScriptVersionResponse(BaseModel):
+    """脚本版本响应"""
+
+    id: int
+    script_id: int
+    version_no: int
+    file_path: str
+    source_file_name: Optional[str] = None
+    note: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class ScriptVersionDetailResponse(ScriptVersionResponse):
+    content: str = ""
+
+
+class ScriptVersionListResponse(BaseModel):
+    code: int = 200
+    message: str = "success"
+    data: List[ScriptVersionResponse]
+
+
+class ScriptRollbackRequest(BaseModel):
+    version_id: int = Field(..., description="目标版本ID")
+    note: Optional[str] = Field(None, description="回滚备注", max_length=500)
+
+
+class ScriptVersionDiffResponse(BaseModel):
+    code: int = 200
+    message: str = "success"
+    from_version_id: int
+    to_version_id: int
+    diff: str

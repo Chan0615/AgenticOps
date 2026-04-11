@@ -106,13 +106,15 @@
         </FormItem>
 
         <FormItem label="执行脚本（可选）">
-          <Select v-model:value="formData.script_id" allow-clear placeholder="选择已上传脚本（不选则使用执行命令）">
-            <SelectOption v-for="item in filteredScriptOptions" :key="item.id" :value="item.id">{{ item.name }}</SelectOption>
+          <Select v-model:value="formData.script_id" allow-clear placeholder="选择脚本（会按脚本类型自动调用解释器）" @change="handleScriptChange">
+            <SelectOption v-for="item in filteredScriptOptions" :key="item.id" :value="item.id">{{ item.name }} ({{ item.source_file_name || scriptDisplayName(item) }})</SelectOption>
           </Select>
+          <div class="task-tip">选中脚本且命令为空时，系统会自动执行：Python 用 `python3`，Shell 用 `bash`。</div>
         </FormItem>
 
-        <FormItem label="执行命令">
-          <Input.TextArea v-model:value="formData.command" :rows="4" placeholder="输入要执行的命令..." />
+        <FormItem label="执行命令（可选）">
+          <Input.TextArea v-model:value="formData.command" :rows="4" :placeholder="commandPlaceholder" />
+          <div class="task-tip">可覆盖脚本默认执行方式；留空则走自动命令。</div>
         </FormItem>
 
         <FormItem label="描述">
@@ -270,7 +272,7 @@ const serverOptions = ref<TaskServerOption[]>([])
 const loadingServers = ref(false)
 const selectedEnvironment = ref('')
 const scriptNameMap = reactive<Record<number, string>>({})
-const scriptOptions = ref<Array<{ id: number; name: string; group_id?: number }>>([])
+const scriptOptions = ref<Array<{ id: number; name: string; group_id?: number; script_type?: string; source_file_name?: string }>>([])
 const formGroupOptions = computed(() => {
   if (!formData.project_id) return []
   return groupOptions.value.filter((g) => g.project_id === formData.project_id)
@@ -278,6 +280,18 @@ const formGroupOptions = computed(() => {
 const filteredScriptOptions = computed(() => {
   if (!formData.group_id) return scriptOptions.value
   return scriptOptions.value.filter((s) => s.group_id === formData.group_id)
+})
+
+const selectedScript = computed(() => scriptOptions.value.find((s) => s.id === formData.script_id))
+
+const commandPlaceholder = computed(() => {
+  if (selectedScript.value?.script_type === 'python') {
+    return "可留空自动执行 python3；或输入自定义命令，例如：python3 /root/ChAn/main.py --env prod"
+  }
+  if (selectedScript.value?.script_type === 'shell') {
+    return "可留空自动执行 bash；或输入自定义命令，例如：bash /root/ChAn/deploy.sh"
+  }
+  return '不选脚本时请输入要执行的命令...'
 })
 
 const environmentOptions = [
@@ -360,7 +374,13 @@ const loadScriptOptions = async () => {
   try {
     const res = await getScriptList({ page: 1, page_size: 200 })
     const items = res.data || []
-    scriptOptions.value = items.map((s) => ({ id: s.id, name: s.name, group_id: s.group_id }))
+    scriptOptions.value = items.map((s) => ({
+      id: s.id,
+      name: s.name,
+      group_id: s.group_id,
+      script_type: s.script_type,
+      source_file_name: s.source_file_name,
+    }))
     items.forEach((s) => {
       scriptNameMap[s.id] = s.name
     })
@@ -463,9 +483,21 @@ const handleFormProjectChange = () => {
   formData.script_id = undefined
 }
 
+const scriptDisplayName = (item: { name: string; script_type?: string }) => {
+  return `${item.name}${item.script_type === 'python' ? '.py' : '.sh'}`
+}
+
+const handleScriptChange = () => {
+  // Keep command untouched to avoid overriding user input.
+}
+
 const handleSubmit = async () => {
   if (!formData.name || !formData.cron_expression || !formData.server_ids?.length) {
     message.warning('请填写任务名称、Cron表达式并选择目标服务器')
+    return
+  }
+  if (!formData.script_id && !String(formData.command || '').trim()) {
+    message.warning('请选择脚本，或填写执行命令')
     return
   }
   if (!formData.project_id || !formData.group_id) {
@@ -561,5 +593,11 @@ onMounted(async () => {
   font-family: Consolas, Monaco, 'Courier New', monospace;
   font-size: 12px;
   color: #334155;
+}
+
+.task-tip {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #64748b;
 }
 </style>

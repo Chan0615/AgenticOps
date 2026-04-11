@@ -44,6 +44,35 @@ export interface ScriptListResponse {
   total: number
 }
 
+export interface ScriptVersion {
+  id: number
+  script_id: number
+  version_no: number
+  file_path: string
+  source_file_name?: string
+  note?: string
+  created_by?: string
+  created_at: string
+}
+
+export interface ScriptVersionDetail extends ScriptVersion {
+  content: string
+}
+
+export interface ScriptVersionListResponse {
+  code: number
+  message: string
+  data: ScriptVersion[]
+}
+
+export interface ScriptVersionDiffResponse {
+  code: number
+  message: string
+  from_version_id: number
+  to_version_id: number
+  diff: string
+}
+
 /**
  * 获取脚本列表
  */
@@ -53,6 +82,27 @@ export const getScriptList = (params: ScriptListParams) => {
     page_size: Math.min(Math.max(params.page_size ?? 20, 1), 100),
   }
   return request.get<any, ScriptListResponse>('/ops/scripts', { params: safeParams })
+}
+
+export const getScriptVersions = (scriptId: number) => {
+  return request.get<any, ScriptVersionListResponse>(`/ops/scripts/${scriptId}/versions`)
+}
+
+export const getScriptVersionDetail = (scriptId: number, versionId: number) => {
+  return request.get<any, ScriptVersionDetail>(`/ops/scripts/${scriptId}/versions/${versionId}`)
+}
+
+export const compareScriptVersions = (scriptId: number, fromVersionId: number, toVersionId: number) => {
+  return request.get<any, ScriptVersionDiffResponse>(`/ops/scripts/${scriptId}/versions/compare`, {
+    params: {
+      from_version_id: fromVersionId,
+      to_version_id: toVersionId,
+    },
+  })
+}
+
+export const rollbackScriptVersion = (scriptId: number, data: { version_id: number; note?: string }) => {
+  return request.post<any, Script>(`/ops/scripts/${scriptId}/rollback`, data)
 }
 
 /**

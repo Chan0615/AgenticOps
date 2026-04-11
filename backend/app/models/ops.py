@@ -120,6 +120,33 @@ class Script(Base):
     project = relationship("OpsProject", back_populates="scripts")
     group = relationship("OpsGroup", back_populates="scripts")
     tasks = relationship("ScheduledTask", back_populates="script")
+    versions = relationship("OpsScriptVersion", back_populates="script", cascade="all, delete-orphan")
+
+
+class OpsScriptVersion(Base):
+    """脚本版本模型"""
+
+    __tablename__ = "ops_script_version"
+    __table_args__ = (
+        UniqueConstraint("script_id", "version_no", name="uq_ops_script_version_script_no"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    script_id = Column(
+        Integer,
+        ForeignKey("ops_script.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="脚本ID",
+    )
+    version_no = Column(Integer, nullable=False, comment="版本号")
+    file_path = Column(String(500), nullable=False, comment="脚本文件路径")
+    source_file_name = Column(String(255), nullable=True, comment="源文件名")
+    note = Column(String(500), nullable=True, comment="版本备注")
+    created_by = Column(String(50), nullable=True, comment="上传人")
+    created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
+
+    script = relationship("Script", back_populates="versions")
 
 
 class ScheduledTask(Base):

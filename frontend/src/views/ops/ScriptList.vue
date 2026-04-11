@@ -134,6 +134,57 @@
       <div class="script-pre-wrap">
         <pre class="script-pre">{{ viewData.content || '暂无脚本内容' }}</pre>
       </div>
+
+      <Divider>版本历史</Divider>
+      <Space wrap style="margin-bottom: 12px; width: 100%">
+        <Select v-model:value="compareFromVersionId" placeholder="选择起始版本" style="width: 220px" :options="versionSelectOptions" />
+        <Select v-model:value="compareToVersionId" placeholder="选择目标版本" style="width: 220px" :options="versionSelectOptions" />
+        <Button @click="handleCompareVersions">版本对比</Button>
+      </Space>
+      <Table
+        :columns="versionColumns"
+        :data-source="versionList"
+        :loading="versionLoading"
+        :pagination="false"
+        size="small"
+        row-key="id"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'version_no'">v{{ record.version_no }}</template>
+          <template v-else-if="column.key === 'created_at'">{{ formatDateTime(record.created_at) }}</template>
+          <template v-else-if="column.key === 'actions'">
+            <Space>
+              <Button type="link" @click="handleViewVersion(record.id)">查看内容</Button>
+              <Button type="link" danger @click="openRollbackModal(record.id)">回滚</Button>
+            </Space>
+          </template>
+        </template>
+      </Table>
+    </Modal>
+
+    <Modal v-model:open="rollbackOpen" title="回滚脚本版本" @ok="handleRollbackConfirm" @cancel="resetRollbackForm">
+      <Form layout="vertical">
+        <FormItem label="目标版本">
+          <Input :value="rollbackTargetLabel" disabled />
+        </FormItem>
+        <FormItem label="回滚备注">
+          <Input.TextArea v-model:value="rollbackNote" :rows="4" placeholder="例如：回滚到稳定版本，修复生产异常" />
+        </FormItem>
+      </Form>
+    </Modal>
+
+    <Modal v-model:open="versionContentOpen" title="版本内容" width="1200px" :footer="null">
+      <div class="version-meta">{{ currentVersionTitle }}</div>
+      <div class="script-pre-wrap">
+        <pre class="script-pre">{{ versionContent || '暂无内容' }}</pre>
+      </div>
+    </Modal>
+
+    <Modal v-model:open="versionDiffOpen" title="版本对比" width="1200px" :footer="null">
+      <div class="version-meta">{{ versionDiffTitle }}</div>
+      <div class="script-pre-wrap">
+        <pre class="script-pre">{{ versionDiffText || '两个版本内容一致，无差异' }}</pre>
+      </div>
     </Modal>
   </div>
 </template>
@@ -158,7 +209,20 @@ import {
   Tag,
   message,
 } from 'ant-design-vue'
-import { deleteScript, distributeScript, getScriptDetail, getScriptList, replaceScriptFile, updateScript, uploadScript } from '@/api/ops/script'
+import {
+  compareScriptVersions,
+  deleteScript,
+  distributeScript,
+  getScriptDetail,
+  getScriptList,
+  getScriptVersionDetail,
+  getScriptVersions,
+  replaceScriptFile,
+  rollbackScriptVersion,
+  updateScript,
+  uploadScript,
+  type ScriptVersion,
+} from '@/api/ops/script'
 import { getServerList, type Server } from '@/api/ops/server'
 import { getGroupList, getProjectList, type OpsGroup, type OpsProject } from '@/api/ops/group'
 import { formatDateTime } from '@/utils/datetime'
@@ -249,6 +313,41 @@ const distributeForm = reactive({
 
 const viewOpen = ref(false)
 const viewData = ref<Script>({} as Script)
+const versionLoading = ref(false)
+const versionList = ref<ScriptVersion[]>([])
+const compareFromVersionId = ref<number | undefined>()
+const compareToVersionId = ref<number | undefined>()
+const versionContentOpen = ref(false)
+const versionContent = ref('')
+const currentVersionTitle = ref('')
+const versionDiffOpen = ref(false)
+const versionDiffText = ref('')
+const versionDiffTitle = ref('')
+const rollbackOpen = ref(false)
+const rollbackVersionId = ref<number | undefined>()
+const rollbackNote = ref('')
+
+const versionColumns = [
+  { title: '版本', key: 'version_no', width: 80 },
+  { title: '源文件名', dataIndex: 'source_file_name', key: 'source_file_name', width: 180 },
+  { title: '备注', dataIndex: 'note', key: 'note' },
+  { title: '上传人', dataIndex: 'created_by', key: 'created_by', width: 100 },
+  { title: '时间', key: 'created_at', width: 180 },
+  { title: '操作', key: 'actions', width: 180 },
+]
+
+const versionSelectOptions = computed(() =>
+  versionList.value.map((item) => ({
+    label: `v${item.version_no} ${item.source_file_name || ''}`,
+    value: item.id,
+  })),
+)
+
+const rollbackTargetLabel = computed(() => {
+  const target = versionList.value.find((item) => item.id === rollbackVersionId.value)
+  if (!target) return '-'
+  return `v${target.version_no} ${target.source_file_name || ''}`
+})
 
 const loadGroupMeta = async () => {
   try {
@@ -400,8 +499,95 @@ const handleView = async (record: Script) => {
   try {
     const detail = await getScriptDetail(record.id)
     viewData.value = detail
+    await loadScriptVersions(record.id)
   } catch {
     viewData.value = record
+    versionList.value = []
+  }
+}
+
+const loadScriptVersions = async (scriptId: number) => {
+  versionLoading.value = true
+  try {
+    const res = await getScriptVersions(scriptId)
+    versionList.value = res.data || []
+    compareFromVersionId.value = versionList.value[1]?.id
+    compareToVersionId.value = versionList.value[0]?.id
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '加载脚本版本失败')
+    versionList.value = []
+    compareFromVersionId.value = undefined
+    compareToVersionId.value = undefined
+  } finally {
+    versionLoading.value = false
+  }
+}
+
+const handleViewVersion = async (versionId: number) => {
+  if (!viewData.value.id) return
+  try {
+    const detail = await getScriptVersionDetail(viewData.value.id, versionId)
+    currentVersionTitle.value = `v${detail.version_no} · ${detail.source_file_name || '未知文件'} · ${formatDateTime(detail.created_at)}`
+    versionContent.value = detail.content || ''
+    versionContentOpen.value = true
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '获取版本内容失败')
+  }
+}
+
+const openRollbackModal = (versionId: number) => {
+  rollbackVersionId.value = versionId
+  rollbackNote.value = ''
+  rollbackOpen.value = true
+}
+
+const resetRollbackForm = () => {
+  rollbackOpen.value = false
+  rollbackVersionId.value = undefined
+  rollbackNote.value = ''
+}
+
+const handleRollbackConfirm = async () => {
+  const versionId = rollbackVersionId.value
+  if (!versionId) {
+    message.warning('请选择要回滚的版本')
+    return
+  }
+  if (!viewData.value.id) return
+  try {
+    await rollbackScriptVersion(viewData.value.id, {
+      version_id: versionId,
+      note: rollbackNote.value || undefined,
+    })
+    message.success('回滚成功')
+    resetRollbackForm()
+    const detail = await getScriptDetail(viewData.value.id)
+    viewData.value = detail
+    await loadScriptVersions(viewData.value.id)
+    loadScripts()
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '回滚失败')
+  }
+}
+
+const handleCompareVersions = async () => {
+  if (!viewData.value.id || !compareFromVersionId.value || !compareToVersionId.value) {
+    message.warning('请选择两个版本进行对比')
+    return
+  }
+  if (compareFromVersionId.value === compareToVersionId.value) {
+    message.warning('请选择两个不同版本进行对比')
+    return
+  }
+  try {
+    const res = await compareScriptVersions(viewData.value.id, compareFromVersionId.value, compareToVersionId.value)
+    const fromVersion = versionList.value.find((v) => v.id === compareFromVersionId.value)
+    const toVersion = versionList.value.find((v) => v.id === compareToVersionId.value)
+    versionDiffTitle.value = `v${fromVersion?.version_no || '-'} -> v${toVersion?.version_no || '-'}`
+    versionDiffText.value = res.diff || ''
+    versionDiffOpen.value = true
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '版本对比失败')
   }
 }
 
@@ -486,5 +672,11 @@ onMounted(async () => {
 .script-pre-wrap {
   max-height: calc(100vh - 320px);
   overflow: auto;
+}
+
+.version-meta {
+  margin-bottom: 10px;
+  color: #64748b;
+  font-size: 12px;
 }
 </style>

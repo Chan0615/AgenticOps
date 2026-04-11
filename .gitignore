@@ -5,6 +5,7 @@ __pycache__/
 
 # Config (contains secrets)
 backend/config.yaml
+backend/storage
 
 # Node
 node_modules/

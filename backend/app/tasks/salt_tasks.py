@@ -61,17 +61,23 @@ async def _resolve_command(db, task_id: int, command: str) -> str:
         raise RuntimeError("关联脚本内容为空")
 
     # 当前实现中脚本字段存储脚本文件路径。
+    script_text = ""
     try:
         from pathlib import Path
 
         path = Path(script_source)
         if path.exists():
-            return path.read_text(encoding="utf-8")
+            script_text = path.read_text(encoding="utf-8")
     except Exception:
-        pass
+        script_text = ""
 
     # 兼容历史数据：脚本字段直接存内容。
-    return script_source
+    if not script_text:
+        script_text = script_source
+
+    if script.script_type == "python":
+        return "python3 - <<'PY'\n" + script_text + "\nPY"
+    return "bash - <<'SH'\n" + script_text + "\nSH"
 
 
 async def _execute_salt_command_async(task_id: int, server_ids: list[int], command: str):
