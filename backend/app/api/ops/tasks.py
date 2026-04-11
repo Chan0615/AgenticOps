@@ -2,9 +2,16 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
 from typing import Optional
 from app.db.database import get_db
 from app.schemas.task import (
+    CronNaturalConvertRequest,
+    CronNaturalConvertResponse,
+    CronPreviewRequest,
+    CronPreviewResponse,
+    CronValidateRequest,
+    CronValidationResponse,
     ScheduledTaskCreate,
     ScheduledTaskUpdate,
     ScheduledTaskResponse,
@@ -15,12 +22,136 @@ from app.schemas.system.user import UserResponse
 from app.crud.ops import task as task_crud
 from app.api.auth.auth import get_current_user
 from app.core.log_decorator import log_operation
+from app.services.cron_helper import (
+    describe_cron_zh,
+    natural_to_cron,
+    preview_next_runs,
+    validate_cron,
+)
 from celery_app import celery_app
 import logging
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/ops/tasks", tags=["定时任务"])
+
+
+@router.post("/cron/validate", response_model=CronValidationResponse)
+async def validate_task_cron(
+    request: CronValidateRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    cron_expression = request.cron_expression.strip()
+    valid, error = validate_cron(cron_expression)
+    if valid:
+        return {
+            "code": 200,
+            "message": "success",
+            "data": {
+                "valid": True,
+                "cron_expression": cron_expression,
+                "description_zh": describe_cron_zh(cron_expression),
+                "error": None,
+            },
+        }
+
+    return {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "valid": False,
+            "cron_expression": cron_expression,
+            "description_zh": None,
+            "error": error,
+        },
+    }
+
+
+@router.post("/cron/describe", response_model=CronValidationResponse)
+async def describe_task_cron(
+    request: CronValidateRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    cron_expression = request.cron_expression.strip()
+    valid, error = validate_cron(cron_expression)
+    if not valid:
+        return {
+            "code": 200,
+            "message": "success",
+            "data": {
+                "valid": False,
+                "cron_expression": cron_expression,
+                "description_zh": None,
+                "error": error,
+            },
+        }
+
+    return {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "valid": True,
+            "cron_expression": cron_expression,
+            "description_zh": describe_cron_zh(cron_expression),
+            "error": None,
+        },
+    }
+
+
+@router.post("/cron/preview", response_model=CronPreviewResponse)
+async def preview_task_cron(
+    request: CronPreviewRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    cron_expression = request.cron_expression.strip()
+    valid, error = validate_cron(cron_expression)
+    if not valid:
+        raise HTTPException(status_code=400, detail=error or "Cron表达式不合法")
+
+    base_time = request.start_time or datetime.now()
+    try:
+        next_runs = preview_next_runs(
+            cron_expression=cron_expression,
+            count=request.count,
+            start_time=base_time,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "cron_expression": cron_expression,
+            "start_time": base_time,
+            "next_runs": next_runs,
+        },
+    }
+
+
+@router.post("/cron/natural", response_model=CronNaturalConvertResponse)
+async def convert_natural_to_cron(
+    request: CronNaturalConvertRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    try:
+        cron_expression = natural_to_cron(request.text)
+        valid, error = validate_cron(cron_expression)
+        if not valid:
+            raise ValueError(error or "转换后的 Cron 表达式不合法")
+        description_zh = describe_cron_zh(cron_expression)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return {
+        "code": 200,
+        "message": "success",
+        "data": {
+            "text": request.text,
+            "cron_expression": cron_expression,
+            "description_zh": description_zh,
+        },
+    }
 
 
 def _normalize_task_type(task_obj):

@@ -113,7 +113,38 @@
         <Row :gutter="16">
           <Col :span="12">
             <FormItem label="Cron表达式" required>
-              <Input v-model:value="formData.cron_expression" placeholder="例如：0 2 * * *" />
+              <Space.Compact style="width: 100%">
+                <Input v-model:value="formData.cron_expression" placeholder="例如：30 18 5,25,28 * *" />
+                <Button :loading="cronValidating" @click="handleValidateCron">校验</Button>
+                <Button :loading="cronPreviewLoading" @click="handlePreviewCron">预览7次</Button>
+              </Space.Compact>
+              <Space.Compact style="width: 100%; margin-top: 8px">
+                <Input v-model:value="cronNaturalText" placeholder="自然语言，例如：每月5,25,28号18:30" />
+                <Button :loading="cronConverting" @click="handleConvertNaturalCron">自动转换</Button>
+              </Space.Compact>
+              <div v-if="cronValidationError || cronDescription || cronPreviewTimes.length" class="cron-preview-panel">
+                <div v-if="cronValidationError" class="cron-error">{{ cronValidationError }}</div>
+                <template v-else>
+                  <div class="cron-desc-row">
+                    <span class="cron-desc-label">中文解释</span>
+                    <span class="cron-desc-value">{{ cronDescription || '-' }}</span>
+                  </div>
+                  <div v-if="cronPreviewTimes.length" class="cron-preview-table">
+                    <div class="cron-preview-head">
+                      <span>序号</span>
+                      <span>执行时间</span>
+                    </div>
+                    <div
+                      v-for="(time, idx) in cronPreviewTimes"
+                      :key="`${time}-${idx}`"
+                      :class="['cron-preview-row', `cron-preview-row-tone-${Math.min(idx, 4)}`]"
+                    >
+                      <span class="cron-preview-index">第{{ idx + 1 }}次</span>
+                      <span class="cron-preview-time">{{ time }}</span>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </FormItem>
           </Col>
           <Col :span="12">
@@ -202,14 +233,18 @@ import {
   message,
 } from 'ant-design-vue'
 import {
+  convertNaturalToTaskCron,
   createTask,
   deleteTask,
+  describeTaskCron,
   getTaskDetail,
   getTaskList,
   getTaskSchedulerHealth,
+  previewTaskCronRuns,
   syncTaskSchedule,
   triggerTask,
   updateTask,
+  validateTaskCron,
   type TaskSchedulerHealthData,
 } from '@/api/ops/task'
 import { getServerList, type Server } from '@/api/ops/server'
@@ -317,6 +352,13 @@ const syncingScheduler = ref(false)
 const schedulerHealth = ref<TaskSchedulerHealthData | null>(null)
 const autoRefreshHealth = ref(true)
 const healthCheckedAt = ref('')
+const cronNaturalText = ref('')
+const cronDescription = ref('')
+const cronValidationError = ref('')
+const cronPreviewTimes = ref<string[]>([])
+const cronValidating = ref(false)
+const cronConverting = ref(false)
+const cronPreviewLoading = ref(false)
 let healthTimer: number | null = null
 const formGroupOptions = computed(() => {
   if (!formData.project_id) return []
@@ -524,6 +566,7 @@ const openModal = async (record?: Task) => {
     isEdit.value = true
     editingId.value = record.id
     Object.assign(formData, record)
+    await refreshCronAssistant(true)
     if (!formData.project_id && formData.group_id) {
       const group = groupOptions.value.find((g) => g.id === formData.group_id)
       formData.project_id = group?.project_id
@@ -563,6 +606,7 @@ const resetForm = () => {
   formData.enabled = true
   formData.description = ''
   selectedEnvironment.value = ''
+  resetCronAssistant()
 }
 
 const handleFormProjectChange = () => {
@@ -576,6 +620,115 @@ const scriptDisplayName = (item: { name: string; script_type?: string }) => {
 
 const handleScriptChange = () => {
   // Keep command untouched to avoid overriding user input.
+}
+
+const resetCronAssistant = () => {
+  cronNaturalText.value = ''
+  cronDescription.value = ''
+  cronValidationError.value = ''
+  cronPreviewTimes.value = []
+}
+
+const refreshCronAssistant = async (silent = false) => {
+  const expr = String(formData.cron_expression || '').trim()
+  if (!expr) {
+    cronDescription.value = ''
+    cronValidationError.value = ''
+    cronPreviewTimes.value = []
+    return false
+  }
+  try {
+    const [descRes, previewRes] = await Promise.all([
+      describeTaskCron(expr),
+      previewTaskCronRuns(expr, 7),
+    ])
+    if (!descRes.data.valid) {
+      cronValidationError.value = descRes.data.error || 'Cron表达式不合法'
+      cronDescription.value = ''
+      cronPreviewTimes.value = []
+      if (!silent) message.warning(cronValidationError.value)
+      return false
+    }
+    cronValidationError.value = ''
+    cronDescription.value = descRes.data.description_zh || ''
+    cronPreviewTimes.value = (previewRes.data.next_runs || []).map((item) => formatDateTime(item) || item)
+    return true
+  } catch (error: any) {
+    const detail = error.response?.data?.detail || 'Cron处理失败'
+    cronValidationError.value = detail
+    cronDescription.value = ''
+    cronPreviewTimes.value = []
+    if (!silent) message.error(detail)
+    return false
+  }
+}
+
+const handleValidateCron = async () => {
+  const expr = String(formData.cron_expression || '').trim()
+  if (!expr) {
+    message.warning('请先输入 Cron 表达式')
+    return
+  }
+  cronValidating.value = true
+  try {
+    const res = await validateTaskCron(expr)
+    if (!res.data.valid) {
+      cronValidationError.value = res.data.error || 'Cron表达式不合法'
+      cronDescription.value = ''
+      cronPreviewTimes.value = []
+      message.warning(cronValidationError.value)
+      return
+    }
+    cronValidationError.value = ''
+    cronDescription.value = res.data.description_zh || ''
+    message.success('Cron表达式校验通过')
+  } catch (error: any) {
+    const detail = error.response?.data?.detail || 'Cron校验失败'
+    cronValidationError.value = detail
+    message.error(detail)
+  } finally {
+    cronValidating.value = false
+  }
+}
+
+const handleConvertNaturalCron = async () => {
+  const text = cronNaturalText.value.trim()
+  if (!text) {
+    message.warning('请先输入自然语言描述')
+    return
+  }
+  cronConverting.value = true
+  try {
+    const res = await convertNaturalToTaskCron(text)
+    formData.cron_expression = res.data.cron_expression
+    cronDescription.value = res.data.description_zh || ''
+    cronValidationError.value = ''
+    message.success('已转换为 Cron 表达式')
+    await handlePreviewCron(true)
+  } catch (error: any) {
+    const detail = error.response?.data?.detail || '自然语言转换失败'
+    cronValidationError.value = detail
+    message.error(detail)
+  } finally {
+    cronConverting.value = false
+  }
+}
+
+const handlePreviewCron = async (silent = false) => {
+  const expr = String(formData.cron_expression || '').trim()
+  if (!expr) {
+    if (!silent) message.warning('请先输入 Cron 表达式')
+    return
+  }
+  cronPreviewLoading.value = true
+  try {
+    const ok = await refreshCronAssistant(silent)
+    if (ok && !silent) {
+      message.success('已生成未来7次执行时间')
+    }
+  } finally {
+    cronPreviewLoading.value = false
+  }
 }
 
 const handleSubmit = async () => {
@@ -593,6 +746,12 @@ const handleSubmit = async () => {
   }
   if (!selectedEnvironment.value) {
     message.warning('请选择 Salt 环境')
+    return
+  }
+
+  const cronOk = await refreshCronAssistant(true)
+  if (!cronOk) {
+    message.warning(cronValidationError.value || 'Cron表达式不合法，请先修正')
     return
   }
 
@@ -747,5 +906,106 @@ onUnmounted(() => {
   margin-top: 6px;
   font-size: 12px;
   color: #64748b;
+}
+
+.cron-error {
+  margin-top: 0;
+  font-size: 12px;
+  color: #dc2626;
+  line-height: 1.6;
+}
+
+.cron-preview-panel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #fbcfe8;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff7fb 0%, #fff1f8 100%);
+}
+
+.cron-desc-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cron-desc-label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  color: #9d174d;
+  background: #fce7f3;
+  border: 1px solid #f9a8d4;
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.cron-desc-value {
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.cron-preview-table {
+  border: 1px solid #fbcfe8;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #ffffffcc;
+}
+
+.cron-preview-head,
+.cron-preview-row {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+}
+
+.cron-preview-head {
+  font-size: 12px;
+  color: #be185d;
+  font-weight: 600;
+  background: #fdf2f8;
+  border-bottom: 1px solid #fbcfe8;
+}
+
+.cron-preview-row {
+  border-bottom: 1px dashed #fce7f3;
+}
+
+.cron-preview-row-tone-0 {
+  background: linear-gradient(90deg, #fff1f7 0%, #ffffff 26%);
+}
+
+.cron-preview-row-tone-1 {
+  background: linear-gradient(90deg, #fff4f9 0%, #ffffff 26%);
+}
+
+.cron-preview-row-tone-2 {
+  background: linear-gradient(90deg, #fff7fb 0%, #ffffff 26%);
+}
+
+.cron-preview-row-tone-3 {
+  background: linear-gradient(90deg, #fffafd 0%, #ffffff 26%);
+}
+
+.cron-preview-row-tone-4 {
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 26%);
+}
+
+.cron-preview-row:last-child {
+  border-bottom: none;
+}
+
+.cron-preview-index {
+  font-size: 12px;
+  color: #be185d;
+}
+
+.cron-preview-time {
+  font-size: 12px;
+  color: #334155;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
 }
 </style>

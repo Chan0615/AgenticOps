@@ -58,6 +58,39 @@ export interface TaskSchedulerHealthResponse {
   data: TaskSchedulerHealthData
 }
 
+export interface CronValidationData {
+  valid: boolean
+  cron_expression: string
+  description_zh?: string
+  error?: string
+}
+
+export interface CronValidationResponse {
+  code: number
+  message: string
+  data: CronValidationData
+}
+
+export interface CronNaturalConvertResponse {
+  code: number
+  message: string
+  data: {
+    text: string
+    cron_expression: string
+    description_zh: string
+  }
+}
+
+export interface CronPreviewResponse {
+  code: number
+  message: string
+  data: {
+    cron_expression: string
+    start_time: string
+    next_runs: string[]
+  }
+}
+
 /**
  * 获取任务列表
  */
@@ -123,4 +156,41 @@ export const getTaskSchedulerHealth = () => {
  */
 export const syncTaskSchedule = () => {
   return request.post<any>('/ops/tasks/sync')
+}
+
+/**
+ * 校验 Cron 表达式
+ */
+export const validateTaskCron = (cronExpression: string) => {
+  return request.post<any, CronValidationResponse>('/ops/tasks/cron/validate', {
+    cron_expression: cronExpression,
+  })
+}
+
+/**
+ * Cron 中文描述
+ */
+export const describeTaskCron = (cronExpression: string) => {
+  return request.post<any, CronValidationResponse>('/ops/tasks/cron/describe', {
+    cron_expression: cronExpression,
+  })
+}
+
+/**
+ * 自然语言转换 Cron
+ */
+export const convertNaturalToTaskCron = (text: string) => {
+  return request.post<any, CronNaturalConvertResponse>('/ops/tasks/cron/natural', {
+    text,
+  })
+}
+
+/**
+ * 预览未来执行时间
+ */
+export const previewTaskCronRuns = (cronExpression: string, count = 7) => {
+  return request.post<any, CronPreviewResponse>('/ops/tasks/cron/preview', {
+    cron_expression: cronExpression,
+    count,
+  })
 }

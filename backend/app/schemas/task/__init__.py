@@ -66,3 +66,54 @@ class ScheduledTaskListResponse(BaseModel):
 class TaskManualTriggerRequest(BaseModel):
     """手动触发任务请求"""
     task_id: int = Field(..., description="任务ID")
+
+
+class CronValidateRequest(BaseModel):
+    cron_expression: str = Field(..., description="Cron表达式", min_length=1, max_length=100)
+
+
+class CronNaturalConvertRequest(BaseModel):
+    text: str = Field(..., description="自然语言表达式", min_length=1, max_length=100)
+
+
+class CronPreviewRequest(BaseModel):
+    cron_expression: str = Field(..., description="Cron表达式", min_length=1, max_length=100)
+    count: int = Field(default=7, ge=1, le=20, description="预览次数")
+    start_time: Optional[datetime] = Field(None, description="开始时间，默认当前时间")
+
+
+class CronValidationData(BaseModel):
+    valid: bool
+    cron_expression: str
+    description_zh: Optional[str] = None
+    error: Optional[str] = None
+
+
+class CronValidationResponse(BaseModel):
+    code: int = 200
+    message: str = "success"
+    data: CronValidationData
+
+
+class CronNaturalConvertData(BaseModel):
+    text: str
+    cron_expression: str
+    description_zh: str
+
+
+class CronNaturalConvertResponse(BaseModel):
+    code: int = 200
+    message: str = "success"
+    data: CronNaturalConvertData
+
+
+class CronPreviewData(BaseModel):
+    cron_expression: str
+    start_time: datetime
+    next_runs: List[datetime]
+
+
+class CronPreviewResponse(BaseModel):
+    code: int = 200
+    message: str = "success"
+    data: CronPreviewData
