@@ -63,6 +63,7 @@ import {
   Skeleton,
   Space,
   Typography,
+  message,
 } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
 import {
@@ -205,10 +206,15 @@ watch(
 onMounted(async () => {
   try {
     const data = await menuApi.getMyMenus()
-    menuTree.value = data
+    menuTree.value = Array.isArray(data) ? data : []
+    if (!menuTree.value.length) {
+      message.error('菜单数据为空，请检查菜单配置与权限')
+    }
     syncOpenKeysByRoute()
   } catch (error) {
     console.error('加载菜单失败:', error)
+    menuTree.value = []
+    message.error('菜单加载失败，请检查菜单接口')
   } finally {
     loading.value = false
   }

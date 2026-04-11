@@ -42,7 +42,11 @@
         </Space>
       </div>
 
-      <Table :columns="columns" :data-source="taskList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
+      <div v-if="metaLoadingHint" class="task-tip-inline task-loading-hint">后台加载中：{{ metaLoadingHint }}</div>
+
+      <Skeleton v-if="loading && !firstLoadDone" active :title="false" :paragraph="{ rows: 8 }" />
+
+      <Table v-else :columns="columns" :data-source="taskList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'group_info'">{{ record.project_name || '-' }} / {{ record.group_name || '-' }}</template>
           <template v-else-if="column.key === 'script_info'">
@@ -189,6 +193,7 @@ import {
   Radio,
   Row,
   Select,
+  Skeleton,
   Switch,
   Space,
   Table,
@@ -261,6 +266,7 @@ const searchGroupOptions = computed(() => {
 
 const taskList = ref<Task[]>([])
 const loading = ref(false)
+const firstLoadDone = ref(false)
 const pagination = reactive({
   current: 1,
   pageSize: 20,
@@ -351,6 +357,22 @@ const filteredServerOptions = computed(() => {
   return serverOptions.value.filter((s) => s.environment === selectedEnvironment.value)
 })
 
+const metaLoading = reactive({
+  group: false,
+  server: false,
+  script: false,
+  health: false,
+})
+
+const metaLoadingHint = computed(() => {
+  const labels: string[] = []
+  if (metaLoading.group) labels.push('项目/分组')
+  if (metaLoading.server) labels.push('服务器')
+  if (metaLoading.script) labels.push('脚本')
+  if (metaLoading.health) labels.push('调度健康')
+  return labels.join('、')
+})
+
 const serverOptionMap = computed<Record<number, TaskServerOption>>(() => {
   return serverOptions.value.reduce((acc, item) => {
     acc[item.id] = item
@@ -385,6 +407,7 @@ const getRunStatusColor = (task: Task) => {
 }
 
 const loadGroupMeta = async () => {
+  if (!firstLoadDone.value) metaLoading.group = true
   try {
     const [projectRes, groupRes] = await Promise.all([
       getProjectList({ page: 1, page_size: 200 }),
@@ -394,10 +417,13 @@ const loadGroupMeta = async () => {
     groupOptions.value = groupRes.data || []
   } catch (error: any) {
     message.error(error.response?.data?.detail || '加载项目分组失败')
+  } finally {
+    metaLoading.group = false
   }
 }
 
 const loadServerOptions = async () => {
+  if (!firstLoadDone.value) metaLoading.server = true
   loadingServers.value = true
   try {
     const res = await getServerList({ page: 1, page_size: 200 })
@@ -412,10 +438,12 @@ const loadServerOptions = async () => {
     serverOptions.value = []
   } finally {
     loadingServers.value = false
+    metaLoading.server = false
   }
 }
 
 const loadScriptOptions = async () => {
+  if (!firstLoadDone.value) metaLoading.script = true
   try {
     const res = await getScriptList({ page: 1, page_size: 100 })
     const items = res.data || []
@@ -431,6 +459,8 @@ const loadScriptOptions = async () => {
     })
   } catch {
     scriptOptions.value = []
+  } finally {
+    metaLoading.script = false
   }
 }
 
@@ -454,6 +484,9 @@ const loadTasks = async () => {
     taskList.value = []
   } finally {
     loading.value = false
+    if (!firstLoadDone.value) {
+      firstLoadDone.value = true
+    }
   }
 }
 
@@ -601,6 +634,7 @@ const handleTrigger = async (record: Task) => {
 }
 
 const loadSchedulerHealth = async () => {
+  if (!firstLoadDone.value) metaLoading.health = true
   checkingScheduler.value = true
   try {
     const res = await getTaskSchedulerHealth()
@@ -611,6 +645,7 @@ const loadSchedulerHealth = async () => {
     message.error(error.response?.data?.detail || '健康检查失败')
   } finally {
     checkingScheduler.value = false
+    metaLoading.health = false
   }
 }
 
@@ -701,6 +736,10 @@ onUnmounted(() => {
 .task-tip-inline {
   color: #64748b;
   font-size: 12px;
+}
+
+.task-loading-hint {
+  margin-bottom: 12px;
 }
 
 .task-tip {

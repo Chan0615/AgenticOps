@@ -1,6 +1,5 @@
 """SaltStack 异步任务"""
 
-import asyncio
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -9,21 +8,12 @@ from celery_app import celery_app
 from app.db.database import AsyncSessionLocal
 from app.models.ops import ScheduledTask, Server, TaskExecutionLog, Script
 from app.services.salt_service import salt_service
+from app.tasks.async_runner import run_async
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_REMOTE_SCRIPT_DIR = "/root/ChAn"
-
-_TASK_LOOP = None
-
-
-def _run_async(coro):
-    global _TASK_LOOP
-    if _TASK_LOOP is None or _TASK_LOOP.is_closed():
-        _TASK_LOOP = asyncio.new_event_loop()
-    return _TASK_LOOP.run_until_complete(coro)
-
 
 def _parse_run_all_result(output) -> tuple[bool, int, str, str]:
     if isinstance(output, dict):
@@ -191,7 +181,7 @@ def execute_salt_command(self, task_id: int, server_ids: list, command: str):
     """通过 SaltStack 执行命令并写入执行日志。"""
     try:
         logger.info("开始执行 Salt 任务: task_id=%s, servers=%s", task_id, server_ids)
-        summaries = _run_async(_execute_salt_command_async(task_id, server_ids, command))
+        summaries = run_async(_execute_salt_command_async(task_id, server_ids, command))
         success_count = sum(1 for item in summaries if item.get("status") == "success")
         failed_count = len(summaries) - success_count
         if failed_count == 0:
@@ -230,7 +220,7 @@ def execute_salt_command(self, task_id: int, server_ids: list, command: str):
 def test_salt_connection(self, salt_env: str = "fuchunyun", target: str = "*"):
     """测试 Salt 连接。"""
     try:
-        result = _run_async(salt_service.test_ping(env_name=salt_env, target=target))
+        result = run_async(salt_service.test_ping(env_name=salt_env, target=target))
         return result
     except Exception as e:
         logger.error("Salt 连接测试失败: %s", e)

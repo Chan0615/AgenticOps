@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 from datetime import datetime
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ops import OpsGroup, ScheduledTask
@@ -10,6 +10,41 @@ from app.schemas.task import ScheduledTaskCreate, ScheduledTaskUpdate
 import logging
 
 logger = logging.getLogger(__name__)
+_task_indexes_checked = False
+
+
+async def _ensure_task_indexes(db: AsyncSession) -> None:
+    """Ensure common query indexes exist for task list endpoint."""
+    global _task_indexes_checked
+    if _task_indexes_checked:
+        return
+
+    index_specs = [
+        ("idx_ops_task_enabled_created_at", "enabled, created_at"),
+        ("idx_ops_task_project_group_created_at", "project_id, group_id, created_at"),
+    ]
+    created_any = False
+
+    for index_name, columns in index_specs:
+        try:
+            exists_result = await db.execute(
+                text(f"SHOW INDEX FROM ops_scheduled_task WHERE Key_name = '{index_name}'")
+            )
+            if exists_result.first() is not None:
+                continue
+
+            await db.execute(
+                text(f"CREATE INDEX {index_name} ON ops_scheduled_task ({columns})")
+            )
+            created_any = True
+            logger.info("Created missing index %s on ops_scheduled_task", index_name)
+        except Exception as exc:
+            logger.warning("Ensure index %s failed: %s", index_name, exc)
+
+    if created_any:
+        await db.commit()
+
+    _task_indexes_checked = True
 
 
 async def get_task(db: AsyncSession, task_id: int) -> Optional[ScheduledTask]:
@@ -32,6 +67,7 @@ async def get_tasks(
     group_id: Optional[int] = None,
 ) -> tuple[List[ScheduledTask], int]:
     """获取任务列表"""
+    await _ensure_task_indexes(db)
     query = select(ScheduledTask).options(joinedload(ScheduledTask.project), joinedload(ScheduledTask.group))
     count_query = select(func.count(ScheduledTask.id))
     
