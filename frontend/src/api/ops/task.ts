@@ -42,6 +42,22 @@ export interface TaskListResponse {
   total: number
 }
 
+export interface TaskSchedulerHealthData {
+  ok: boolean
+  workers: string[]
+  required_queues: string[]
+  queue_consumers: Record<string, number>
+  missing_queues: string[]
+  beat_healthy: boolean
+  detail: string
+}
+
+export interface TaskSchedulerHealthResponse {
+  code: number
+  message: string
+  data: TaskSchedulerHealthData
+}
+
 /**
  * 获取任务列表
  */
@@ -89,4 +105,18 @@ export const toggleTask = (id: number) => {
  */
 export const triggerTask = (taskId: number) => {
   return request.post<any>('/ops/tasks/trigger', { task_id: taskId })
+}
+
+/**
+ * 获取 worker/beat 健康状态
+ */
+export const getTaskSchedulerHealth = () => {
+  return request.get<any, TaskSchedulerHealthResponse>('/ops/tasks/health')
+}
+
+/**
+ * 手动触发一次调度扫描
+ */
+export const syncTaskSchedule = () => {
+  return request.post<any>('/ops/tasks/sync')
 }

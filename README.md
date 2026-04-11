@@ -30,12 +30,18 @@
 ### 运维模块（`/api/ops/*`）
 - 服务器管理：资产维护、连接测试
 - 脚本管理：脚本上传、编辑、分发
+- 脚本版本管理：
+  - 版本表与版本号自动递增（初始上传生成 `v1`）
+  - 版本历史列表、版本内容查看
+  - 版本对比（unified diff）
+  - 一键回滚到指定版本（支持回滚备注）
 - 定时任务：Cron 调度、启停与手动触发
 - 执行日志：任务执行记录与结果查看
 - 项目与分组：
   - 项目 CRUD（`/api/ops/projects`）
   - 分组 CRUD（`/api/ops/groups`）
   - 脚本/任务支持项目与分组维度过滤
+  - 系统默认项目/分组禁删（前后端双重保护）
 
 ### 知识库与助手
 - RAG 知识库管理
@@ -45,6 +51,9 @@
 - 运维与设置模块已迁移至 Ant Design Vue
 - 登录页/个人页采用插画风视觉方案
 - 菜单图标已支持下拉可选与预览
+- 任务创建页执行方式优化：
+  - 选择脚本且命令留空时自动执行（Python -> `python3`，Shell -> `bash`）
+  - 脚本下拉展示源文件名（如 `xxx.py` / `xxx.sh`）
 
 ## 计划开发功能
 
@@ -127,6 +136,25 @@ npm run dev
 - `backend/config.yaml` 为本地配置文件，已 gitignore，请勿提交敏感信息
 - 旧版 `/server/*` 路由已迁移到 `/ops/*`
 - 旧 SSH WebSocket 本地直连能力已下线为兼容提示，运维连接主流程基于 JumpServer API
+- 开发模式建议限制热重载目录，避免上传脚本触发后端自动重启：
+  - `uvicorn app.main:app --reload --reload-dir app --port 8000`
+
+## 脚本版本 API（新增）
+
+- `GET /api/ops/scripts/{script_id}/versions`：版本列表
+- `GET /api/ops/scripts/{script_id}/versions/{version_id}`：版本详情（含脚本内容）
+- `GET /api/ops/scripts/{script_id}/versions/compare`：版本对比
+  - 参数：`from_version_id`、`to_version_id`
+- `POST /api/ops/scripts/{script_id}/rollback`：回滚版本
+  - body: `{"version_id": 12, "note": "回滚到稳定版本"}`
+
+## 任务执行规则（当前）
+
+- 有 `command`：优先执行 `command`
+- 无 `command` 且有 `script_id`：自动从脚本生成执行命令
+  - Python 脚本：使用 `python3` 执行
+  - Shell 脚本：使用 `bash` 执行
+- 两者都为空：任务校验失败，不允许创建
 
 ## 分页参数限制（避免 422）
 
@@ -150,6 +178,15 @@ npm run dev
 - `python init_db.py`：初始化/重建数据库
 - `python add_server_menu.py`：旧菜单 `/server/*` 迁移到 `/ops/*`
 - `python add_ops_project_group.py`：项目/分组数据迁移脚本
+
+## 下一步建议（可直接排期）
+
+- 凭据中心（主机凭据加密、轮换、权限隔离）
+- 运维审批流（高风险任务强制审批）
+- 任务模板库（重启、巡检、清理、发布）
+- 告警中心（阈值、通知渠道、告警收敛）
+- 主机自动发现与 CMDB/云资源同步
+- 任务批量编排（分批执行、并发控制、失败回滚）
 
 ## API 文档
 

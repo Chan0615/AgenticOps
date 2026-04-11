@@ -49,6 +49,97 @@ def _ensure_celery_worker_available() -> None:
         raise HTTPException(status_code=503, detail="未检测到可用 Celery Worker，请先启动 worker")
 
 
+def _collect_celery_health() -> dict:
+    try:
+        inspector = celery_app.control.inspect(timeout=2)
+        ping_result = inspector.ping() if inspector else None
+        active_queues = inspector.active_queues() if inspector else None
+        stats = inspector.stats() if inspector else None
+    except Exception as exc:
+        logger.error("Celery 健康检查失败: %s", exc)
+        return {
+            "ok": False,
+            "workers": [],
+            "required_queues": ["salt", "scheduler"],
+            "queue_consumers": {},
+            "missing_queues": ["salt", "scheduler"],
+            "beat_healthy": False,
+            "detail": "Celery inspector 调用失败",
+        }
+
+    ping_result = ping_result or {}
+    active_queues = active_queues or {}
+    stats = stats or {}
+
+    workers = sorted(set(list(ping_result.keys()) + list(active_queues.keys()) + list(stats.keys())))
+
+    queue_consumers: dict[str, int] = {}
+    for _, queues in active_queues.items():
+        for queue_info in queues or []:
+            qname = queue_info.get("name")
+            if not qname:
+                continue
+            queue_consumers[qname] = queue_consumers.get(qname, 0) + 1
+
+    required_queues = ["salt", "scheduler"]
+    missing_queues = [q for q in required_queues if queue_consumers.get(q, 0) == 0]
+
+    beat_healthy = queue_consumers.get("scheduler", 0) > 0
+    ok = bool(workers) and not missing_queues
+
+    return {
+        "ok": ok,
+        "workers": workers,
+        "required_queues": required_queues,
+        "queue_consumers": queue_consumers,
+        "missing_queues": missing_queues,
+        "beat_healthy": beat_healthy,
+        "detail": "ok" if ok else "worker 或队列消费异常",
+    }
+
+
+@router.get("/health")
+async def get_task_scheduler_health(
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """检查 Celery worker/队列健康状态。"""
+    health = _collect_celery_health()
+    return {
+        "code": 200,
+        "message": "success",
+        "data": health,
+    }
+
+
+@router.post("/sync")
+@log_operation(module="运维-任务", action="立即同步任务", description="手动触发一次调度扫描")
+async def sync_scheduled_tasks(
+    current_user: UserResponse = Depends(get_current_user),
+):
+    """手动触发一次 scheduler 检查流程。"""
+    health = _collect_celery_health()
+    if not health.get("workers"):
+        raise HTTPException(status_code=503, detail="未检测到 Celery Worker，请先启动 worker")
+    if "scheduler" in (health.get("missing_queues") or []):
+        raise HTTPException(status_code=503, detail="未检测到 scheduler 队列消费者，请使用 -Q salt,scheduler 启动 worker")
+
+    from app.tasks.scheduler import check_and_execute_tasks
+
+    try:
+        async_result = check_and_execute_tasks.delay()
+    except Exception as exc:
+        logger.error("触发任务同步失败: %s", exc)
+        raise HTTPException(status_code=503, detail="调度扫描投递失败，Celery/Broker 不可用")
+
+    return {
+        "code": 200,
+        "message": "同步任务已触发",
+        "data": {
+            "celery_task_id": async_result.id,
+        },
+    }
+
+
 @router.get("", response_model=ScheduledTaskListResponse)
 async def list_tasks(
     page: int = Query(1, ge=1, description="页码"),

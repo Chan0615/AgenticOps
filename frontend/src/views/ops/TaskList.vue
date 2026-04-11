@@ -21,6 +21,27 @@
         <Button type="primary" @click="openModal()">创建任务</Button>
       </div>
 
+      <div class="task-toolbar">
+        <Space wrap>
+          <Button :loading="checkingScheduler" @click="loadSchedulerHealth">Worker/Beat 健康检查</Button>
+          <Button type="primary" ghost :loading="syncingScheduler" @click="handleSyncSchedule">立即同步任务</Button>
+          <Space size="small">
+            <span class="task-tip-inline">自动刷新（10分钟/次）</span>
+            <Switch v-model:checked="autoRefreshHealth" size="small" />
+          </Space>
+          <Tag :color="schedulerHealth?.ok ? 'green' : 'red'">
+            Worker: {{ schedulerHealth?.ok ? '正常' : '异常' }}
+          </Tag>
+          <Tag :color="schedulerHealth?.beat_healthy ? 'green' : 'orange'">
+            Scheduler队列: {{ schedulerHealth?.beat_healthy ? '正常' : '未消费' }}
+          </Tag>
+          <span v-if="schedulerHealth?.missing_queues?.length" class="task-tip-inline">
+            缺失队列: {{ schedulerHealth.missing_queues.join(', ') }}
+          </span>
+          <span v-if="healthCheckedAt" class="task-tip-inline">检查时间: {{ healthCheckedAt }}</span>
+        </Space>
+      </div>
+
       <Table :columns="columns" :data-source="taskList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'group_info'">{{ record.project_name || '-' }} / {{ record.group_name || '-' }}</template>
@@ -154,7 +175,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Button,
@@ -168,12 +189,23 @@ import {
   Radio,
   Row,
   Select,
+  Switch,
   Space,
   Table,
   Tag,
   message,
 } from 'ant-design-vue'
-import { createTask, deleteTask, getTaskDetail, getTaskList, triggerTask, updateTask } from '@/api/ops/task'
+import {
+  createTask,
+  deleteTask,
+  getTaskDetail,
+  getTaskList,
+  getTaskSchedulerHealth,
+  syncTaskSchedule,
+  triggerTask,
+  updateTask,
+  type TaskSchedulerHealthData,
+} from '@/api/ops/task'
 import { getServerList, type Server } from '@/api/ops/server'
 import { getScriptList } from '@/api/ops/script'
 import { getGroupList, getProjectList, type OpsGroup, type OpsProject } from '@/api/ops/group'
@@ -273,6 +305,12 @@ const loadingServers = ref(false)
 const selectedEnvironment = ref('')
 const scriptNameMap = reactive<Record<number, string>>({})
 const scriptOptions = ref<Array<{ id: number; name: string; group_id?: number; script_type?: string; source_file_name?: string }>>([])
+const checkingScheduler = ref(false)
+const syncingScheduler = ref(false)
+const schedulerHealth = ref<TaskSchedulerHealthData | null>(null)
+const autoRefreshHealth = ref(true)
+const healthCheckedAt = ref('')
+let healthTimer: number | null = null
 const formGroupOptions = computed(() => {
   if (!formData.project_id) return []
   return groupOptions.value.filter((g) => g.project_id === formData.project_id)
@@ -547,6 +585,49 @@ const handleTrigger = async (record: Task) => {
   }
 }
 
+const loadSchedulerHealth = async () => {
+  checkingScheduler.value = true
+  try {
+    const res = await getTaskSchedulerHealth()
+    schedulerHealth.value = res.data
+    healthCheckedAt.value = new Date().toLocaleString()
+  } catch (error: any) {
+    schedulerHealth.value = null
+    message.error(error.response?.data?.detail || '健康检查失败')
+  } finally {
+    checkingScheduler.value = false
+  }
+}
+
+const startHealthTimer = () => {
+  if (healthTimer !== null) return
+  healthTimer = window.setInterval(() => {
+    if (!autoRefreshHealth.value || checkingScheduler.value || syncingScheduler.value) return
+    loadSchedulerHealth()
+  }, 600000)
+}
+
+const stopHealthTimer = () => {
+  if (healthTimer !== null) {
+    clearInterval(healthTimer)
+    healthTimer = null
+  }
+}
+
+const handleSyncSchedule = async () => {
+  syncingScheduler.value = true
+  try {
+    await syncTaskSchedule()
+    message.success('已触发一次调度扫描')
+    await loadSchedulerHealth()
+    await loadTasks()
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '同步任务失败')
+  } finally {
+    syncingScheduler.value = false
+  }
+}
+
 const handleViewLogs = (record: Task) => {
   router.push({
     name: 'ops-logs',
@@ -581,11 +662,21 @@ onMounted(async () => {
   await loadGroupMeta()
   await loadServerOptions()
   await loadScriptOptions()
+  await loadSchedulerHealth()
+  startHealthTimer()
   await loadTasks()
+})
+
+onUnmounted(() => {
+  stopHealthTimer()
 })
 </script>
 
 <style scoped>
+.task-toolbar {
+  margin-bottom: 16px;
+}
+
 .task-command {
   margin: 0;
   white-space: pre-wrap;
@@ -593,6 +684,11 @@ onMounted(async () => {
   font-family: Consolas, Monaco, 'Courier New', monospace;
   font-size: 12px;
   color: #334155;
+}
+
+.task-tip-inline {
+  color: #64748b;
+  font-size: 12px;
 }
 
 .task-tip {

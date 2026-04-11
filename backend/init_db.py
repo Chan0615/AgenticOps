@@ -349,7 +349,7 @@ async def seed_data():
                 "path": "/ops/groups",
                 "icon": "Collection",
                 "type": "menu",
-                "sort_order": 5,
+                "sort_order": 0,
                 "parent_code": "ops",
                 "component": "ops/GroupManagement",
                 "description": "项目与分组管理",

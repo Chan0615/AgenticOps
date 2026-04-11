@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 from pathlib import Path
-from sqlalchemy import select, func
+from sqlalchemy import select, func, text
 from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.ops import OpsGroup, OpsScriptVersion, Script
@@ -10,6 +10,36 @@ from app.schemas.script import ScriptCreate, ScriptUpdate
 import logging
 
 logger = logging.getLogger(__name__)
+_version_table_checked = False
+
+
+async def _ensure_script_version_table(db: AsyncSession) -> None:
+    global _version_table_checked
+    if _version_table_checked:
+        return
+
+    await db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS ops_script_version (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                script_id INT NOT NULL,
+                version_no INT NOT NULL,
+                file_path VARCHAR(500) NOT NULL,
+                source_file_name VARCHAR(255) NULL,
+                note VARCHAR(500) NULL,
+                created_by VARCHAR(50) NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_ops_script_version_script_id (script_id),
+                UNIQUE KEY uq_ops_script_version_script_no (script_id, version_no),
+                CONSTRAINT fk_ops_script_version_script
+                    FOREIGN KEY (script_id) REFERENCES ops_script(id)
+                    ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """
+        )
+    )
+    _version_table_checked = True
 
 
 async def _append_script_version(
@@ -20,6 +50,8 @@ async def _append_script_version(
     note: Optional[str] = None,
     created_by: Optional[str] = None,
 ) -> OpsScriptVersion:
+    await _ensure_script_version_table(db)
+
     next_no_result = await db.execute(
         select(func.coalesce(func.max(OpsScriptVersion.version_no), 0) + 1).where(
             OpsScriptVersion.script_id == script_id
@@ -161,6 +193,7 @@ async def update_script(
 
 
 async def get_script_version(db: AsyncSession, script_id: int, version_id: int) -> Optional[OpsScriptVersion]:
+    await _ensure_script_version_table(db)
     result = await db.execute(
         select(OpsScriptVersion).where(
             OpsScriptVersion.id == version_id,
@@ -171,6 +204,7 @@ async def get_script_version(db: AsyncSession, script_id: int, version_id: int) 
 
 
 async def list_script_versions(db: AsyncSession, script_id: int) -> List[OpsScriptVersion]:
+    await _ensure_script_version_table(db)
     result = await db.execute(
         select(OpsScriptVersion)
         .where(OpsScriptVersion.script_id == script_id)
@@ -188,6 +222,7 @@ async def rollback_script_to_file(
     updated_by: Optional[str],
     script_type: Optional[str] = None,
 ) -> Optional[Script]:
+    await _ensure_script_version_table(db)
     db_script = await get_script(db, script_id)
     if not db_script:
         return None
@@ -210,6 +245,7 @@ async def rollback_script_to_file(
 
 async def delete_script(db: AsyncSession, script_id: int) -> bool:
     """删除脚本"""
+    await _ensure_script_version_table(db)
     db_script = await get_script(db, script_id)
     if not db_script:
         return False
