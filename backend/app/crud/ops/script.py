@@ -2,8 +2,9 @@
 
 from typing import List, Optional
 from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.ops import Script
+from app.models.ops import OpsGroup, Script
 from app.schemas.script import ScriptCreate, ScriptUpdate
 import logging
 
@@ -12,7 +13,11 @@ logger = logging.getLogger(__name__)
 
 async def get_script(db: AsyncSession, script_id: int) -> Optional[Script]:
     """根据ID获取脚本"""
-    result = await db.execute(select(Script).where(Script.id == script_id))
+    result = await db.execute(
+        select(Script)
+        .options(joinedload(Script.project), joinedload(Script.group))
+        .where(Script.id == script_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -22,9 +27,11 @@ async def get_scripts(
     limit: int = 20,
     name: Optional[str] = None,
     script_type: Optional[str] = None,
+    project_id: Optional[int] = None,
+    group_id: Optional[int] = None,
 ) -> tuple[List[Script], int]:
     """获取脚本列表"""
-    query = select(Script)
+    query = select(Script).options(joinedload(Script.project), joinedload(Script.group))
     count_query = select(func.count(Script.id))
     
     if name:
@@ -34,6 +41,14 @@ async def get_scripts(
     if script_type:
         query = query.where(Script.script_type == script_type)
         count_query = count_query.where(Script.script_type == script_type)
+
+    if project_id is not None:
+        query = query.where(Script.project_id == project_id)
+        count_query = count_query.where(Script.project_id == project_id)
+
+    if group_id is not None:
+        query = query.where(Script.group_id == group_id)
+        count_query = count_query.where(Script.group_id == group_id)
     
     total_result = await db.execute(count_query)
     total = total_result.scalar()
@@ -49,6 +64,13 @@ async def create_script(db: AsyncSession, script: ScriptCreate, created_by: str 
     """创建脚本"""
     payload = script.model_dump()
     file_path = payload.pop("file_path")
+    group_id = payload.get("group_id")
+    if group_id:
+        group_result = await db.execute(select(OpsGroup).where(OpsGroup.id == group_id))
+        group = group_result.scalar_one_or_none()
+        if not group:
+            raise ValueError("所属分组不存在")
+        payload["project_id"] = group.project_id
     db_script = Script(
         **payload,
         content=file_path,
@@ -69,6 +91,12 @@ async def update_script(db: AsyncSession, script_id: int, script: ScriptUpdate) 
     update_data = script.model_dump(exclude_unset=True)
     if "file_path" in update_data:
         update_data["content"] = update_data.pop("file_path")
+    if "group_id" in update_data and update_data["group_id"]:
+        group_result = await db.execute(select(OpsGroup).where(OpsGroup.id == update_data["group_id"]))
+        group = group_result.scalar_one_or_none()
+        if not group:
+            raise ValueError("所属分组不存在")
+        update_data["project_id"] = group.project_id
     for field, value in update_data.items():
         setattr(db_script, field, value)
     

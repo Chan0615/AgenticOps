@@ -11,6 +11,7 @@ from sqlalchemy import (
     Text,
     JSON,
     Float,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -42,6 +43,55 @@ class Server(Base):
     execution_logs = relationship("TaskExecutionLog", back_populates="server")
 
 
+class OpsProject(Base):
+    """运维项目模型"""
+
+    __tablename__ = "ops_project"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(100), nullable=False, comment="项目名称")
+    code = Column(String(100), nullable=False, unique=True, comment="项目编码")
+    description = Column(String(500), nullable=True, comment="描述")
+    created_by = Column(String(50), nullable=True, comment="创建人")
+    created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
+    updated_at = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间"
+    )
+
+    groups = relationship("OpsGroup", back_populates="project", cascade="all, delete-orphan")
+    scripts = relationship("Script", back_populates="project")
+    tasks = relationship("ScheduledTask", back_populates="project")
+
+
+class OpsGroup(Base):
+    """运维分组模型"""
+
+    __tablename__ = "ops_group"
+    __table_args__ = (
+        UniqueConstraint("project_id", "name", name="uq_ops_group_project_name"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    project_id = Column(
+        Integer,
+        ForeignKey("ops_project.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+        comment="所属项目ID",
+    )
+    name = Column(String(100), nullable=False, comment="分组名称")
+    description = Column(String(500), nullable=True, comment="描述")
+    created_by = Column(String(50), nullable=True, comment="创建人")
+    created_at = Column(DateTime, server_default=func.now(), comment="创建时间")
+    updated_at = Column(
+        DateTime, server_default=func.now(), onupdate=func.now(), comment="更新时间"
+    )
+
+    project = relationship("OpsProject", back_populates="groups")
+    scripts = relationship("Script", back_populates="group")
+    tasks = relationship("ScheduledTask", back_populates="group")
+
+
 class Script(Base):
     """脚本模型"""
 
@@ -49,6 +99,12 @@ class Script(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, comment="脚本名称")
+    project_id = Column(
+        Integer, ForeignKey("ops_project.id", ondelete="SET NULL"), nullable=True, index=True, comment="所属项目ID"
+    )
+    group_id = Column(
+        Integer, ForeignKey("ops_group.id", ondelete="SET NULL"), nullable=True, index=True, comment="所属分组ID"
+    )
     description = Column(String(500), nullable=True, comment="描述")
     content = Column(Text, nullable=False, comment="脚本内容")
     script_type = Column(String(20), default="shell", comment="脚本类型: shell/python")
@@ -61,6 +117,8 @@ class Script(Base):
     )
 
     # 关联关系
+    project = relationship("OpsProject", back_populates="scripts")
+    group = relationship("OpsGroup", back_populates="scripts")
     tasks = relationship("ScheduledTask", back_populates="script")
 
 
@@ -71,6 +129,12 @@ class ScheduledTask(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), nullable=False, comment="任务名称")
+    project_id = Column(
+        Integer, ForeignKey("ops_project.id", ondelete="SET NULL"), nullable=True, index=True, comment="所属项目ID"
+    )
+    group_id = Column(
+        Integer, ForeignKey("ops_group.id", ondelete="SET NULL"), nullable=True, index=True, comment="所属分组ID"
+    )
     description = Column(String(500), nullable=True, comment="描述")
     script_id = Column(
         Integer, ForeignKey("ops_script.id", ondelete="SET NULL"), nullable=True, comment="关联脚本ID"
@@ -91,6 +155,8 @@ class ScheduledTask(Base):
     )
 
     # 关联关系
+    project = relationship("OpsProject", back_populates="tasks")
+    group = relationship("OpsGroup", back_populates="tasks")
     script = relationship("Script", back_populates="tasks")
     execution_logs = relationship("TaskExecutionLog", back_populates="task")
 

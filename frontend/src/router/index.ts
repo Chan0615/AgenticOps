@@ -91,6 +91,12 @@ const router = createRouter({
               name: 'ops-logs',
               component: () => import('@/views/ops/LogList.vue'),
               meta: { title: '执行日志', keepAlive: false }
+            },
+            {
+              path: 'groups',
+              name: 'ops-groups',
+              component: () => import('@/views/ops/GroupManagement.vue'),
+              meta: { title: '项目分组', keepAlive: false }
             }
           ]
         },

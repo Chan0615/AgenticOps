@@ -11,8 +11,8 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix"
   },
   "dependencies": {
-    "@arco-design/web-vue": "^2.57.0",
     "@vueuse/core": "^10.7.2",
+    "ant-design-vue": "^4.2.6",
     "axios": "^1.6.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",

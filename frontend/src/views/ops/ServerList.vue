@@ -1,229 +1,162 @@
 <template>
-  <div class="server-list-container">
-    <a-card :bordered="false">
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <a-space>
-          <a-input
-            v-model="searchParams.name"
-            placeholder="搜索服务器名称"
-            allow-clear
-            style="width: 200px"
-            @press-enter="handleSearch"
-          >
-            <template #prefix>
-              <icon-search />
-            </template>
-          </a-input>
-          
-          <a-select
-            v-model="searchParams.environment"
-            placeholder="环境"
-            allow-clear
-            style="width: 150px"
-          >
-            <a-option value="fuchunyun">富春云</a-option>
-            <a-option value="aliyun">阿里云</a-option>
-            <a-option value="binjiang">滨江</a-option>
-            <a-option value="aliyunyc">阿里云压测</a-option>
-          </a-select>
-          
-          <a-select
-            v-model="searchParams.status"
-            placeholder="状态"
-            allow-clear
-            style="width: 120px"
-          >
-            <a-option value="online">在线</a-option>
-            <a-option value="offline">离线</a-option>
-            <a-option value="unknown">未知</a-option>
-          </a-select>
-          
-          <a-button type="primary" @click="handleSearch">
-            <template #icon><icon-search /></template>
-            搜索
-          </a-button>
-          
-          <a-button @click="handleReset">
-            <template #icon><icon-refresh /></template>
-            重置
-          </a-button>
-        </a-space>
+  <div class="server-page ant-illustration-page">
+    <Card :bordered="false">
+      <Space wrap style="margin-bottom: 16px">
+        <Input v-model:value="searchParams.name" placeholder="搜索服务器名称" allow-clear style="width: 220px" @pressEnter="handleSearch" />
+        <Select v-model:value="searchParams.environment" allow-clear placeholder="环境" style="width: 150px">
+          <SelectOption value="fuchunyun">富春云</SelectOption>
+          <SelectOption value="aliyun">阿里云</SelectOption>
+          <SelectOption value="binjiang">滨江</SelectOption>
+          <SelectOption value="aliyunyc">阿里云压测</SelectOption>
+        </Select>
+        <Select v-model:value="searchParams.status" allow-clear placeholder="状态" style="width: 130px">
+          <SelectOption value="online">在线</SelectOption>
+          <SelectOption value="offline">离线</SelectOption>
+          <SelectOption value="unknown">未知</SelectOption>
+        </Select>
+        <Button type="primary" @click="handleSearch">搜索</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
+
+      <div style="margin-bottom: 16px">
+        <Button type="primary" @click="openModal()">添加服务器</Button>
       </div>
 
-      <!-- 操作栏 -->
-      <div class="action-bar">
-        <a-button type="primary" @click="handleAdd">
-          <template #icon><icon-plus /></template>
-          添加服务器
-        </a-button>
-      </div>
+      <Table :columns="columns" :data-source="serverList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'status'">
+            <Tag :color="getStatusColor(record.status)">{{ getStatusText(record.status) }}</Tag>
+          </template>
+          <template v-else-if="column.key === 'environment'">
+            <Tag :color="getEnvColor(record.environment)">{{ getEnvText(record.environment) }}</Tag>
+          </template>
+          <template v-else-if="column.key === 'created_at'">{{ formatDateTime(record.created_at) }}</template>
+          <template v-else-if="column.key === 'actions'">
+            <Space>
+              <Button type="link" @click="handleTest(record)">测试连接</Button>
+              <Button type="link" @click="openModal(record)">编辑</Button>
+              <Popconfirm title="确定要删除该服务器吗？" @confirm="handleDelete(record.id)">
+                <Button type="link" danger>删除</Button>
+              </Popconfirm>
+            </Space>
+          </template>
+        </template>
+      </Table>
+    </Card>
 
-      <!-- 表格 -->
-      <a-table
-        :columns="columns"
-        :data="serverList"
-        :loading="loading"
-        :pagination="pagination"
-        :scroll="{ x: 1240 }"
-        table-layout-fixed
-        @page-change="handlePageChange"
-        @page-size-change="handlePageSizeChange"
-      >
-        <template #status="{ record }">
-          <a-tag :color="getStatusColor(record.status)">
-            {{ getStatusText(record.status) }}
-          </a-tag>
-        </template>
-        
-        <template #environment="{ record }">
-          <a-tag :color="getEnvColor(record.environment)">
-            {{ getEnvText(record.environment) }}
-          </a-tag>
-        </template>
+    <Modal v-model:open="modalOpen" :title="isEdit ? '编辑服务器' : '添加服务器'" width="720px" @ok="handleSubmit" @cancel="resetForm">
+      <Form :model="formData" layout="vertical">
+        <Row :gutter="16">
+          <Col :span="12">
+            <FormItem label="服务器名称" required>
+              <Input v-model:value="formData.name" placeholder="例如：生产服务器-01" />
+            </FormItem>
+          </Col>
+          <Col :span="12">
+            <FormItem label="IP地址/域名" required>
+              <Input v-model:value="formData.hostname" placeholder="例如：192.168.1.100" />
+            </FormItem>
+          </Col>
+        </Row>
 
-        <template #created_at="{ record }">
-          {{ formatDateTime(record.created_at) }}
-        </template>
-        
-        <template #actions="{ record }">
-          <a-space>
-            <a-tag color="blue" @click="handleTest(record)" :hoverable="true">
-              测试连接
-            </a-tag>
-            <a-tag @click="handleEdit(record)" :hoverable="true">
-              编辑
-            </a-tag>
-            <a-popconfirm
-              content="确定要删除该服务器吗？"
-              @ok="handleDelete(record.id)"
-            >
-              <a-tag color="red" size="small" @click="handleDelete(record.id)" :hoverable="true">
-                删除
-              </a-tag>
-            </a-popconfirm>
-          </a-space>
-        </template>
-      </a-table>
-    </a-card>
+        <Row :gutter="16">
+          <Col :span="8">
+            <FormItem label="SSH端口">
+              <InputNumber v-model:value="formData.port" :min="1" :max="65535" style="width: 100%" />
+            </FormItem>
+          </Col>
+          <Col :span="16">
+            <FormItem label="登录用户名">
+              <Input v-model:value="formData.username" placeholder="root" />
+            </FormItem>
+          </Col>
+        </Row>
 
-    <!-- 添加/编辑对话框 -->
-    <a-modal
-      v-model:visible="modalVisible"
-      :title="modalTitle"
-      width="700px"
-      @ok="handleSubmit"
-      @cancel="handleCancel"
-    >
-      <a-form :model="formData" layout="vertical">
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item label="服务器名称" required>
-              <a-input v-model="formData.name" placeholder="例如：生产服务器-01" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item label="IP地址/域名" required>
-              <a-input v-model="formData.hostname" placeholder="例如：192.168.1.100" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        
-        <a-row :gutter="16">
-          <a-col :span="8">
-            <a-form-item label="SSH端口">
-              <a-input-number v-model="formData.port" :min="1" :max="65535" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="16">
-            <a-form-item label="登录用户名">
-              <a-input v-model="formData.username" placeholder="root" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item label="环境">
-              <a-select v-model="formData.environment" placeholder="请选择环境">
-                <a-option value="fuchunyun">富春云</a-option>
-                <a-option value="aliyun">阿里云</a-option>
-                <a-option value="binjiang">滨江</a-option>
-                <a-option value="aliyunyc">阿里云压测</a-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item label="Salt Minion ID">
-              <a-input v-model="formData.salt_minion_id" placeholder="可选" />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        
-        <a-form-item label="描述">
-          <a-textarea
-            v-model="formData.description"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-            placeholder="服务器描述信息"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        <Row :gutter="16">
+          <Col :span="12">
+            <FormItem label="环境">
+              <Select v-model:value="formData.environment" placeholder="请选择环境">
+                <SelectOption value="fuchunyun">富春云</SelectOption>
+                <SelectOption value="aliyun">阿里云</SelectOption>
+                <SelectOption value="binjiang">滨江</SelectOption>
+                <SelectOption value="aliyunyc">阿里云压测</SelectOption>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col :span="12">
+            <FormItem label="Salt Minion ID">
+              <Input v-model:value="formData.salt_minion_id" placeholder="可选" />
+            </FormItem>
+          </Col>
+        </Row>
+
+        <FormItem label="描述">
+          <Input.TextArea v-model:value="formData.description" :rows="3" placeholder="服务器描述信息" />
+        </FormItem>
+      </Form>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { onMounted, reactive, ref } from 'vue'
 import {
-  IconSearch,
-  IconRefresh,
-  IconPlus,
-} from '@arco-design/web-vue/es/icon'
+  Button,
+  Card,
+  Col,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+  message,
+} from 'ant-design-vue'
 import {
-  getServerList,
   createServer,
-  updateServer,
   deleteServer,
+  getServerList,
   testServerConnection,
   type Server,
+  updateServer,
 } from '@/api/ops/server'
 import { formatDateTime } from '@/utils/datetime'
 
-// 搜索参数
+const FormItem = Form.Item
+const SelectOption = Select.Option
+
 const searchParams = reactive({
   name: '',
-  environment: '',
-  status: '',
+  environment: undefined as string | undefined,
+  status: undefined as string | undefined,
 })
 
-// 表格数据
 const serverList = ref<Server[]>([])
 const loading = ref(false)
 const pagination = reactive({
   current: 1,
   pageSize: 20,
   total: 0,
-  showTotal: true,
-  showPageSize: true,
+  showSizeChanger: true,
 })
 
-// 表格列定义
 const columns = [
-      { title: '主机', dataIndex: 'name', width: 150 },
-      { title: 'IP', dataIndex: 'hostname', width: 130 },
-      { title: '端口', dataIndex: 'port', width: 60 },
-      { title: '用户', dataIndex: 'username', width: 80 },
-      { title: '环境', slotName: 'environment', width: 100 },
-      { title: '状态', slotName: 'status', width: 80 },
-      { title: '描述', dataIndex: 'description', width: 220, ellipsis: true, tooltip: true },
-      { title: '创建', slotName: 'created_at', width: 170 },
-      { title: '操作', slotName: 'actions', width: 200 },
+  { title: '主机', dataIndex: 'name', key: 'name', width: 150 },
+  { title: 'IP', dataIndex: 'hostname', key: 'hostname', width: 130 },
+  { title: '端口', dataIndex: 'port', key: 'port', width: 70 },
+  { title: '用户', dataIndex: 'username', key: 'username', width: 90 },
+  { title: '环境', key: 'environment', width: 110 },
+  { title: '状态', key: 'status', width: 90 },
+  { title: '描述', dataIndex: 'description', key: 'description' },
+  { title: '创建', key: 'created_at', width: 180 },
+  { title: '操作', key: 'actions', width: 220, fixed: 'right' as const },
 ]
 
-// 模态框
-const modalVisible = ref(false)
-const modalTitle = ref('添加服务器')
+const modalOpen = ref(false)
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
 
@@ -237,25 +170,21 @@ const formData = reactive<Partial<Server>>({
   description: '',
 })
 
-// 加载服务器列表
 const loadServers = async () => {
   loading.value = true
   try {
-    const params = {
+    const params: Record<string, any> = {
       page: pagination.current,
       page_size: pagination.pageSize,
-      ...searchParams,
     }
+    if (searchParams.name) params.name = searchParams.name
+    if (searchParams.environment) params.environment = searchParams.environment
+    if (searchParams.status) params.status = searchParams.status
     const res = await getServerList(params)
-    // 响应拦截器已经返回 response.data，所以 res 就是 {code, message, data, total}
     serverList.value = res.data || []
     pagination.total = res.total || 0
   } catch (error: any) {
-    console.error('加载服务器列表失败:', error)
-    // 只有在真正的错误时才显示提示
-    if (error.response && error.response.status !== 401) {
-      Message.error('加载服务器列表失败: ' + (error.response?.data?.detail || error.message))
-    }
+    message.error(error.response?.data?.detail || '加载服务器列表失败')
     serverList.value = []
     pagination.total = 0
   } finally {
@@ -263,104 +192,84 @@ const loadServers = async () => {
   }
 }
 
-// 搜索
 const handleSearch = () => {
   pagination.current = 1
   loadServers()
 }
 
-// 重置
 const handleReset = () => {
   searchParams.name = ''
-  searchParams.environment = ''
-  searchParams.status = ''
+  searchParams.environment = undefined
+  searchParams.status = undefined
   pagination.current = 1
   loadServers()
 }
 
-// 分页
-const handlePageChange = (page: number) => {
-  pagination.current = page
+const handleTableChange = (pageInfo: any) => {
+  pagination.current = pageInfo.current
+  pagination.pageSize = pageInfo.pageSize
   loadServers()
 }
 
-const handlePageSizeChange = (pageSize: number) => {
-  pagination.pageSize = pageSize
-  pagination.current = 1
-  loadServers()
+const openModal = (record?: Server) => {
+  if (record) {
+    isEdit.value = true
+    editingId.value = record.id
+    Object.assign(formData, record)
+  } else {
+    resetForm()
+  }
+  modalOpen.value = true
 }
 
-// 添加
-const handleAdd = () => {
-  isEdit.value = false
-  modalTitle.value = '添加服务器'
-  resetForm()
-  modalVisible.value = true
-}
-
-// 编辑
-const handleEdit = (record: Server) => {
-  isEdit.value = true
-  editingId.value = record.id
-  modalTitle.value = '编辑服务器'
-  Object.assign(formData, record)
-  modalVisible.value = true
-}
-
-// 删除
 const handleDelete = async (id: number) => {
   try {
     await deleteServer(id)
-    Message.success('删除成功')
+    message.success('删除成功')
     loadServers()
-  } catch (error) {
-    Message.error('删除失败')
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '删除失败')
   }
 }
 
-// 测试连接
 const handleTest = async (record: Server) => {
   try {
-    const res = await testServerConnection({
-      server_id: record.id,
-      test_type: 'salt',
-    })
+    const res = await testServerConnection({ server_id: record.id, test_type: 'salt' })
     if (res.code === 200) {
-      Message.success('连接测试成功')
+      message.success('连接测试成功')
       loadServers()
     } else {
-      Message.error(res.message || '连接测试失败')
+      message.error(res.message || '连接测试失败')
     }
-  } catch (error) {
-    Message.error('连接测试失败')
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '连接测试失败')
   }
 }
 
-// 提交
 const handleSubmit = async () => {
+  if (!formData.name || !formData.hostname) {
+    message.warning('请填写服务器名称和IP地址')
+    return
+  }
   try {
     if (isEdit.value && editingId.value) {
       await updateServer(editingId.value, formData)
-      Message.success('更新成功')
+      message.success('更新成功')
     } else {
       await createServer(formData)
-      Message.success('创建成功')
+      message.success('创建成功')
     }
-    modalVisible.value = false
+    resetForm()
     loadServers()
-  } catch (error) {
-    Message.error(isEdit.value ? '更新失败' : '创建失败')
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || (isEdit.value ? '更新失败' : '创建失败'))
   }
 }
 
-// 取消
-const handleCancel = () => {
-  modalVisible.value = false
-  resetForm()
-}
-
-// 重置表单
 const resetForm = () => {
+  modalOpen.value = false
+  isEdit.value = false
+  editingId.value = null
   formData.name = ''
   formData.hostname = ''
   formData.port = 22
@@ -370,14 +279,13 @@ const resetForm = () => {
   formData.description = ''
 }
 
-// 状态颜色
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
     online: 'green',
     offline: 'red',
-    unknown: 'gray',
+    unknown: 'default',
   }
-  return colors[status] || 'gray'
+  return colors[status] || 'default'
 }
 
 const getStatusText = (status: string) => {
@@ -389,7 +297,6 @@ const getStatusText = (status: string) => {
   return texts[status] || status
 }
 
-// 环境颜色
 const getEnvColor = (env: string) => {
   const colors: Record<string, string> = {
     fuchunyun: 'blue',
@@ -397,7 +304,7 @@ const getEnvColor = (env: string) => {
     binjiang: 'green',
     aliyunyc: 'purple',
   }
-  return colors[env] || 'gray'
+  return colors[env] || 'default'
 }
 
 const getEnvText = (env: string) => {
@@ -414,23 +321,3 @@ onMounted(() => {
   loadServers()
 })
 </script>
-
-<style scoped>
-.server-list-container {
-  padding: 20px;
-}
-
-.search-bar {
-  margin-bottom: 16px;
-}
-
-.action-bar {
-  margin-bottom: 16px;
-}
-
-.server-list-container :deep(.arco-table-th),
-.server-list-container :deep(.arco-table-td) {
-  vertical-align: middle;
-  white-space: nowrap;
-}
-</style>

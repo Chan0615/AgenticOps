@@ -1,0 +1,1 @@
+import{a as r}from"./index-rPZskqnf.js";const o=e=>r.get("/ops/servers",{params:e}),n=e=>r.post("/ops/servers",e),p=(e,s)=>r.put(`/ops/servers/${e}`,s),a=e=>r.delete(`/ops/servers/${e}`),c=e=>r.post("/ops/servers/test-connection",e);export{n as c,a as d,o as g,c as t,p as u};

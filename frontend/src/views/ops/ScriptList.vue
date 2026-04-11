@@ -1,311 +1,242 @@
 <template>
-  <div class="script-list-container">
-    <a-card :bordered="false">
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <a-space>
-          <a-input
-            v-model="searchParams.name"
-            placeholder="搜索脚本名称"
-            allow-clear
-            style="width: 200px"
-            @press-enter="handleSearch"
-          >
-            <template #prefix>
-              <icon-search />
-            </template>
-          </a-input>
-          
-          <a-select
-            v-model="searchParams.script_type"
-            placeholder="脚本类型"
-            allow-clear
-            style="width: 150px"
-          >
-            <a-option value="shell">Shell</a-option>
-            <a-option value="python">Python</a-option>
-          </a-select>
-          
-          <a-button type="primary" @click="handleSearch">
-            <template #icon><icon-search /></template>
-            搜索
-          </a-button>
-          
-          <a-button @click="handleReset">
-            <template #icon><icon-refresh /></template>
-            重置
-          </a-button>
-        </a-space>
+  <div class="script-page ant-illustration-page">
+    <Card :bordered="false">
+      <Space wrap style="margin-bottom: 16px">
+        <Input v-model:value="searchParams.name" placeholder="搜索脚本名称" allow-clear style="width: 220px" @pressEnter="handleSearch" />
+        <Select v-model:value="searchParams.script_type" allow-clear placeholder="脚本类型" style="width: 140px">
+          <SelectOption value="shell">Shell</SelectOption>
+          <SelectOption value="python">Python</SelectOption>
+        </Select>
+        <Select v-model:value="searchParams.project_id" allow-clear placeholder="项目" style="width: 180px" @change="handleSearchProjectChange">
+          <SelectOption v-for="item in projectOptions" :key="item.id" :value="item.id">{{ item.name }}</SelectOption>
+        </Select>
+        <Select v-model:value="searchParams.group_id" allow-clear placeholder="分组" style="width: 180px">
+          <SelectOption v-for="item in searchGroupOptions" :key="item.id" :value="item.id">{{ item.name }}</SelectOption>
+        </Select>
+        <Button type="primary" @click="handleSearch">搜索</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
+
+      <div style="margin-bottom: 16px">
+        <Button type="primary" @click="openModal()">创建脚本</Button>
       </div>
 
-      <!-- 操作栏 -->
-      <div class="action-bar">
-        <a-button type="primary" @click="handleAdd">
-          <template #icon><icon-plus /></template>
-          创建脚本
-        </a-button>
-      </div>
-
-      <!-- 表格 -->
-      <a-table
-        :columns="columns"
-        :data="scriptList"
-        :loading="loading"
-        :pagination="pagination"
-        :scroll="{ x: 1200 }"
-        table-layout-fixed
-        @page-change="handlePageChange"
-        @page-size-change="handlePageSizeChange"
-      >
-        <template #script_type="{ record }">
-          <a-tag :color="record.script_type === 'shell' ? 'green' : 'blue'">
-            {{ record.script_type.toUpperCase() }}
-          </a-tag>
+      <Table :columns="columns" :data-source="scriptList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'script_type'">
+            <Tag :color="record.script_type === 'shell' ? 'green' : 'blue'">{{ record.script_type?.toUpperCase() }}</Tag>
+          </template>
+          <template v-else-if="column.key === 'group_info'">
+            {{ record.project_name || '-' }} / {{ record.group_name || '-' }}
+          </template>
+          <template v-else-if="column.key === 'timeout'">{{ record.timeout }} 秒</template>
+          <template v-else-if="column.key === 'created_at'">{{ formatDateTime(record.created_at) }}</template>
+          <template v-else-if="column.key === 'actions'">
+            <Space>
+              <Button type="link" @click="handleView(record)">查看</Button>
+              <Button type="link" @click="openDistribute(record)">分发</Button>
+              <Button type="link" @click="openModal(record)">编辑</Button>
+              <Popconfirm title="确定删除该脚本吗？" @confirm="handleDelete(record.id)">
+                <Button type="link" danger>删除</Button>
+              </Popconfirm>
+            </Space>
+          </template>
         </template>
-        
-        <template #timeout="{ record }">
-          {{ record.timeout }}秒
-        </template>
+      </Table>
+    </Card>
 
-        <template #created_at="{ record }">
-          {{ formatDateTime(record.created_at) }}
-        </template>
-        
-        <template #actions="{ record }">
-          <a-space>
-            <a-tag color="blue" @click="handleView(record)" :hoverable="true">
-              查看
-            </a-tag>
-            <a-tag color="arcoblue" @click="openDistribute(record)" :hoverable="true">
-              分发
-            </a-tag>
-            <a-tag @click="handleEdit(record)" :hoverable="true">
-              编辑
-            </a-tag>
-            <a-popconfirm
-              content="确定要删除该脚本吗？"
-              @ok="handleDelete(record.id)"
-            >
-              <a-tag color="red" size="small" :hoverable="true">
-                删除
-              </a-tag>
-            </a-popconfirm>
-          </a-space>
-        </template>
-      </a-table>
-    </a-card>
+    <Modal v-model:open="modalOpen" :title="isEdit ? '编辑脚本' : '创建脚本'" width="860px" @ok="handleSubmit" @cancel="resetForm">
+      <Form :model="formData" layout="vertical">
+        <Row :gutter="16">
+          <Col :span="12">
+            <FormItem label="脚本名称" required>
+              <Input v-model:value="formData.name" placeholder="例如：日志清理脚本" />
+            </FormItem>
+          </Col>
+          <Col :span="12">
+            <FormItem label="脚本类型" required>
+              <Select v-model:value="formData.script_type">
+                <SelectOption value="shell">Shell</SelectOption>
+                <SelectOption value="python">Python</SelectOption>
+              </Select>
+            </FormItem>
+          </Col>
+        </Row>
 
-    <!-- 添加/编辑对话框 -->
-    <a-modal
-      v-model:visible="modalVisible"
-      :title="modalTitle"
-      width="900px"
-      @ok="handleSubmit"
-      @cancel="handleCancel"
-    >
-      <a-form :model="formData" layout="vertical">
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item label="脚本名称" required>
-              <a-input v-model="formData.name" placeholder="例如：日志清理脚本" />
-            </a-form-item>
-          </a-col>
-          <a-col :span="12">
-            <a-form-item label="脚本类型" required>
-              <a-select v-model="formData.script_type">
-                <a-option value="shell">Shell</a-option>
-                <a-option value="python">Python</a-option>
-              </a-select>
-            </a-form-item>
-          </a-col>
-        </a-row>
-        
-        <a-form-item label="上传脚本文件" required>
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept=".sh,.py,.bash,.txt"
-            style="display: none"
-            @change="onFileInputChange"
-          />
-          <a-space>
-            <a-button type="outline" @click="triggerFileSelect">选择脚本文件</a-button>
-          </a-space>
-          <div v-if="selectedFileName" style="margin-top: 8px;">
-            <a-tag color="arcoblue" closable @close="handleFileRemove">
-              已选择: {{ selectedFileName }}
-            </a-tag>
-          </div>
-        </a-form-item>
-        
-        <a-row :gutter="16">
-          <a-col :span="12">
-            <a-form-item label="超时时间（秒）">
-              <a-input-number
-                v-model="formData.timeout"
-                :min="1"
-                :max="3600"
-                style="width: 100%"
-              />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        
-        <a-form-item label="描述">
-          <a-textarea
-            v-model="formData.description"
-            :auto-size="{ minRows: 2, maxRows: 4 }"
-            placeholder="脚本描述信息"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        <Row :gutter="16">
+          <Col :span="12">
+            <FormItem label="所属项目" required>
+              <Select v-model:value="formData.project_id" placeholder="请选择项目" @change="handleFormProjectChange">
+                <SelectOption v-for="item in projectOptions" :key="item.id" :value="item.id">{{ item.name }}</SelectOption>
+              </Select>
+            </FormItem>
+          </Col>
+          <Col :span="12">
+            <FormItem label="所属分组" required>
+              <Select v-model:value="formData.group_id" :disabled="!formData.project_id" placeholder="请选择分组">
+                <SelectOption v-for="item in formGroupOptions" :key="item.id" :value="item.id">{{ item.name }}</SelectOption>
+              </Select>
+            </FormItem>
+          </Col>
+        </Row>
 
-    <a-modal
-      v-model:visible="distributeVisible"
-      title="分发脚本"
-      width="720px"
-      @ok="handleDistributeSubmit"
-      @cancel="handleDistributeCancel"
-    >
-      <a-form :model="distributeForm" layout="vertical">
-        <a-form-item label="脚本">
-          <a-input :model-value="distributingScript?.name || ''" disabled />
-        </a-form-item>
+        <FormItem :label="isEdit ? '替换脚本文件（可选）' : '上传脚本文件'" :required="!isEdit">
+          <Input type="file" @change="onFileInputChange" />
+          <div v-if="selectedFileName" class="upload-tip">已选择：{{ selectedFileName }}</div>
+        </FormItem>
 
-        <a-form-item label="目标服务器" required>
-          <a-select
-            v-model="distributeForm.server_ids"
-            multiple
-            allow-search
-            placeholder="请选择服务器"
-          >
-            <a-option v-for="s in serverOptions" :key="s.id" :value="s.id">
-              {{ s.name }} ({{ s.hostname }})
-            </a-option>
-          </a-select>
-        </a-form-item>
+        <Row :gutter="16">
+          <Col :span="12">
+            <FormItem label="超时时间（秒）">
+              <InputNumber v-model:value="formData.timeout" :min="1" :max="3600" style="width: 100%" />
+            </FormItem>
+          </Col>
+        </Row>
 
-        <a-form-item label="目标目录" required>
-          <a-input v-model="distributeForm.target_directory" placeholder="例如：/opt/scripts" />
-        </a-form-item>
+        <FormItem label="描述">
+          <Input v-model:value="formData.description" placeholder="脚本描述信息" />
+        </FormItem>
+      </Form>
+    </Modal>
 
-        <a-form-item label="目标文件名（可选）">
-          <a-input v-model="distributeForm.file_name" placeholder="例如：deploy.sh" />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+    <Modal v-model:open="distributeOpen" title="分发脚本" width="720px" @ok="handleDistributeSubmit" @cancel="resetDistributeForm">
+      <Form :model="distributeForm" layout="vertical">
+        <FormItem label="脚本">
+          <Input :value="distributingScript?.name" disabled />
+        </FormItem>
+        <FormItem label="目标服务器" required>
+          <Select v-model:value="distributeForm.server_ids" mode="multiple" placeholder="请选择服务器">
+            <SelectOption v-for="item in serverOptions" :key="item.id" :value="item.id">{{ item.name }} ({{ item.hostname }})</SelectOption>
+          </Select>
+        </FormItem>
+        <FormItem label="目标目录" required>
+          <Input v-model:value="distributeForm.target_directory" placeholder="例如：/opt/scripts" />
+        </FormItem>
+        <FormItem label="目标文件名（可选）">
+          <Input v-model:value="distributeForm.file_name" placeholder="例如：deploy.sh" />
+        </FormItem>
+      </Form>
+    </Modal>
 
-    <!-- 查看对话框 -->
-    <a-modal
-      v-model:visible="viewVisible"
-      title="查看脚本"
-      width="900px"
-      :footer="false"
-    >
-      <a-spin :loading="viewLoading" style="width: 100%">
-      <a-descriptions :column="2" bordered>
-        <a-descriptions-item label="脚本名称">
-          {{ viewData.name }}
-        </a-descriptions-item>
-        <a-descriptions-item label="脚本类型">
-          <a-tag :color="viewData.script_type === 'shell' ? 'green' : 'blue'">
-            {{ (viewData.script_type || '').toUpperCase() }}
-          </a-tag>
-        </a-descriptions-item>
-        <a-descriptions-item label="超时时间">
-          {{ viewData.timeout }}秒
-        </a-descriptions-item>
-        <a-descriptions-item label="创建人">
-          {{ viewData.created_by || '-' }}
-        </a-descriptions-item>
-        <a-descriptions-item label="创建时间" :span="2">
-          {{ formatDateTime(viewData.created_at) }}
-        </a-descriptions-item>
-        <a-descriptions-item label="描述" :span="2">
-          {{ viewData.description || '-' }}
-        </a-descriptions-item>
-      </a-descriptions>
-      
-      <a-divider>脚本内容</a-divider>
-      <div class="script-content" v-html="highlightedContent"></div>
-      </a-spin>
-    </a-modal>
+    <Modal v-model:open="viewOpen" title="脚本详情" width="900px" :footer="null">
+      <Descriptions bordered :column="2">
+        <DescriptionsItem label="脚本名称">{{ viewData.name }}</DescriptionsItem>
+        <DescriptionsItem label="脚本类型">
+          <Tag :color="viewData.script_type === 'shell' ? 'green' : 'blue'">{{ (viewData.script_type || '').toUpperCase() }}</Tag>
+        </DescriptionsItem>
+        <DescriptionsItem label="项目/分组">{{ viewData.project_name || '-' }} / {{ viewData.group_name || '-' }}</DescriptionsItem>
+        <DescriptionsItem label="超时时间">{{ viewData.timeout }} 秒</DescriptionsItem>
+        <DescriptionsItem label="创建人">{{ viewData.created_by || '-' }}</DescriptionsItem>
+        <DescriptionsItem label="创建时间">{{ formatDateTime(viewData.created_at) }}</DescriptionsItem>
+        <DescriptionsItem label="描述" :span="2">{{ viewData.description || '-' }}</DescriptionsItem>
+      </Descriptions>
+      <Divider>脚本内容</Divider>
+      <pre class="script-pre">{{ viewData.content || '暂无脚本内容' }}</pre>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import { Message } from '@arco-design/web-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  IconSearch,
-  IconRefresh,
-  IconPlus,
-} from '@arco-design/web-vue/es/icon'
-import { getScriptList, getScriptDetail, deleteScript, updateScript, uploadScript, replaceScriptFile, distributeScript } from '@/api/ops/script'
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+  message,
+} from 'ant-design-vue'
+import { deleteScript, distributeScript, getScriptDetail, getScriptList, replaceScriptFile, updateScript, uploadScript } from '@/api/ops/script'
 import { getServerList, type Server } from '@/api/ops/server'
+import { getGroupList, getProjectList, type OpsGroup, type OpsProject } from '@/api/ops/group'
 import { formatDateTime } from '@/utils/datetime'
-import hljs from 'highlight.js/lib/core'
-import python from 'highlight.js/lib/languages/python'
-import bash from 'highlight.js/lib/languages/bash'
-import 'highlight.js/styles/github-dark.css'
 
-hljs.registerLanguage('python', python)
-hljs.registerLanguage('bash', bash)
+const FormItem = Form.Item
+const SelectOption = Select.Option
+const DescriptionsItem = Descriptions.Item
 
 interface Script {
   id: number
   name: string
+  project_id?: number
+  group_id?: number
+  project_name?: string
+  group_name?: string
   description?: string
   content?: string
   file_path?: string
   source_file_name?: string
   script_type: string
-  parameters?: any[]
   timeout: number
   created_by?: string
   created_at: string
   updated_at: string
 }
 
-// 搜索参数
 const searchParams = reactive({
   name: '',
-  script_type: '',
+  script_type: undefined as string | undefined,
+  project_id: undefined as number | undefined,
+  group_id: undefined as number | undefined,
 })
 
-// 表格数据
+const projectOptions = ref<OpsProject[]>([])
+const groupOptions = ref<OpsGroup[]>([])
+const searchGroupOptions = computed(() => {
+  if (!searchParams.project_id) return groupOptions.value
+  return groupOptions.value.filter((g) => g.project_id === searchParams.project_id)
+})
+const formGroupOptions = computed(() => {
+  if (!formData.project_id) return []
+  return groupOptions.value.filter((g) => g.project_id === formData.project_id)
+})
+
 const scriptList = ref<Script[]>([])
 const loading = ref(false)
 const pagination = reactive({
   current: 1,
   pageSize: 20,
   total: 0,
-  showTotal: true,
-  showPageSize: true,
+  showSizeChanger: true,
 })
 
-// 表格列定义
 const columns = [
-  { title: '脚本', dataIndex: 'name', width: 200 },
-  { title: '类型', slotName: 'script_type', width: 100 },
-  { title: '超时', slotName: 'timeout', width: 90 },
-  { title: '描述', dataIndex: 'description', width: 260, ellipsis: true, tooltip: true },
-  { title: '创建人', dataIndex: 'created_by', width: 90 },
-  { title: '创建', slotName: 'created_at', width: 170 },
-  { title: '操作', slotName: 'actions', width: 220 },
+  { title: '脚本名称', dataIndex: 'name', key: 'name', width: 180 },
+  { title: '项目/分组', key: 'group_info', width: 220 },
+  { title: '类型', key: 'script_type', width: 100 },
+  { title: '超时', key: 'timeout', width: 100 },
+  { title: '描述', dataIndex: 'description', key: 'description' },
+  { title: '创建人', dataIndex: 'created_by', key: 'created_by', width: 100 },
+  { title: '创建时间', key: 'created_at', width: 180 },
+  { title: '操作', key: 'actions', width: 220, fixed: 'right' as const },
 ]
 
-// 模态框
-const modalVisible = ref(false)
-const modalTitle = ref('创建脚本')
+const modalOpen = ref(false)
 const isEdit = ref(false)
 const editingId = ref<number | null>(null)
-const fileInputRef = ref<HTMLInputElement | null>(null)
 const selectedUploadFile = ref<File | null>(null)
 const selectedFileName = ref('')
 
-const distributeVisible = ref(false)
+const formData = reactive<Partial<Script>>({
+  name: '',
+  project_id: undefined,
+  group_id: undefined,
+  script_type: 'shell',
+  timeout: 300,
+  description: '',
+})
+
+const distributeOpen = ref(false)
 const distributingScript = ref<Script | null>(null)
 const serverOptions = ref<Server[]>([])
 const distributeForm = reactive({
@@ -314,165 +245,91 @@ const distributeForm = reactive({
   file_name: '',
 })
 
-const formData = reactive<Partial<Script>>({
-  name: '',
-  script_type: 'shell',
-  timeout: 300,
-  description: '',
-})
-
-// 查看
-const viewVisible = ref(false)
+const viewOpen = ref(false)
 const viewData = ref<Script>({} as Script)
-const viewLoading = ref(false)
-const highlightedContent = computed(() => {
-  const raw = viewData.value?.content || '暂无脚本内容'
-  if (!viewData.value?.content) {
-    return `<pre><code>${raw}</code></pre>`
-  }
-  const lang = viewData.value.script_type === 'python' ? 'python' : 'bash'
-  const html = hljs.highlight(raw, { language: lang }).value
-  return `<pre><code class="hljs language-${lang}">${html}</code></pre>`
-})
 
-// 加载脚本列表
+const loadGroupMeta = async () => {
+  try {
+    const [projectRes, groupRes] = await Promise.all([
+      getProjectList({ page: 1, page_size: 200 }),
+      getGroupList({ page: 1, page_size: 200 }),
+    ])
+    projectOptions.value = projectRes.data || []
+    groupOptions.value = groupRes.data || []
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '加载项目分组失败')
+  }
+}
+
 const loadScripts = async () => {
   loading.value = true
   try {
-    const res = await getScriptList({
+    const params: Record<string, any> = {
       page: pagination.current,
       page_size: pagination.pageSize,
-      ...searchParams,
-    })
+    }
+    if (searchParams.name) params.name = searchParams.name
+    if (searchParams.script_type) params.script_type = searchParams.script_type
+    if (searchParams.project_id) params.project_id = searchParams.project_id
+    if (searchParams.group_id) params.group_id = searchParams.group_id
+    const res = await getScriptList(params)
     scriptList.value = res.data || []
     pagination.total = res.total || 0
   } catch (error: any) {
-    console.error('加载脚本列表失败:', error)
-    if (error.response && error.response.status !== 401) {
-      Message.error('加载脚本列表失败: ' + (error.response?.data?.detail || error.message))
-    }
+    message.error(error.response?.data?.detail || '加载脚本列表失败')
     scriptList.value = []
-    pagination.total = 0
   } finally {
     loading.value = false
   }
 }
 
-// 搜索
 const handleSearch = () => {
   pagination.current = 1
   loadScripts()
 }
 
-// 重置
 const handleReset = () => {
   searchParams.name = ''
-  searchParams.script_type = ''
+  searchParams.script_type = undefined
+  searchParams.project_id = undefined
+  searchParams.group_id = undefined
   pagination.current = 1
   loadScripts()
 }
 
-// 分页
-const handlePageChange = (page: number) => {
-  pagination.current = page
+const handleSearchProjectChange = () => {
+  searchParams.group_id = undefined
+}
+
+const handleTableChange = (pageInfo: any) => {
+  pagination.current = pageInfo.current
+  pagination.pageSize = pageInfo.pageSize
   loadScripts()
 }
 
-const handlePageSizeChange = (pageSize: number) => {
-  pagination.pageSize = pageSize
-  pagination.current = 1
-  loadScripts()
-}
-
-// 添加
-const handleAdd = () => {
-  isEdit.value = false
-  modalTitle.value = '创建脚本'
-  resetForm()
-  modalVisible.value = true
-}
-
-// 编辑
-const handleEdit = (record: Script) => {
-  isEdit.value = true
-  editingId.value = record.id
-  modalTitle.value = '编辑脚本'
-  Object.assign(formData, record)
-  selectedUploadFile.value = null
-  selectedFileName.value = ''
-  modalVisible.value = true
-}
-
-// 查看
-const handleView = async (record: Script) => {
-  viewVisible.value = true
-  viewLoading.value = true
-  try {
-    const detail = await getScriptDetail(record.id)
-    viewData.value = detail
-  } catch (error: any) {
-    viewData.value = record
-    Message.error(error.response?.data?.detail || '加载脚本详情失败')
-  } finally {
-    viewLoading.value = false
-  }
-}
-
-// 删除
-const handleDelete = async (id: number) => {
-  try {
-    await deleteScript(id)
-    Message.success('删除成功')
-    loadScripts()
-  } catch (error) {
-    Message.error('删除失败')
-  }
-}
-
-// 提交
-const handleSubmit = async () => {
-  try {
-    if (!selectedUploadFile.value) {
-      Message.warning('请上传脚本文件')
-      return
+const openModal = (record?: Script) => {
+  if (record) {
+    isEdit.value = true
+    editingId.value = record.id
+    Object.assign(formData, record)
+    if (!formData.project_id && formData.group_id) {
+      const group = groupOptions.value.find((g) => g.id === formData.group_id)
+      formData.project_id = group?.project_id
     }
-
-    const fd = new FormData()
-    fd.append('file', selectedUploadFile.value)
-
-    if (isEdit.value && editingId.value) {
-      await replaceScriptFile(editingId.value, fd)
-      await updateScript(editingId.value, {
-        name: formData.name,
-        description: formData.description,
-        script_type: formData.script_type,
-        timeout: formData.timeout,
-      })
-      Message.success('更新成功')
-    } else {
-      if (formData.name) fd.append('name', formData.name)
-      if (formData.description) fd.append('description', formData.description)
-      if (formData.script_type) fd.append('script_type', formData.script_type)
-      if (formData.timeout) fd.append('timeout', String(formData.timeout))
-      await uploadScript(fd)
-      Message.success('创建成功')
-    }
-    modalVisible.value = false
-    loadScripts()
-  } catch (error) {
-    Message.error(isEdit.value ? '更新失败' : '创建失败')
+  } else {
+    resetForm()
+    isEdit.value = false
   }
+  modalOpen.value = true
 }
 
-// 取消
-const handleCancel = () => {
-  modalVisible.value = false
-  resetForm()
-}
-
-// 重置表单
 const resetForm = () => {
+  modalOpen.value = false
+  isEdit.value = false
+  editingId.value = null
   formData.name = ''
+  formData.project_id = undefined
+  formData.group_id = undefined
   formData.script_type = 'shell'
   formData.timeout = 300
   formData.description = ''
@@ -480,8 +337,8 @@ const resetForm = () => {
   selectedFileName.value = ''
 }
 
-const triggerFileSelect = () => {
-  fileInputRef.value?.click()
+const handleFormProjectChange = () => {
+  formData.group_id = undefined
 }
 
 const onFileInputChange = (event: Event) => {
@@ -491,116 +348,136 @@ const onFileInputChange = (event: Event) => {
   selectedFileName.value = file?.name || ''
 }
 
-const handleFileRemove = () => {
-  selectedUploadFile.value = null
-  selectedFileName.value = ''
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
+const handleSubmit = async () => {
+  if (!formData.name || !formData.project_id || !formData.group_id) {
+    message.warning('请填写脚本名称并选择项目分组')
+    return
+  }
+  if (!isEdit.value && !selectedUploadFile.value) {
+    message.warning('请上传脚本文件')
+    return
+  }
+
+  try {
+    if (isEdit.value && editingId.value) {
+      if (selectedUploadFile.value) {
+        const fd = new FormData()
+        fd.append('file', selectedUploadFile.value)
+        await replaceScriptFile(editingId.value, fd)
+      }
+      await updateScript(editingId.value, {
+        name: formData.name,
+        project_id: formData.project_id,
+        group_id: formData.group_id,
+        description: formData.description,
+        script_type: formData.script_type,
+        timeout: formData.timeout,
+      })
+      message.success('脚本更新成功')
+    } else {
+      const fd = new FormData()
+      fd.append('file', selectedUploadFile.value as File)
+      fd.append('name', formData.name)
+      fd.append('project_id', String(formData.project_id))
+      fd.append('group_id', String(formData.group_id))
+      if (formData.description) fd.append('description', formData.description)
+      if (formData.script_type) fd.append('script_type', formData.script_type)
+      if (formData.timeout) fd.append('timeout', String(formData.timeout))
+      await uploadScript(fd)
+      message.success('脚本创建成功')
+    }
+    resetForm()
+    loadScripts()
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || (isEdit.value ? '脚本更新失败' : '脚本创建失败'))
   }
 }
 
+const handleView = async (record: Script) => {
+  viewOpen.value = true
+  try {
+    const detail = await getScriptDetail(record.id)
+    viewData.value = detail
+  } catch {
+    viewData.value = record
+  }
+}
+
+const handleDelete = async (id: number) => {
+  try {
+    await deleteScript(id)
+    message.success('删除成功')
+    loadScripts()
+  } catch (error: any) {
+    message.error(error.response?.data?.detail || '删除失败')
+  }
+}
+
+const loadDistributeServers = async () => {
+  try {
+    const res = await getServerList({ page: 1, page_size: 200 })
+    serverOptions.value = res.data || []
+  } catch {
+    serverOptions.value = []
+  }
+}
 
 const openDistribute = async (record: Script) => {
   distributingScript.value = record
   distributeForm.server_ids = []
   distributeForm.target_directory = '/opt/scripts'
   distributeForm.file_name = record.source_file_name || `${record.name}${record.script_type === 'python' ? '.py' : '.sh'}`
-  distributeVisible.value = true
+  distributeOpen.value = true
   await loadDistributeServers()
 }
 
-const loadDistributeServers = async () => {
-  try {
-    const pageSize = 100
-    let page = 1
-    let total = 0
-    const allServers: Server[] = []
-
-    do {
-      const res = await getServerList({ page, page_size: pageSize })
-      const items = res.data || []
-      total = res.total || items.length
-      allServers.push(...items)
-      page += 1
-    } while (allServers.length < total)
-
-    serverOptions.value = allServers
-  } catch (error) {
-    Message.error('加载服务器列表失败')
-    serverOptions.value = []
-  }
+const resetDistributeForm = () => {
+  distributeOpen.value = false
+  distributingScript.value = null
+  distributeForm.server_ids = []
+  distributeForm.target_directory = '/opt/scripts'
+  distributeForm.file_name = ''
 }
 
 const handleDistributeSubmit = async () => {
   if (!distributingScript.value) return
-  if (!distributeForm.server_ids.length) {
-    Message.warning('请选择目标服务器')
+  if (!distributeForm.server_ids.length || !distributeForm.target_directory) {
+    message.warning('请填写目标服务器和目标目录')
     return
   }
-  if (!distributeForm.target_directory) {
-    Message.warning('请输入目标目录')
-    return
-  }
-
   try {
-    const res = await distributeScript(distributingScript.value.id, {
+    await distributeScript(distributingScript.value.id, {
       server_ids: distributeForm.server_ids,
       target_directory: distributeForm.target_directory,
       file_name: distributeForm.file_name || undefined,
     })
-    const failedResults = (res.data?.results || []).filter((item: any) => !item.success)
-    if (res.code === 200 && failedResults.length === 0) {
-      Message.success(res.message || '脚本分发完成')
-    } else {
-      const firstError = failedResults[0]?.message
-      Message.warning(firstError ? `${res.message}，失败原因：${firstError}` : (res.message || '脚本分发部分失败'))
-    }
-    distributeVisible.value = false
+    message.success('脚本分发任务已提交')
+    resetDistributeForm()
   } catch (error: any) {
-    Message.error(error.response?.data?.detail || '脚本分发失败')
+    message.error(error.response?.data?.detail || '脚本分发失败')
   }
 }
 
-const handleDistributeCancel = () => {
-  distributeVisible.value = false
-  distributingScript.value = null
-}
-
-onMounted(() => {
-  loadScripts()
+onMounted(async () => {
+  await loadGroupMeta()
+  await loadScripts()
 })
 </script>
 
 <style scoped>
-.script-list-container {
-  padding: 20px;
+.upload-tip {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 12px;
 }
 
-.search-bar {
-  margin-bottom: 16px;
-}
-
-.action-bar {
-  margin-bottom: 16px;
-}
-
-.script-list-container :deep(.arco-table-th),
-.script-list-container :deep(.arco-table-td) {
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.script-content {
-  background: #0d1117;
-  border-radius: 8px;
-  overflow-x: auto;
-  max-height: 400px;
-}
-
-.script-content :deep(pre) {
+.script-pre {
   margin: 0;
-  padding: 16px;
-  font-size: 13px;
-  line-height: 1.6;
+  padding: 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

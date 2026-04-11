@@ -1,206 +1,104 @@
 <template>
-  <div class="min-h-screen bg-surface-50 flex">
-    <!-- 侧边栏 -->
-    <aside
-      :class="[
-        'fixed inset-y-0 left-0 z-40 flex flex-col w-64 bg-white border-r border-surface-200 transition-transform duration-300 lg:translate-x-0 lg:static',
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      ]"
-    >
-      <!-- Logo -->
-      <div class="flex items-center gap-3 px-5 h-16 border-b border-surface-100 shrink-0">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-        </div>
-         <div>
-           <h1 class="text-sm font-bold text-surface-900 tracking-wide">CHAN AgenticOps</h1>
-         </div>
+  <Layout class="main-layout">
+    <Sider v-model:collapsed="collapsed" :trigger="null" collapsible :width="250" class="main-sider">
+      <div class="logo-wrap">
+        <Avatar shape="square" :size="36" class="logo-avatar">A</Avatar>
+        <div v-if="!collapsed" class="logo-title">CHAN AgenticOps</div>
       </div>
 
-      <!-- 菜单 -->
-      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        <p class="px-3 py-2 text-[10px] font-semibold text-surface-400 uppercase tracking-widest">导航</p>
+      <div class="menu-wrap">
+        <Skeleton v-if="loading" active :paragraph="{ rows: 8 }" />
+        <Menu
+          v-else
+          mode="inline"
+          :selected-keys="selectedKeys"
+          v-model:openKeys="openKeys"
+          :items="menuItems"
+          @click="handleMenuClick"
+        />
+      </div>
+    </Sider>
 
-        <template v-if="loading">
-          <div v-for="i in 4" :key="i" class="h-9 rounded-lg bg-surface-100 animate-pulse mb-1"></div>
-        </template>
+    <Layout>
+      <Header class="main-header">
+        <Space>
+          <Button type="text" @click="collapsed = !collapsed">{{ collapsed ? '展开' : '收起' }}</Button>
+          <TypographyText type="secondary">{{ currentTitle }}</TypographyText>
+        </Space>
 
-        <template v-else>
-          <template v-for="item in menuTree" :key="item.id">
-            <!-- 无子菜单的一级菜单 -->
-            <router-link
-              v-if="!item.children?.length"
-              :to="item.path || '#'"
-              class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-surface-600 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200 group"
-              active-class="bg-brand-50 text-brand-600 font-medium"
-            >
-              <svg class="w-[18px] h-[18px] shrink-0 opacity-50 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="getIconPath(item.icon)" />
-              </svg>
-              <span>{{ item.name }}</span>
-            </router-link>
-
-            <!-- 有子菜单的一级菜单 -->
-            <div v-else>
-              <button
-                @click="toggleGroup(item.id)"
-                class="flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm text-surface-600 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200"
-                :class="expandedGroups[item.id] ? 'text-brand-600' : ''"
-              >
-                <div class="flex items-center gap-3">
-                  <svg class="w-[18px] h-[18px] shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="getIconPath(item.icon)" />
-                  </svg>
-                  <span>{{ item.name }}</span>
-                </div>
-                <svg
-                  :class="['w-4 h-4 transition-transform duration-200 text-surface-400', expandedGroups[item.id] ? 'rotate-180' : '']"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              <div v-show="expandedGroups[item.id]" class="ml-4 pl-3 border-l border-surface-200 space-y-0.5 mt-1 mb-1">
-                <router-link
-                  v-for="child in item.children"
-                  :key="child.id"
-                  :to="child.path || '#'"
-                  class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-surface-500 hover:bg-brand-50 hover:text-brand-600 transition-all duration-200"
-                  active-class="bg-brand-50 text-brand-600 font-medium"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full bg-surface-300 shrink-0"></span>
-                  {{ child.name }}
-                </router-link>
-              </div>
-            </div>
+        <Dropdown :trigger="['click']">
+          <Space class="user-area">
+            <Avatar>{{ userInitial }}</Avatar>
+            <span>{{ authStore.user?.full_name || authStore.user?.username }}</span>
+          </Space>
+          <template #overlay>
+            <Menu>
+              <MenuItem key="profile" @click="router.push('/settings/profile')">个人设置</MenuItem>
+              <MenuItem key="logout" danger @click="handleLogout">退出登录</MenuItem>
+            </Menu>
           </template>
-        </template>
-      </nav>
+        </Dropdown>
+      </Header>
 
-      <!-- 底部用户 -->
-      <div class="shrink-0 p-3 border-t border-surface-100">
-        <div class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-surface-50 transition-colors cursor-pointer" @click="userMenuOpen = !userMenuOpen">
-          <div class="w-8 h-8 rounded-full bg-brand-100 border border-brand-200 flex items-center justify-center">
-            <span class="text-xs font-semibold text-brand-600">{{ userInitial }}</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-surface-900 truncate">{{ authStore.user?.username }}</p>
-            <p class="text-[10px] text-surface-400 truncate">{{ authStore.user?.is_superuser ? '管理员' : '用户' }}</p>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-    <!-- 遮罩 -->
-    <div
-      v-if="sidebarOpen"
-      @click="sidebarOpen = false"
-      class="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 lg:hidden"
-    ></div>
-
-    <!-- 右侧 -->
-    <div class="flex-1 flex flex-col min-h-screen min-w-0">
-      <!-- 顶栏 -->
-      <header class="h-16 shrink-0 bg-white/80 backdrop-blur-md border-b border-surface-100 flex items-center justify-between px-6" style="z-index: 50;">
-        <div class="flex items-center gap-4">
-          <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg hover:bg-surface-100 text-surface-500">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <div>
-            <h2 class="text-sm font-semibold text-surface-900">{{ currentTitle }}</h2>
-            <p class="text-xs text-surface-400">CHAN AgenticOps</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <!-- 用户下拉 -->
-          <div class="relative">
-            <button @click.stop="userMenuOpen = !userMenuOpen" class="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-xl hover:bg-surface-50 transition-all border border-transparent hover:border-surface-200">
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-md shadow-brand-200/50">
-                <span class="text-sm font-semibold text-white">{{ userInitial }}</span>
-              </div>
-              <div class="hidden sm:block text-left">
-                <p class="text-sm font-medium text-surface-900 leading-tight">{{ authStore.user?.full_name || authStore.user?.username }}</p>
-                <p class="text-[11px] text-surface-400 leading-tight">{{ authStore.user?.is_superuser ? '超级管理员' : '普通用户' }}</p>
-              </div>
-              <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            <div v-if="userMenuOpen" @click.stop class="absolute right-0 mt-2 w-64 bg-white border border-surface-200 rounded-2xl shadow-xl py-2 z-[60] animate-fade-in">
-              <!-- 用户信息卡片 -->
-              <div class="px-4 py-4 border-b border-surface-100">
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-lg shadow-brand-200/50">
-                    <span class="text-lg font-bold text-white">{{ userInitial }}</span>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-surface-900 truncate">{{ authStore.user?.full_name || authStore.user?.username }}</p>
-                    <p class="text-xs text-surface-400 truncate">{{ authStore.user?.email || '未设置邮箱' }}</p>
-                    <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium" :class="authStore.user?.is_superuser ? 'bg-brand-50 text-brand-600' : 'bg-surface-100 text-surface-500'">
-                      <span class="w-1.5 h-1.5 rounded-full" :class="authStore.user?.is_superuser ? 'bg-brand-400' : 'bg-surface-400'"></span>
-                      {{ authStore.user?.is_superuser ? '超级管理员' : '普通用户' }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 菜单项 -->
-              <div class="py-1">
-                <router-link to="/settings/profile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-surface-600 hover:bg-surface-50 hover:text-surface-900 transition-colors">
-                  <svg class="w-4 h-4 text-surface-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                  个人设置
-                </router-link>
-              </div>
-              
-              <div class="border-t border-surface-100 mt-1 pt-1">
-                <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-500 hover:bg-rose-50 transition-colors">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  退出登录
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <!-- 内容区 -->
-      <main class="flex-1 p-6 overflow-auto bg-surface-50">
+      <Content class="main-content ant-illustration-page">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" :key="$route.path" />
           </transition>
         </router-view>
-      </main>
-    </div>
-  </div>
+      </Content>
+    </Layout>
+  </Layout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { computed, h, onMounted, ref, watch, type Component } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  Layout,
+  Menu,
+  Skeleton,
+  Space,
+  Typography,
+} from 'ant-design-vue'
+import type { MenuProps } from 'ant-design-vue'
+import {
+  AppstoreOutlined,
+  BookOutlined,
+  ClockCircleOutlined,
+  CodeOutlined,
+  DashboardOutlined,
+  DesktopOutlined,
+  FileTextOutlined,
+  MenuOutlined,
+  MessageOutlined,
+  RobotOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons-vue'
 import { menuApi } from '@/api/system/menu'
-import type { Menu } from '@/api/system/types'
+import { useAuthStore } from '@/stores/auth'
+import type { Menu as SysMenu } from '@/api/system/types'
 
-const router = useRouter()
+const Header = Layout.Header
+const Content = Layout.Content
+const Sider = Layout.Sider
+const MenuItem = Menu.Item
+const TypographyText = Typography.Text
+
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 
-const sidebarOpen = ref(false)
-const userMenuOpen = ref(false)
+const collapsed = ref(false)
 const loading = ref(true)
-const menuTree = ref<Menu[]>([])
-const expandedGroups = reactive<Record<number, boolean>>({})
+const menuTree = ref<SysMenu[]>([])
+const openKeys = ref<string[]>([])
 
 const userInitial = computed(() => authStore.user?.username?.charAt(0).toUpperCase() || 'U')
 
@@ -209,61 +107,165 @@ const currentTitle = computed(() => {
   return meta?.title || 'CHAN AgenticOps'
 })
 
-// 监听路由变化，更新浏览器标题
-watch(
-  () => route.meta.title,
-  (newTitle) => {
-    if (newTitle) {
-      document.title = `${newTitle} - CHAN AgenticOps`
-    } else {
-      document.title = 'CHAN AgenticOps'
-    }
-  },
-  { immediate: true }
-)
+const selectedKeys = computed(() => [route.path])
 
-function toggleGroup(id: number) {
-  expandedGroups[id] = !expandedGroups[id]
+const iconMap: Record<string, Component> = {
+  DataBoard: DashboardOutlined,
+  DashboardOutlined,
+  Brain: RobotOutlined,
+  RobotOutlined,
+  ChatDotRound: MessageOutlined,
+  MessageOutlined,
+  Collection: BookOutlined,
+  BookOutlined,
+  Tool: ToolOutlined,
+  ToolOutlined,
+  Desktop: DesktopOutlined,
+  DesktopOutlined,
+  Code: CodeOutlined,
+  CodeOutlined,
+  ClockCircle: ClockCircleOutlined,
+  ClockCircleOutlined,
+  File: FileTextOutlined,
+  FileTextOutlined,
+  Setting: SettingOutlined,
+  SettingOutlined,
+  User: UserOutlined,
+  UserOutlined,
+  UserFilled: TeamOutlined,
+  TeamOutlined,
+  Menu: MenuOutlined,
+  MenuOutlined,
 }
 
-function handleLogout() {
+const resolveMenuIcon = (icon?: string) => {
+  if (!icon) return undefined
+  const IconComponent = iconMap[icon] || AppstoreOutlined
+  return h(IconComponent)
+}
+
+const buildMenuItems = (items: SysMenu[]): any[] => {
+  return items
+    .filter((item) => item.type !== 'button' && item.status)
+    .map((item) => {
+      const children = item.children?.filter((child) => child.type !== 'button' && child.status) || []
+      if (children.length) {
+        return {
+          key: item.code,
+          label: item.name,
+          icon: resolveMenuIcon(item.icon),
+          children: children.map((child) => ({
+            key: child.path || child.code,
+            label: child.name,
+            icon: resolveMenuIcon(child.icon),
+          })),
+        }
+      }
+      return {
+        key: item.path || item.code,
+        label: item.name,
+        icon: resolveMenuIcon(item.icon),
+      }
+    })
+}
+
+const menuItems = computed(() => buildMenuItems(menuTree.value))
+
+const syncOpenKeysByRoute = () => {
+  for (const parent of menuTree.value) {
+    const children = parent.children || []
+    if (children.some((child) => child.path === route.path)) {
+      openKeys.value = [parent.code]
+      break
+    }
+  }
+}
+
+const handleMenuClick: MenuProps['onClick'] = (info) => {
+  const key = String(info?.key ?? '')
+  if (!key) return
+  if (key.startsWith('/')) {
+    router.push(key)
+  }
+}
+
+const handleLogout = () => {
   authStore.logout()
   router.push('/login')
 }
 
-// 图标路径映射
-const iconPaths: Record<string, string> = {
-  DataBoard: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
-  Setting: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z',
-  User: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-  UserFilled: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z',
-  Menu: 'M4 6h16M4 10h16M4 14h16M4 18h16',
-}
-
-function getIconPath(iconName?: string): string {
-  return iconPaths[iconName || ''] || iconPaths['Menu']
-}
-
-// 点击外部关闭
-function handleClickOutside() {
-  userMenuOpen.value = false
-}
+watch(
+  () => route.meta.title,
+  (newTitle) => {
+    document.title = newTitle ? `${newTitle} - CHAN AgenticOps` : 'CHAN AgenticOps'
+  },
+  { immediate: true },
+)
 
 onMounted(async () => {
-  document.addEventListener('click', handleClickOutside)
   try {
     const data = await menuApi.getMyMenus()
     menuTree.value = data
-    const firstParent = menuTree.value.find(m => m.children?.length)
-    if (firstParent) expandedGroups[firstParent.id] = true
-  } catch (e) {
-    console.error('加载菜单失败:', e)
+    syncOpenKeysByRoute()
+  } catch (error) {
+    console.error('加载菜单失败:', error)
   } finally {
     loading.value = false
   }
 })
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
 </script>
+
+<style scoped>
+.main-layout {
+  min-height: 100vh;
+  background: transparent;
+}
+
+.main-sider {
+  background: #fff !important;
+  border-right: 1px solid #dbeafe;
+}
+
+.logo-wrap {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.logo-avatar {
+  background: linear-gradient(135deg, #22c55e, #4dabf7);
+  font-weight: 700;
+}
+
+.logo-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.menu-wrap {
+  padding: 12px 10px;
+}
+
+.main-header {
+  height: 64px;
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.main-content {
+  padding: 16px;
+}
+
+.user-area {
+  cursor: pointer;
+}
+</style>

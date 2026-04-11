@@ -83,6 +83,10 @@ def _to_script_response(script, include_content: bool = False) -> ScriptResponse
     return ScriptResponse(
         id=script.id,
         name=script.name,
+        project_id=script.project_id,
+        group_id=script.group_id,
+        project_name=getattr(script.project, "name", None) if getattr(script, "project", None) else None,
+        group_name=getattr(script.group, "name", None) if getattr(script, "group", None) else None,
         description=script.description,
         script_type=script.script_type,
         parameters=script.parameters,
@@ -102,13 +106,21 @@ async def list_scripts(
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     name: Optional[str] = Query(None, description="脚本名称"),
     script_type: Optional[str] = Query(None, description="脚本类型"),
+    project_id: Optional[int] = Query(None, description="所属项目ID"),
+    group_id: Optional[int] = Query(None, description="所属分组ID"),
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
     """获取脚本列表"""
     skip = (page - 1) * page_size
     scripts, total = await script_crud.get_scripts(
-        db, skip=skip, limit=page_size, name=name, script_type=script_type
+        db,
+        skip=skip,
+        limit=page_size,
+        name=name,
+        script_type=script_type,
+        project_id=project_id,
+        group_id=group_id,
     )
     
     return ScriptListResponse(
@@ -150,6 +162,8 @@ async def upload_script(
     name: Optional[str] = Form(None),
     description: Optional[str] = Form(None),
     script_type: Optional[str] = Form(None),
+    project_id: Optional[int] = Form(None),
+    group_id: Optional[int] = Form(None),
     timeout: int = Form(300),
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
@@ -180,14 +194,19 @@ async def upload_script(
 
     script_in = ScriptCreate(
         name=final_name,
+        project_id=project_id,
+        group_id=group_id,
         description=description,
         file_path=str(target_path),
         script_type=script_type or guessed_type,
         timeout=timeout,
     )
-    db_script = await script_crud.create_script(
-        db, script_in, created_by=current_user.username
-    )
+    try:
+        db_script = await script_crud.create_script(
+            db, script_in, created_by=current_user.username
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return _to_script_response(db_script, include_content=True)
 
 
@@ -239,7 +258,10 @@ async def update_script(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """更新脚本"""
-    db_script = await script_crud.update_script(db, script_id, script)
+    try:
+        db_script = await script_crud.update_script(db, script_id, script)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     if not db_script:
         raise HTTPException(status_code=404, detail="脚本不存在")
     return _to_script_response(db_script, include_content=True)

@@ -8,6 +8,8 @@ from datetime import datetime
 class ScriptBase(BaseModel):
     """脚本基础 Schema"""
     name: str = Field(..., description="脚本名称", max_length=100)
+    project_id: Optional[int] = Field(None, description="所属项目ID")
+    group_id: Optional[int] = Field(None, description="所属分组ID")
     description: Optional[str] = Field(None, description="描述", max_length=500)
     script_type: str = Field(default="shell", description="脚本类型: shell/python")
     parameters: Optional[List[Dict[str, Any]]] = Field(default=None, description="参数定义JSON")
@@ -32,6 +34,8 @@ class ScriptUpdate(BaseModel):
 class ScriptResponse(ScriptBase):
     """脚本响应 Schema"""
     id: int
+    project_name: Optional[str] = None
+    group_name: Optional[str] = None
     file_path: Optional[str] = None
     source_file_name: Optional[str] = None
     content: Optional[str] = None

@@ -6,6 +6,10 @@ import request from '@/api'
 export interface ScheduledTask {
   id: number
   name: string
+  project_id?: number
+  group_id?: number
+  project_name?: string
+  group_name?: string
   description?: string
   script_id?: number
   server_ids: number[]
@@ -27,6 +31,8 @@ export interface TaskListParams {
   page_size?: number
   name?: string
   enabled?: boolean
+  project_id?: number
+  group_id?: number
 }
 
 export interface TaskListResponse {

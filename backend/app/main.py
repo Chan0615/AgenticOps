@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import asyncio
+import sys
 
 from app.core import config
 from app.api.auth import auth_router
@@ -8,6 +10,11 @@ from app.api.agent import rag_router
 from app.api.system import users_router, roles_router, menus_router
 from app.api.common.logs import router as logs_router
 from app.api.ops import router as ops_router
+from app.db.database import engine
+
+
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 
 @asynccontextmanager
@@ -15,7 +22,7 @@ async def lifespan(app: FastAPI):
     # 启动时不再自动创建表，改为手动运行 init_db.py 初始化
     # await init_db()  # 已禁用自动初始化，避免创建未使用的 Agent 表
     yield
-    # 关闭时执行清理（如果需要）
+    await engine.dispose()
 
 
 app = FastAPI(

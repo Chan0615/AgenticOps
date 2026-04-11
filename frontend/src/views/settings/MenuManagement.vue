@@ -50,7 +50,8 @@
             <div v-else class="w-6"></div>
 
             <div class="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center shrink-0">
-              <span class="text-sm font-semibold text-brand-600">{{ menu.name.charAt(0) }}</span>
+              <component v-if="resolveIcon(menu.icon)" :is="resolveIcon(menu.icon)" class="w-4 h-4 text-brand-600" />
+              <span v-else class="text-sm font-semibold text-brand-600">{{ menu.name.charAt(0) }}</span>
             </div>
 
             <div class="flex-1 min-w-0">
@@ -104,7 +105,8 @@
               <div v-else class="w-6"></div>
 
               <div class="w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center shrink-0">
-                <span class="text-xs font-medium text-surface-500">{{ child.name.charAt(0) }}</span>
+                <component v-if="resolveIcon(child.icon)" :is="resolveIcon(child.icon)" class="w-4 h-4 text-surface-500" />
+                <span v-else class="text-xs font-medium text-surface-500">{{ child.name.charAt(0) }}</span>
               </div>
 
               <div class="flex-1 min-w-0">
@@ -220,12 +222,24 @@
 
           <div>
             <label class="block text-xs font-medium text-surface-600 mb-1.5">图标</label>
-            <input 
-              v-model="formData.icon"
-              type="text"
-              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
-              placeholder="如: Setting, User, Menu"
-            />
+            <Select
+              v-model:value="formData.icon"
+              allow-clear
+              placeholder="请选择图标"
+              class="w-full icon-select"
+            >
+              <SelectOption v-for="option in iconOptions" :key="option.value" :value="option.value">
+                <span class="inline-flex items-center gap-2">
+                  <component :is="resolveIcon(option.value)" class="w-4 h-4 text-brand-600" />
+                  <span>{{ option.label }} ({{ option.value }})</span>
+                </span>
+              </SelectOption>
+            </Select>
+            <div class="mt-2 h-9 px-3 rounded-lg border border-surface-200 bg-surface-50 flex items-center gap-2 text-xs text-surface-500">
+              <span>预览:</span>
+              <component v-if="selectedIconComponent" :is="selectedIconComponent" class="w-4 h-4 text-brand-600" />
+              <span v-else>未设置</span>
+            </div>
           </div>
           
           <div>
@@ -257,9 +271,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { computed, ref, onMounted, reactive, type Component } from 'vue'
+import {
+  BookOutlined,
+  ClockCircleOutlined,
+  CodeOutlined,
+  DashboardOutlined,
+  DesktopOutlined,
+  FileTextOutlined,
+  MenuOutlined,
+  MessageOutlined,
+  RobotOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  ToolOutlined,
+  UserOutlined,
+} from '@ant-design/icons-vue'
+import { Select } from 'ant-design-vue'
 import { menuApi } from '@/api/system/menu'
 import type { Menu, MenuCreate, MenuUpdate } from '@/api/system/types'
+
+const SelectOption = Select.Option
 
 const menuTree = ref<Menu[]>([])
 const expandedMenus = ref(new Set<number>())
@@ -279,6 +311,71 @@ const formData = reactive({
   sort_order: 0,
   description: ''
 })
+
+const iconOptions = [
+  { value: 'DataBoard', label: '仪表盘' },
+  { value: 'Brain', label: 'AI/RAG' },
+  { value: 'ChatDotRound', label: '聊天问答' },
+  { value: 'Collection', label: '集合/分组' },
+  { value: 'Tool', label: '工具运维' },
+  { value: 'Desktop', label: '服务器' },
+  { value: 'Code', label: '脚本代码' },
+  { value: 'ClockCircle', label: '定时任务' },
+  { value: 'File', label: '日志文件' },
+  { value: 'Setting', label: '系统设置' },
+  { value: 'User', label: '用户' },
+  { value: 'UserFilled', label: '角色用户' },
+  { value: 'Menu', label: '菜单' },
+  { value: 'DashboardOutlined', label: '仪表盘(ant)' },
+  { value: 'RobotOutlined', label: '机器人(ant)' },
+  { value: 'MessageOutlined', label: '消息(ant)' },
+  { value: 'BookOutlined', label: '书籍(ant)' },
+  { value: 'ToolOutlined', label: '工具(ant)' },
+  { value: 'DesktopOutlined', label: '桌面(ant)' },
+  { value: 'CodeOutlined', label: '代码(ant)' },
+  { value: 'ClockCircleOutlined', label: '时钟(ant)' },
+  { value: 'FileTextOutlined', label: '文档(ant)' },
+  { value: 'SettingOutlined', label: '设置(ant)' },
+  { value: 'UserOutlined', label: '用户(ant)' },
+  { value: 'TeamOutlined', label: '团队(ant)' },
+  { value: 'MenuOutlined', label: '菜单(ant)' },
+]
+
+const iconMap: Record<string, Component> = {
+  DataBoard: DashboardOutlined,
+  DashboardOutlined,
+  Brain: RobotOutlined,
+  RobotOutlined,
+  ChatDotRound: MessageOutlined,
+  MessageOutlined,
+  Collection: BookOutlined,
+  BookOutlined,
+  Tool: ToolOutlined,
+  ToolOutlined,
+  Desktop: DesktopOutlined,
+  DesktopOutlined,
+  Code: CodeOutlined,
+  CodeOutlined,
+  ClockCircle: ClockCircleOutlined,
+  ClockCircleOutlined,
+  File: FileTextOutlined,
+  FileTextOutlined,
+  Setting: SettingOutlined,
+  SettingOutlined,
+  User: UserOutlined,
+  UserOutlined,
+  UserFilled: TeamOutlined,
+  TeamOutlined,
+  Menu: MenuOutlined,
+  MenuOutlined,
+}
+
+const resolveIcon = (icon?: string) => {
+  if (!icon) return null
+  return iconMap[icon] || null
+}
+
+const selectedIconComponent = computed(() => resolveIcon(formData.icon))
 
 function toggleExpand(id: number) {
   if (expandedMenus.value.has(id)) {

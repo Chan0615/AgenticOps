@@ -3,8 +3,9 @@
 from typing import List, Optional
 from datetime import datetime
 from sqlalchemy import select, func
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.ops import ScheduledTask
+from app.models.ops import OpsGroup, ScheduledTask
 from app.schemas.task import ScheduledTaskCreate, ScheduledTaskUpdate
 import logging
 
@@ -13,7 +14,11 @@ logger = logging.getLogger(__name__)
 
 async def get_task(db: AsyncSession, task_id: int) -> Optional[ScheduledTask]:
     """根据ID获取任务"""
-    result = await db.execute(select(ScheduledTask).where(ScheduledTask.id == task_id))
+    result = await db.execute(
+        select(ScheduledTask)
+        .options(joinedload(ScheduledTask.project), joinedload(ScheduledTask.group))
+        .where(ScheduledTask.id == task_id)
+    )
     return result.scalar_one_or_none()
 
 
@@ -23,9 +28,11 @@ async def get_tasks(
     limit: int = 20,
     name: Optional[str] = None,
     enabled: Optional[bool] = None,
+    project_id: Optional[int] = None,
+    group_id: Optional[int] = None,
 ) -> tuple[List[ScheduledTask], int]:
     """获取任务列表"""
-    query = select(ScheduledTask)
+    query = select(ScheduledTask).options(joinedload(ScheduledTask.project), joinedload(ScheduledTask.group))
     count_query = select(func.count(ScheduledTask.id))
     
     if name:
@@ -35,6 +42,14 @@ async def get_tasks(
     if enabled is not None:
         query = query.where(ScheduledTask.enabled == enabled)
         count_query = count_query.where(ScheduledTask.enabled == enabled)
+
+    if project_id is not None:
+        query = query.where(ScheduledTask.project_id == project_id)
+        count_query = count_query.where(ScheduledTask.project_id == project_id)
+
+    if group_id is not None:
+        query = query.where(ScheduledTask.group_id == group_id)
+        count_query = count_query.where(ScheduledTask.group_id == group_id)
     
     total_result = await db.execute(count_query)
     total = total_result.scalar()
@@ -51,6 +66,13 @@ async def create_task(
 ) -> ScheduledTask:
     """创建定时任务"""
     payload = task.model_dump()
+    group_id = payload.get("group_id")
+    if group_id:
+        group_result = await db.execute(select(OpsGroup).where(OpsGroup.id == group_id))
+        group = group_result.scalar_one_or_none()
+        if not group:
+            raise ValueError("所属分组不存在")
+        payload["project_id"] = group.project_id
     payload["task_type"] = "salt"
     db_task = ScheduledTask(
         **payload,
@@ -82,6 +104,12 @@ async def update_task(
         return None
     
     update_data = task.model_dump(exclude_unset=True)
+    if "group_id" in update_data and update_data["group_id"]:
+        group_result = await db.execute(select(OpsGroup).where(OpsGroup.id == update_data["group_id"]))
+        group = group_result.scalar_one_or_none()
+        if not group:
+            raise ValueError("所属分组不存在")
+        update_data["project_id"] = group.project_id
     if "task_type" in update_data:
         update_data["task_type"] = "salt"
     for field, value in update_data.items():

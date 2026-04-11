@@ -29,6 +29,14 @@ def _normalize_task_type(task_obj):
     return task_obj
 
 
+def _to_task_response(task_obj):
+    task_obj = _normalize_task_type(task_obj)
+    payload = ScheduledTaskResponse.model_validate(task_obj)
+    payload.project_name = getattr(task_obj.project, "name", None) if getattr(task_obj, "project", None) else None
+    payload.group_name = getattr(task_obj.group, "name", None) if getattr(task_obj, "group", None) else None
+    return payload
+
+
 def _ensure_celery_worker_available() -> None:
     try:
         inspector = celery_app.control.inspect(timeout=1)
@@ -47,20 +55,28 @@ async def list_tasks(
     page_size: int = Query(20, ge=1, le=100, description="每页数量"),
     name: Optional[str] = Query(None, description="任务名称"),
     enabled: Optional[bool] = Query(None, description="是否启用"),
+    project_id: Optional[int] = Query(None, description="所属项目ID"),
+    group_id: Optional[int] = Query(None, description="所属分组ID"),
     db: AsyncSession = Depends(get_db),
     current_user: UserResponse = Depends(get_current_user),
 ):
     """获取定时任务列表"""
     skip = (page - 1) * page_size
     tasks, total = await task_crud.get_tasks(
-        db, skip=skip, limit=page_size, name=name, enabled=enabled
+        db,
+        skip=skip,
+        limit=page_size,
+        name=name,
+        enabled=enabled,
+        project_id=project_id,
+        group_id=group_id,
     )
-    normalized_tasks = [_normalize_task_type(t) for t in tasks]
+    normalized_tasks = [_to_task_response(t) for t in tasks]
     
     return ScheduledTaskListResponse(
         code=200,
         message="success",
-        data=[ScheduledTaskResponse.model_validate(t) for t in normalized_tasks],
+        data=normalized_tasks,
         total=total,
     )
 
@@ -75,8 +91,7 @@ async def get_task(
     task = await task_crud.get_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="任务不存在")
-    task = _normalize_task_type(task)
-    return task
+    return _to_task_response(task)
 
 
 @router.post("", response_model=ScheduledTaskResponse)
@@ -87,9 +102,12 @@ async def create_task(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """创建定时任务"""
-    db_task = await task_crud.create_task(
-        db, task, created_by=current_user.username
-    )
+    try:
+        db_task = await task_crud.create_task(
+            db, task, created_by=current_user.username
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return db_task
 
 
@@ -102,9 +120,12 @@ async def update_task(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """更新定时任务"""
-    db_task = await task_crud.update_task(
-        db, task_id, task, updated_by=current_user.username
-    )
+    try:
+        db_task = await task_crud.update_task(
+            db, task_id, task, updated_by=current_user.username
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     if not db_task:
         raise HTTPException(status_code=404, detail="任务不存在")
     return db_task

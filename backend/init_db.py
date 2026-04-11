@@ -20,6 +20,10 @@ from app.core import config
 from app.core.security import get_password_hash
 
 
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 def _get_mysql_default() -> dict:
     """获取默认 MySQL 配置"""
     return config._get("mysql", "default")
@@ -50,6 +54,8 @@ def create_database():
 async def create_tables(force_reset: bool = False):
     """创建所有表"""
     print("[2/4] 创建数据表 ...")
+    from sqlalchemy import text
+
     from app.db.database import Base
     # 导入系统管理模块和 Agent RAG 模块的模型
     from app.models.models import User, Role, UserRole, Menu, RoleMenu  # noqa: F401
@@ -61,15 +67,20 @@ async def create_tables(force_reset: bool = False):
         ConversationMessage
     )
     # 导入运维管理模块的模型（Ops）
-    from app.models.ops import Server, Script, ScheduledTask, TaskExecutionLog  # noqa: F401
+    from app.models.ops import (  # noqa: F401
+        Server,
+        Script,
+        ScheduledTask,
+        TaskExecutionLog,
+        OpsProject,
+        OpsGroup,
+    )
     # 导入操作日志模块的模型
     from app.models.log import OperationLog  # noqa: F401
 
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:
         if force_reset:
-            from sqlalchemy import text
-
             await conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
 
             # 删除数据库中所有现有表（包括历史遗留表，如 server/server_group）
@@ -103,6 +114,21 @@ async def create_tables(force_reset: bool = False):
             )
             print("      已新增字段: ops_scheduled_task.updated_by")
 
+        # 兼容老库：补充脚本/任务的项目和分组字段
+        for table_name in ("ops_script", "ops_scheduled_task"):
+            for col_name, col_ddl in (
+                ("project_id", "INT NULL COMMENT '所属项目ID'"),
+                ("group_id", "INT NULL COMMENT '所属分组ID'"),
+            ):
+                col_result = await conn.execute(
+                    text(f"SHOW COLUMNS FROM {table_name} LIKE '{col_name}'")
+                )
+                if col_result.first() is None:
+                    await conn.execute(
+                        text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_ddl}")
+                    )
+                    print(f"      已新增字段: {table_name}.{col_name}")
+
         # 为高频日志查询补齐索引（兼容已有库的增量初始化）
         result = await conn.execute(text("SHOW INDEX FROM ops_task_execution_log"))
         existing_indexes = {row[2] for row in result.fetchall()}
@@ -122,6 +148,77 @@ async def create_tables(force_reset: bool = False):
                 )
             )
             print(f"      已创建索引: {index_name}")
+
+        # 为脚本/任务的项目分组字段补齐索引
+        for table_name, idx_defs in {
+            "ops_script": {
+                "idx_ops_script_project_id": "project_id",
+                "idx_ops_script_group_id": "group_id",
+            },
+            "ops_scheduled_task": {
+                "idx_ops_task_project_id": "project_id",
+                "idx_ops_task_group_id": "group_id",
+            },
+        }.items():
+            idx_result = await conn.execute(text(f"SHOW INDEX FROM {table_name}"))
+            existing_indexes = {row[2] for row in idx_result.fetchall()}
+            for idx_name, idx_cols in idx_defs.items():
+                if idx_name in existing_indexes:
+                    continue
+                await conn.execute(
+                    text(f"ALTER TABLE {table_name} ADD INDEX {idx_name} ({idx_cols})")
+                )
+                print(f"      已创建索引: {idx_name}")
+
+        # 兼容老库：补齐默认项目/分组并回填历史脚本任务
+        await conn.execute(
+            text(
+                "INSERT INTO ops_project (name, code, description, created_by) "
+                "SELECT '默认项目', 'default', '系统默认项目', 'system' "
+                "FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM ops_project WHERE code = 'default')"
+            )
+        )
+        project_result = await conn.execute(
+            text("SELECT id FROM ops_project WHERE code = 'default' LIMIT 1")
+        )
+        default_project_id = project_result.scalar()
+
+        await conn.execute(
+            text(
+                "INSERT INTO ops_group (project_id, name, description, created_by) "
+                "SELECT :project_id, '未分组', '系统默认分组', 'system' "
+                "FROM DUAL WHERE NOT EXISTS "
+                "(SELECT 1 FROM ops_group WHERE project_id = :project_id AND name = '未分组')"
+            ),
+            {"project_id": default_project_id},
+        )
+        group_result = await conn.execute(
+            text(
+                "SELECT id FROM ops_group "
+                "WHERE project_id = :project_id AND name = '未分组' LIMIT 1"
+            ),
+            {"project_id": default_project_id},
+        )
+        default_group_id = group_result.scalar()
+
+        await conn.execute(
+            text(
+                "UPDATE ops_script SET "
+                "project_id = COALESCE(project_id, :project_id), "
+                "group_id = COALESCE(group_id, :group_id) "
+                "WHERE project_id IS NULL OR group_id IS NULL"
+            ),
+            {"project_id": default_project_id, "group_id": default_group_id},
+        )
+        await conn.execute(
+            text(
+                "UPDATE ops_scheduled_task SET "
+                "project_id = COALESCE(project_id, :project_id), "
+                "group_id = COALESCE(group_id, :group_id) "
+                "WHERE project_id IS NULL OR group_id IS NULL"
+            ),
+            {"project_id": default_project_id, "group_id": default_group_id},
+        )
     await engine.dispose()
     print("      数据表创建完成")
 
@@ -245,6 +342,81 @@ async def seed_data():
                 "parent_code": "ops",
                 "component": "ops/LogList",
                 "description": "任务执行日志",
+            },
+            {
+                "name": "项目分组",
+                "code": "ops:groups",
+                "path": "/ops/groups",
+                "icon": "Collection",
+                "type": "menu",
+                "sort_order": 5,
+                "parent_code": "ops",
+                "component": "ops/GroupManagement",
+                "description": "项目与分组管理",
+            },
+            {
+                "name": "项目查询",
+                "code": "ops:projects:list",
+                "type": "button",
+                "sort_order": 1,
+                "parent_code": "ops:groups",
+                "description": "查询项目列表",
+            },
+            {
+                "name": "项目创建",
+                "code": "ops:projects:create",
+                "type": "button",
+                "sort_order": 2,
+                "parent_code": "ops:groups",
+                "description": "创建项目",
+            },
+            {
+                "name": "项目更新",
+                "code": "ops:projects:update",
+                "type": "button",
+                "sort_order": 3,
+                "parent_code": "ops:groups",
+                "description": "更新项目",
+            },
+            {
+                "name": "项目删除",
+                "code": "ops:projects:delete",
+                "type": "button",
+                "sort_order": 4,
+                "parent_code": "ops:groups",
+                "description": "删除项目",
+            },
+            {
+                "name": "分组查询",
+                "code": "ops:groups:list",
+                "type": "button",
+                "sort_order": 5,
+                "parent_code": "ops:groups",
+                "description": "查询分组列表",
+            },
+            {
+                "name": "分组创建",
+                "code": "ops:groups:create",
+                "type": "button",
+                "sort_order": 6,
+                "parent_code": "ops:groups",
+                "description": "创建分组",
+            },
+            {
+                "name": "分组更新",
+                "code": "ops:groups:update",
+                "type": "button",
+                "sort_order": 7,
+                "parent_code": "ops:groups",
+                "description": "更新分组",
+            },
+            {
+                "name": "分组删除",
+                "code": "ops:groups:delete",
+                "type": "button",
+                "sort_order": 8,
+                "parent_code": "ops:groups",
+                "description": "删除分组",
             },
             {
                 "name": "系统管理",

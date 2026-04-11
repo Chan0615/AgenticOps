@@ -1,83 +1,107 @@
 <template>
-  <div class="p-4 md:p-5 h-[calc(100vh-86px)] overflow-hidden bg-surface-50">
-    <div class="h-full grid grid-rows-[auto_auto_1fr] gap-4">
-      <section class="bg-white rounded-2xl border border-brand-100 px-5 py-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs text-brand-500">AGENTICOPS DASHBOARD</p>
-            <h1 class="text-2xl font-bold text-surface-900 mt-1">运营概览</h1>
-          </div>
-          <div class="text-right">
-            <p class="text-xs text-surface-400">{{ today }}</p>
-            <p class="text-sm text-brand-600 mt-1">任务成功率 {{ successRate }}%</p>
-          </div>
-        </div>
-      </section>
+  <div class="dashboard-page ant-illustration-page">
+    <Card :bordered="false" class="hero-card">
+      <Row :gutter="16" align="middle" justify="space-between">
+        <Col>
+          <TypographyText type="secondary">AGENTICOPS DASHBOARD</TypographyText>
+          <TypographyTitle :level="2" class="hero-title">运营概览</TypographyTitle>
+        </Col>
+        <Col>
+          <Space direction="vertical" size="small" align="end">
+            <TypographyText type="secondary">{{ today }}</TypographyText>
+            <Tag color="blue">任务成功率 {{ successRate }}%</Tag>
+          </Space>
+        </Col>
+      </Row>
+    </Card>
 
-      <section class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-        <article v-for="kpi in kpis" :key="kpi.label" class="bg-white rounded-xl border border-surface-200 px-3 py-3">
-          <p class="text-[11px] text-surface-400">{{ kpi.label }}</p>
-          <p class="text-xl font-bold text-surface-900 mt-1">{{ kpi.value }}</p>
-          <p class="text-[11px] mt-1" :class="kpi.hintClass">{{ kpi.hint }}</p>
-        </article>
-      </section>
+    <Row :gutter="12" class="section-gap">
+      <Col v-for="item in kpis" :key="item.label" :xs="12" :sm="8" :md="6" :lg="6" :xl="3">
+        <Card :bordered="false" class="kpi-card">
+          <Statistic :title="item.label" :value="item.value" />
+          <span class="kpi-hint" :style="{ color: item.color }">{{ item.hint }}</span>
+        </Card>
+      </Col>
+    </Row>
 
-      <section class="min-h-0 grid grid-rows-[auto_1fr] gap-4">
-        <div class="bg-white rounded-2xl border border-surface-200 p-4">
-          <h3 class="text-sm font-semibold text-surface-900">快捷入口</h3>
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-2.5 mt-3">
-            <router-link to="/ops/tasks" class="quick-card">任务中心</router-link>
-            <router-link to="/ops/logs" class="quick-card">执行日志</router-link>
-            <router-link to="/rag/knowledge" class="quick-card">知识库管理</router-link>
-            <router-link to="/ops/servers" class="quick-card">服务器列表</router-link>
-            <router-link to="/assistant" class="quick-card">AI助手</router-link>
-          </div>
-        </div>
+    <Card :bordered="false" class="section-gap">
+      <TypographyTitle :level="5" class="quick-title">快捷入口</TypographyTitle>
+      <Space wrap>
+        <Button v-for="entry in quickEntries" :key="entry.path" @click="router.push(entry.path)">
+          {{ entry.name }}
+        </Button>
+      </Space>
+    </Card>
 
-        <div class="min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div class="bg-white rounded-2xl border border-surface-200 p-4 min-h-0 overflow-auto">
-            <h3 class="text-sm font-semibold text-surface-900">系统公告</h3>
-            <div class="space-y-2 mt-3">
-              <div v-for="n in notices" :key="n.title" class="notice-row">
-                <p class="text-sm text-surface-800">{{ n.title }}</p>
-                <p class="text-xs text-surface-400 mt-0.5">{{ n.time }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-2xl border border-surface-200 p-4 min-h-0 overflow-auto">
-            <h3 class="text-sm font-semibold text-surface-900">运行态势</h3>
-            <div class="space-y-2 mt-3">
-              <div v-for="item in health" :key="item.name" class="health-row">
-                <div class="flex items-center justify-between">
-                  <p class="text-sm text-surface-800">{{ item.name }}</p>
-                  <span class="status-pill" :class="item.statusClass">{{ item.status }}</span>
-                </div>
-                <p class="text-xs text-surface-400 mt-0.5">{{ item.desc }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-2xl border border-surface-200 p-4 min-h-0 overflow-auto">
-            <h3 class="text-sm font-semibold text-surface-900">系统脉冲</h3>
-            <div class="space-y-2 mt-3">
-              <div v-for="event in events" :key="event.title + event.time" class="pulse-row">
-                <span class="w-2 h-2 rounded-full mt-1.5" :class="event.dotClass"></span>
-                <div>
-                  <p class="text-sm text-surface-800">{{ event.title }}</p>
-                  <p class="text-xs text-surface-400 mt-0.5">{{ event.time }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+    <Row :gutter="12" class="section-gap">
+      <Col :xs="24" :lg="8">
+        <Card :bordered="false" title="系统公告" class="list-card">
+          <List :data-source="notices" :split="false">
+            <template #renderItem="{ item }">
+              <ListItem>
+                <ListItemMeta :description="item.time">
+                  <template #title>{{ item.title }}</template>
+                </ListItemMeta>
+              </ListItem>
+            </template>
+          </List>
+        </Card>
+      </Col>
+      <Col :xs="24" :lg="8">
+        <Card :bordered="false" title="运行态势" class="list-card">
+          <List :data-source="health" :split="false">
+            <template #renderItem="{ item }">
+              <ListItem>
+                  <Space direction="vertical" size="small" class="health-stack">
+                    <Space class="health-row">
+                    <TypographyText>{{ item.name }}</TypographyText>
+                    <Tag :color="item.color">{{ item.status }}</Tag>
+                  </Space>
+                  <TypographyText type="secondary">{{ item.desc }}</TypographyText>
+                </Space>
+              </ListItem>
+            </template>
+          </List>
+        </Card>
+      </Col>
+      <Col :xs="24" :lg="8">
+        <Card :bordered="false" title="系统脉冲" class="list-card">
+          <Timeline>
+            <TimelineItem v-for="event in events" :key="event.title + event.time" :color="event.color">
+              <TypographyText>{{ event.title }}</TypographyText>
+              <br />
+              <TypographyText type="secondary">{{ event.time }}</TypographyText>
+            </TimelineItem>
+          </Timeline>
+        </Card>
+      </Col>
+    </Row>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  Button,
+  Card,
+  Col,
+  List,
+  Row,
+  Space,
+  Statistic,
+  Tag,
+  Timeline,
+  Typography,
+} from 'ant-design-vue'
+
+const router = useRouter()
+
+const ListItem = List.Item
+const ListItemMeta = List.Item.Meta
+const TimelineItem = Timeline.Item
+const TypographyText = Typography.Text
+const TypographyTitle = Typography.Title
 
 const now = new Date()
 const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -99,15 +123,23 @@ const successRate = computed(() => {
 })
 
 const kpis = computed(() => [
-  { label: '活跃用户', value: stats.value.activeUsers, hint: '近 7 日', hintClass: 'text-brand-600' },
-  { label: '知识文档', value: stats.value.docs, hint: `${stats.value.indexedDocs} 已索引`, hintClass: 'text-emerald-600' },
-  { label: '运维主机', value: stats.value.servers, hint: '在线 16', hintClass: 'text-cyan-600' },
-  { label: '今日会话', value: stats.value.chats, hint: 'AI 请求', hintClass: 'text-amber-600' },
-  { label: '执行总量', value: stats.value.todayRuns, hint: '今日任务', hintClass: 'text-surface-500' },
-  { label: '失败次数', value: stats.value.failedRuns, hint: '需关注', hintClass: 'text-rose-600' },
-  { label: '向量片段', value: stats.value.chunks, hint: '检索基座', hintClass: 'text-fuchsia-600' },
-  { label: '任务成功率', value: `${successRate.value}%`, hint: '稳定运行', hintClass: 'text-teal-600' },
+  { label: '活跃用户', value: stats.value.activeUsers, hint: '近 7 日', color: '#2563eb' },
+  { label: '知识文档', value: stats.value.docs, hint: `${stats.value.indexedDocs} 已索引`, color: '#16a34a' },
+  { label: '运维主机', value: stats.value.servers, hint: '在线 16', color: '#0891b2' },
+  { label: '今日会话', value: stats.value.chats, hint: 'AI 请求', color: '#d97706' },
+  { label: '执行总量', value: stats.value.todayRuns, hint: '今日任务', color: '#475569' },
+  { label: '失败次数', value: stats.value.failedRuns, hint: '需关注', color: '#e11d48' },
+  { label: '向量片段', value: stats.value.chunks, hint: '检索基座', color: '#7c3aed' },
+  { label: '任务成功率', value: `${successRate.value}%`, hint: '稳定运行', color: '#0f766e' },
 ])
+
+const quickEntries = [
+  { name: '任务中心', path: '/ops/tasks' },
+  { name: '执行日志', path: '/ops/logs' },
+  { name: '知识库管理', path: '/rag/knowledge' },
+  { name: '服务器列表', path: '/ops/servers' },
+  { name: 'AI助手', path: '/assistant' },
+]
 
 const notices = ref([
   { title: '日志归档策略已开启（保留 90 天）', time: '今天 09:30' },
@@ -116,61 +148,56 @@ const notices = ref([
 ])
 
 const events = ref([
-  { title: 'AI检测脚本执行失败', time: '12 分钟前', dotClass: 'bg-rose-500' },
-  { title: '日志归档任务完成', time: '43 分钟前', dotClass: 'bg-emerald-500' },
-  { title: '新增知识库文档', time: '2 小时前', dotClass: 'bg-amber-500' },
-  { title: '主机连通性巡检', time: '3 小时前', dotClass: 'bg-cyan-500' },
+  { title: 'AI检测脚本执行失败', time: '12 分钟前', color: 'red' },
+  { title: '日志归档任务完成', time: '43 分钟前', color: 'green' },
+  { title: '新增知识库文档', time: '2 小时前', color: 'gold' },
+  { title: '主机连通性巡检', time: '3 小时前', color: 'blue' },
 ])
 
 const health = ref([
-  { name: '计划任务调度', status: '正常', statusClass: 'ok', desc: '每分钟检查，无积压' },
-  { name: 'Celery 队列', status: '可用', statusClass: 'good', desc: 'Worker 在线，平均延迟 < 2s' },
-  { name: '日志存储', status: '关注', statusClass: 'warn', desc: '建议保持 90 天在线数据' },
+  { name: '计划任务调度', status: '正常', color: 'green', desc: '每分钟检查，无积压' },
+  { name: 'Celery 队列', status: '可用', color: 'blue', desc: 'Worker 在线，平均延迟 < 2s' },
+  { name: '日志存储', status: '关注', color: 'gold', desc: '建议保持 90 天在线数据' },
 ])
 </script>
 
 <style scoped>
-.quick-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 11px 8px;
-  border-radius: 10px;
-  border: 1px solid #fbcfe8;
-  background: #fff1f7;
-  color: #9d174d;
+.hero-card {
+  border-radius: 18px;
+}
+
+.hero-title {
+  margin: 6px 0 0 !important;
+}
+
+.section-gap {
+  margin-top: 12px;
+}
+
+.quick-title {
+  margin-bottom: 12px !important;
+}
+
+.health-stack {
+  width: 100%;
+}
+
+.health-row {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.kpi-card {
+  margin-bottom: 12px;
+  border-radius: 16px;
+}
+
+.kpi-hint {
+  display: inline-block;
   font-size: 12px;
-  font-weight: 600;
-  transition: all .2s ease;
 }
 
-.quick-card:hover {
-  border-color: #f472b6;
-  background: #ffe4f1;
+.list-card {
+  min-height: 330px;
 }
-
-.notice-row,
-.health-row,
-.pulse-row {
-  border: 1px solid #f1f5f9;
-  border-radius: 10px;
-  background: #fff;
-  padding: 9px 10px;
-}
-
-.pulse-row {
-  display: flex;
-  gap: 9px;
-  align-items: flex-start;
-}
-
-.status-pill {
-  font-size: 11px;
-  border-radius: 999px;
-  padding: 2px 8px;
-}
-
-.status-pill.ok { background: #dcfce7; color: #166534; }
-.status-pill.good { background: #e0f2fe; color: #075985; }
-.status-pill.warn { background: #fef3c7; color: #92400e; }
 </style>

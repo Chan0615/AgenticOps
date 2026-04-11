@@ -1,149 +1,94 @@
 <template>
-  <div class="log-list-container">
-    <a-card :bordered="false">
-      <!-- 搜索栏 -->
-      <div class="search-bar">
-        <a-space wrap>
-          <a-range-picker
-            v-model="dateRange"
-            style="width: 250px"
-          />
-          
-          <a-select
-            v-model="searchParams.status"
-            placeholder="执行状态"
-            allow-clear
-            style="width: 150px"
-          >
-            <a-option value="pending">等待中</a-option>
-            <a-option value="running">运行中</a-option>
-            <a-option value="success">成功</a-option>
-            <a-option value="failed">失败</a-option>
-          </a-select>
-          
-          <a-input
-            v-model="searchParams.task_name"
-            placeholder="任务名称"
-            allow-clear
-            style="width: 180px"
-          />
+  <div class="log-page ant-illustration-page">
+    <Card :bordered="false">
+      <Space wrap style="margin-bottom: 16px">
+        <RangePicker v-model:value="dateRange" show-time value-format="YYYY-MM-DD HH:mm:ss" style="width: 320px" />
 
-          <a-input
-            v-model="searchParams.server_keyword"
-            placeholder="服务器IP/名称"
-            allow-clear
-            style="width: 180px"
-          />
-          
-          <a-button type="primary" @click="handleSearch">
-            <template #icon><icon-search /></template>
-            搜索
-          </a-button>
-          
-          <a-button @click="handleReset">
-            <template #icon><icon-refresh /></template>
-            重置
-          </a-button>
-        </a-space>
-      </div>
+        <Select v-model:value="searchParams.status" allow-clear placeholder="执行状态" style="width: 140px">
+          <SelectOption value="pending">等待中</SelectOption>
+          <SelectOption value="running">运行中</SelectOption>
+          <SelectOption value="success">成功</SelectOption>
+          <SelectOption value="failed">失败</SelectOption>
+        </Select>
 
-      <!-- 表格 -->
-      <a-table
-        :columns="columns"
-        :data="logList"
-        :loading="loading"
-        :pagination="pagination"
-        @page-change="handlePageChange"
-        @page-size-change="handlePageSizeChange"
-      >
-        <template #task_info="{ record }">
-          {{ formatTask(record) }}
-        </template>
+        <Input v-model:value="searchParams.task_name" placeholder="任务名称" allow-clear style="width: 180px" />
+        <Input v-model:value="searchParams.server_keyword" placeholder="服务器IP/名称" allow-clear style="width: 190px" />
 
-        <template #server_info="{ record }">
-          {{ record.server_ip || '-' }}
-        </template>
+        <Button type="primary" @click="handleSearch">搜索</Button>
+        <Button @click="handleReset">重置</Button>
+      </Space>
 
-        <template #status="{ record }">
-          <a-tag :color="getStatusColor(record.status)">
-            {{ getStatusText(record.status) }}
-          </a-tag>
+      <Table :columns="columns" :data-source="logList" :loading="loading" :pagination="pagination" row-key="id" @change="handleTableChange">
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'task_info'">{{ formatTask(record) }}</template>
+          <template v-else-if="column.key === 'server_info'">{{ record.server_ip || '-' }}</template>
+          <template v-else-if="column.key === 'status'">
+            <Tag :color="getStatusColor(record.status)">{{ getStatusText(record.status) }}</Tag>
+          </template>
+          <template v-else-if="column.key === 'duration'">
+            <span v-if="record.duration">{{ record.duration.toFixed(2) }}秒</span>
+            <span v-else>-</span>
+          </template>
+          <template v-else-if="column.key === 'created_at'">{{ formatDateTime(record.created_at) }}</template>
+          <template v-else-if="column.key === 'actions'">
+            <Button type="link" @click="handleView(record)">查看详情</Button>
+          </template>
         </template>
-        
-        <template #duration="{ record }">
-          <span v-if="record.duration">
-            {{ record.duration.toFixed(2) }}秒
-          </span>
-          <span v-else>-</span>
-        </template>
+      </Table>
+    </Card>
 
-        <template #created_at="{ record }">
-          {{ formatDateTime(record.created_at) }}
-        </template>
-        
-        <template #actions="{ record }">
-          <a-button type="text" size="small" @click="handleView(record)">
-            查看详情
-          </a-button>
-        </template>
-      </a-table>
-    </a-card>
+    <Modal v-model:open="detailVisible" title="执行日志详情" width="920px" :footer="null">
+      <Descriptions :column="2" bordered>
+        <DescriptionsItem label="任务">{{ formatTask(detailData) }}</DescriptionsItem>
+        <DescriptionsItem label="服务器IP">{{ detailData.server_ip || '-' }}</DescriptionsItem>
+        <DescriptionsItem label="执行状态">
+          <Tag :color="getStatusColor(detailData.status)">{{ getStatusText(detailData.status) }}</Tag>
+        </DescriptionsItem>
+        <DescriptionsItem label="开始时间">{{ formatDateTime(detailData.started_at) }}</DescriptionsItem>
+        <DescriptionsItem label="结束时间">{{ formatDateTime(detailData.finished_at) }}</DescriptionsItem>
+        <DescriptionsItem label="执行时长">{{ detailData.duration ? `${detailData.duration.toFixed(2)}秒` : '-' }}</DescriptionsItem>
+        <DescriptionsItem label="退出码">{{ detailData.exit_code ?? '-' }}</DescriptionsItem>
+      </Descriptions>
 
-    <!-- 详情对话框 -->
-    <a-modal
-      v-model:visible="detailVisible"
-      title="执行日志详情"
-      width="900px"
-      :footer="false"
-    >
-      <a-descriptions :column="2" bordered>
-        <a-descriptions-item label="任务">
-          {{ formatTask(detailData) }}
-        </a-descriptions-item>
-        <a-descriptions-item label="服务器IP">
-          {{ detailData.server_ip || '-' }}
-        </a-descriptions-item>
-        <a-descriptions-item label="执行状态">
-          <a-tag :color="getStatusColor(detailData.status)">
-            {{ getStatusText(detailData.status) }}
-          </a-tag>
-        </a-descriptions-item>
-        <a-descriptions-item label="开始时间">
-          {{ formatDateTime(detailData.started_at) }}
-        </a-descriptions-item>
-        <a-descriptions-item label="结束时间">
-          {{ formatDateTime(detailData.finished_at) }}
-        </a-descriptions-item>
-        <a-descriptions-item label="执行时长">
-          {{ detailData.duration ? detailData.duration.toFixed(2) + '秒' : '-' }}
-        </a-descriptions-item>
-        <a-descriptions-item label="退出码">
-          {{ detailData.exit_code ?? '-' }}
-        </a-descriptions-item>
-      </a-descriptions>
-      
-      <a-divider>执行命令</a-divider>
+      <Divider>执行命令</Divider>
       <pre class="command-content">{{ detailData.command || '-' }}</pre>
-      
-      <a-divider v-if="detailData.output">标准输出</a-divider>
-      <pre v-if="detailData.output" class="output-content">{{ detailData.output }}</pre>
-      
-      <a-divider v-if="detailData.error" status="danger">错误输出</a-divider>
-      <pre v-if="detailData.error" class="error-content">{{ detailData.error }}</pre>
-    </a-modal>
+
+      <template v-if="detailData.output">
+        <Divider>标准输出</Divider>
+        <pre class="output-content">{{ detailData.output }}</pre>
+      </template>
+
+      <template v-if="detailData.error">
+        <Divider>错误输出</Divider>
+        <pre class="error-content">{{ detailData.error }}</pre>
+      </template>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { Message } from '@arco-design/web-vue'
 import {
-  IconSearch,
-  IconRefresh,
-} from '@arco-design/web-vue/es/icon'
-import { getExecutionLogs, getExecutionLogDetail } from '@/api/ops/log'
+  Button,
+  Card,
+  DatePicker,
+  Descriptions,
+  Divider,
+  Input,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tag,
+  message,
+} from 'ant-design-vue'
+import { getExecutionLogDetail, getExecutionLogs } from '@/api/ops/log'
 import { formatDateTime } from '@/utils/datetime'
+
+const SelectOption = Select.Option
+const RangePicker = DatePicker.RangePicker
+const DescriptionsItem = Descriptions.Item
 
 const route = useRoute()
 
@@ -164,7 +109,6 @@ interface ExecutionLog {
   created_at: string
 }
 
-// 搜索参数
 const searchParams = reactive({
   status: '',
   task_id: '',
@@ -173,35 +117,30 @@ const searchParams = reactive({
   recent_days: '',
 })
 
-const dateRange = ref<[string, string] | undefined>()
+const dateRange = ref<[string, string] | undefined>(undefined)
 
-// 表格数据
 const logList = ref<ExecutionLog[]>([])
 const loading = ref(false)
 const pagination = reactive({
   current: 1,
   pageSize: 20,
   total: 0,
-  showTotal: true,
-  showPageSize: true,
+  showSizeChanger: true,
 })
 
-// 表格列定义
 const columns = [
-  { title: '任务', slotName: 'task_info', width: 220 },
-  { title: '服务器IP', slotName: 'server_info', width: 180 },
-  { title: '状态', slotName: 'status', width: 100 },
-  { title: '命令', dataIndex: 'command', ellipsis: true, tooltip: true },
-  { title: '执行时长', slotName: 'duration', width: 120 },
-  { title: '创建时间', slotName: 'created_at', width: 180 },
-  { title: '操作', slotName: 'actions', width: 120, fixed: 'right' },
+  { title: '任务', key: 'task_info', width: 240 },
+  { title: '服务器IP', key: 'server_info', width: 180 },
+  { title: '状态', key: 'status', width: 100 },
+  { title: '命令', dataIndex: 'command', key: 'command' },
+  { title: '执行时长', key: 'duration', width: 120 },
+  { title: '创建时间', key: 'created_at', width: 180 },
+  { title: '操作', key: 'actions', width: 120, fixed: 'right' as const },
 ]
 
-// 详情
 const detailVisible = ref(false)
 const detailData = ref<ExecutionLog>({} as ExecutionLog)
 
-// 加载日志列表
 const loadLogs = async () => {
   loading.value = true
   try {
@@ -223,19 +162,17 @@ const loadLogs = async () => {
     logList.value = res.data || []
     pagination.total = res.total || 0
   } catch (error: any) {
-    Message.error(error.response?.data?.detail || '加载日志列表失败')
+    message.error(error.response?.data?.detail || '加载日志列表失败')
   } finally {
     loading.value = false
   }
 }
 
-// 搜索
 const handleSearch = () => {
   pagination.current = 1
   loadLogs()
 }
 
-// 重置
 const handleReset = () => {
   searchParams.status = ''
   searchParams.task_id = ''
@@ -247,6 +184,12 @@ const handleReset = () => {
   loadLogs()
 }
 
+const handleTableChange = (pageInfo: any) => {
+  pagination.current = pageInfo.current
+  pagination.pageSize = pageInfo.pageSize
+  loadLogs()
+}
+
 const formatTask = (record: ExecutionLog) => {
   if (record.task_id && record.task_name) return `${record.task_name} · ID ${record.task_id}`
   if (record.task_name) return record.task_name
@@ -254,38 +197,23 @@ const formatTask = (record: ExecutionLog) => {
   return '-'
 }
 
-// 分页
-const handlePageChange = (page: number) => {
-  pagination.current = page
-  loadLogs()
-}
-
-const handlePageSizeChange = (pageSize: number) => {
-  pagination.pageSize = pageSize
-  pagination.current = 1
-  loadLogs()
-}
-
-// 查看详情
 const handleView = async (record: ExecutionLog) => {
   try {
-    const detail = await getExecutionLogDetail(record.id)
-    detailData.value = detail
+    detailData.value = await getExecutionLogDetail(record.id)
     detailVisible.value = true
   } catch (error: any) {
-    Message.error(error.response?.data?.detail || '加载日志详情失败')
+    message.error(error.response?.data?.detail || '加载日志详情失败')
   }
 }
 
-// 状态颜色
 const getStatusColor = (status: string) => {
   const colors: Record<string, string> = {
-    pending: 'gray',
+    pending: 'default',
     running: 'blue',
     success: 'green',
     failed: 'red',
   }
-  return colors[status] || 'gray'
+  return colors[status] || 'default'
 }
 
 const getStatusText = (status: string) => {
@@ -318,22 +246,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.log-list-container {
-  padding: 20px;
-}
-
-.search-bar {
-  margin-bottom: 16px;
-}
-
 .command-content,
 .output-content,
 .error-content {
-  background: #f5f5f5;
-  padding: 16px;
-  border-radius: 4px;
+  background: #f5f8ff;
+  border: 1px solid #dbeafe;
+  padding: 14px;
+  border-radius: 10px;
   overflow-x: auto;
-  font-family: 'Courier New', monospace;
+  font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.6;
   max-height: 300px;
@@ -342,7 +263,8 @@ onMounted(() => {
 }
 
 .error-content {
-  background: #fff1f0;
-  color: #cf1322;
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #be123c;
 }
 </style>

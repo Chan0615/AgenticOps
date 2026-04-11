@@ -8,6 +8,8 @@ from datetime import datetime
 class ScheduledTaskBase(BaseModel):
     """定时任务基础 Schema"""
     name: str = Field(..., description="任务名称", max_length=100)
+    project_id: Optional[int] = Field(None, description="所属项目ID")
+    group_id: Optional[int] = Field(None, description="所属分组ID")
     description: Optional[str] = Field(None, description="描述", max_length=500)
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: List[int] = Field(..., description="目标服务器ID列表", min_length=1)
@@ -25,6 +27,8 @@ class ScheduledTaskCreate(ScheduledTaskBase):
 class ScheduledTaskUpdate(BaseModel):
     """更新定时任务 Schema"""
     name: Optional[str] = Field(None, description="任务名称", max_length=100)
+    project_id: Optional[int] = Field(None, description="所属项目ID")
+    group_id: Optional[int] = Field(None, description="所属分组ID")
     description: Optional[str] = Field(None, description="描述", max_length=500)
     script_id: Optional[int] = Field(None, description="关联脚本ID")
     server_ids: Optional[List[int]] = Field(None, description="目标服务器ID列表")
@@ -37,6 +41,8 @@ class ScheduledTaskUpdate(BaseModel):
 class ScheduledTaskResponse(ScheduledTaskBase):
     """定时任务响应 Schema"""
     id: int
+    project_name: Optional[str] = None
+    group_name: Optional[str] = None
     celery_task_id: Optional[str] = None
     last_run_at: Optional[datetime] = None
     next_run_at: Optional[datetime] = None

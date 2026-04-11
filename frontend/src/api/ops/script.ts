@@ -6,6 +6,10 @@ import request from '@/api'
 export interface Script {
   id: number
   name: string
+  project_id?: number
+  group_id?: number
+  project_name?: string
+  group_name?: string
   description?: string
   content?: string
   file_path?: string
@@ -29,6 +33,8 @@ export interface ScriptListParams {
   page_size?: number
   name?: string
   script_type?: string
+  project_id?: number
+  group_id?: number
 }
 
 export interface ScriptListResponse {
