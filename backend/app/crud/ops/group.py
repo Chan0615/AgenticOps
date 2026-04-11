@@ -15,6 +15,23 @@ from app.schemas.group import (
 )
 
 
+def _normalize_text(value: Optional[str]) -> str:
+    return (value or "").strip().lower()
+
+
+def _is_protected_project(project: OpsProject) -> bool:
+    code = _normalize_text(project.code)
+    name = _normalize_text(project.name)
+    creator = _normalize_text(project.created_by)
+    return code == "default" or name == "default" or "默认" in name or creator == "system"
+
+
+def _is_protected_group(group: OpsGroup) -> bool:
+    name = _normalize_text(group.name)
+    creator = _normalize_text(group.created_by)
+    return name == "default" or "默认" in name or creator == "system"
+
+
 async def get_project(db: AsyncSession, project_id: int) -> Optional[OpsProject]:
     result = await db.execute(select(OpsProject).where(OpsProject.id == project_id))
     return result.scalar_one_or_none()
@@ -75,6 +92,9 @@ async def delete_project(db: AsyncSession, project_id: int) -> bool:
     db_project = await get_project(db, project_id)
     if not db_project:
         return False
+
+    if _is_protected_project(db_project):
+        raise PermissionError("系统默认项目不允许删除")
 
     group_count_result = await db.execute(
         select(func.count(OpsGroup.id)).where(OpsGroup.project_id == project_id)
@@ -172,6 +192,9 @@ async def delete_group(db: AsyncSession, group_id: int) -> bool:
     db_group = await get_group(db, group_id)
     if not db_group:
         return False
+
+    if _is_protected_group(db_group):
+        raise PermissionError("系统默认分组不允许删除")
 
     script_count_result = await db.execute(
         select(func.count(Script.id)).where(Script.group_id == group_id)

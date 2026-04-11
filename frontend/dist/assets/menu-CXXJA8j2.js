@@ -1,1 +1,0 @@
-import{a as t}from"./index-Bi8MR3Nt.js";const s={getMyMenus:()=>t.get("/menus/my"),getMenus:()=>t.get("/menus/"),getAllMenus:(e=0,u=100)=>t.get("/menus/all",{params:{skip:e,limit:u}}),getMenu:e=>t.get(`/menus/${e}`),createMenu:e=>t.post("/menus/",e),updateMenu:(e,u)=>t.put(`/menus/${e}`,u),deleteMenu:e=>t.delete(`/menus/${e}`)};export{s as m};

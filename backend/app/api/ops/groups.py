@@ -80,6 +80,8 @@ async def delete_project(
 ):
     try:
         success = await group_crud.delete_project(db, project_id)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     if not success:
@@ -167,6 +169,8 @@ async def delete_group(
 ):
     try:
         success = await group_crud.delete_group(db, group_id)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     if not success:

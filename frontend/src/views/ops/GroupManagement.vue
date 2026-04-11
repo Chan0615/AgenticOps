@@ -18,7 +18,10 @@
               <template v-else-if="column.key === 'actions'">
                 <Space>
                   <Button type="link" @click="openProjectModal(record)">编辑</Button>
-                  <Popconfirm title="确定删除该项目吗？" @confirm="handleDeleteProject(record.id)">
+                  <Tooltip v-if="isProtectedProject(record)" title="系统默认项目不允许删除">
+                    <Button type="link" danger disabled>删除</Button>
+                  </Tooltip>
+                  <Popconfirm v-else title="确定删除该项目吗？" @confirm="handleDeleteProject(record.id)">
                     <Button type="link" danger>删除</Button>
                   </Popconfirm>
                 </Space>
@@ -46,7 +49,10 @@
               <template v-else-if="column.key === 'actions'">
                 <Space>
                   <Button type="link" @click="openGroupModal(record)">编辑</Button>
-                  <Popconfirm title="确定删除该分组吗？" @confirm="handleDeleteGroup(record.id)">
+                  <Tooltip v-if="isProtectedGroup(record)" title="系统默认分组不允许删除">
+                    <Button type="link" danger disabled>删除</Button>
+                  </Tooltip>
+                  <Popconfirm v-else title="确定删除该分组吗？" @confirm="handleDeleteGroup(record.id)">
                     <Button type="link" danger>删除</Button>
                   </Popconfirm>
                 </Space>
@@ -102,6 +108,7 @@ import {
   Space,
   Table,
   Tabs,
+  Tooltip,
   message,
 } from 'ant-design-vue'
 import {
@@ -147,6 +154,19 @@ const groupColumns = [
   { title: '创建时间', dataIndex: 'created_at', key: 'created_at', width: 180 },
   { title: '操作', key: 'actions', width: 140 },
 ]
+
+const isProtectedProject = (record: OpsProject) => {
+  const code = (record.code || '').toLowerCase()
+  const name = (record.name || '').toLowerCase()
+  const creator = (record.created_by || '').toLowerCase()
+  return code === 'default' || name === 'default' || name.includes('默认') || creator === 'system'
+}
+
+const isProtectedGroup = (record: OpsGroup) => {
+  const name = (record.name || '').toLowerCase()
+  const creator = (record.created_by || '').toLowerCase()
+  return name === 'default' || name.includes('默认') || creator === 'system'
+}
 
 const projectModalOpen = ref(false)
 const projectEditId = ref<number | null>(null)
@@ -258,6 +278,11 @@ const handleSubmitProject = async () => {
 }
 
 const handleDeleteProject = async (id: number) => {
+  const target = projects.value.find((item) => item.id === id)
+  if (target && isProtectedProject(target)) {
+    message.warning('系统默认项目不允许删除')
+    return
+  }
   try {
     await deleteProject(id)
     message.success('项目删除成功')
@@ -320,6 +345,11 @@ const handleSubmitGroup = async () => {
 }
 
 const handleDeleteGroup = async (id: number) => {
+  const target = groups.value.find((item) => item.id === id)
+  if (target && isProtectedGroup(target)) {
+    message.warning('系统默认分组不允许删除')
+    return
+  }
   try {
     await deleteGroup(id)
     message.success('分组删除成功')
