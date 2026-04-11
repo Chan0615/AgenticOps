@@ -1,7 +1,7 @@
 """仪表盘概览 API"""
 
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
@@ -12,10 +12,20 @@ from app.models.agent import AgentDocumentChunk, Conversation, Document, Knowled
 from app.models.models import User
 from app.models.ops import OpsGroup, OpsProject, ScheduledTask, Server, TaskExecutionLog
 from app.schemas.system.user import UserResponse
+from app.services.dashboard_notice_store import (
+    create_notice,
+    delete_notice,
+    list_notices,
+    update_notice,
+)
 
 
 router = APIRouter(prefix="/api/ops/dashboard", tags=["仪表盘"])
 logger = logging.getLogger(__name__)
+_HEALTH_CACHE: dict = {
+    "data": None,
+    "ts": None,
+}
 
 
 def _relative_time(dt: datetime | None) -> str:
@@ -30,6 +40,40 @@ def _relative_time(dt: datetime | None) -> str:
     if seconds < 86400:
         return f"{seconds // 3600} 小时前"
     return f"{seconds // 86400} 天前"
+
+
+def _parse_iso_datetime(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _get_cached_celery_health() -> dict:
+    now = datetime.now()
+    cached_ts = _HEALTH_CACHE.get("ts")
+    cached_data = _HEALTH_CACHE.get("data")
+    if cached_ts and cached_data and (now - cached_ts).total_seconds() <= 30:
+        return cached_data
+
+    try:
+        from app.api.ops.tasks import _collect_celery_health
+
+        health = _collect_celery_health()
+    except Exception as exc:
+        logger.warning("Dashboard celery health failed: %s", exc)
+        health = {
+            "ok": False,
+            "workers": [],
+            "beat_healthy": False,
+            "detail": "Celery 状态不可用",
+        }
+
+    _HEALTH_CACHE["data"] = health
+    _HEALTH_CACHE["ts"] = now
+    return health
 
 
 async def _safe_count(db: AsyncSession, stmt, fallback: int = 0) -> int:
@@ -138,18 +182,7 @@ async def get_dashboard_overview(
         else 100.0
     )
 
-    try:
-        from app.api.ops.tasks import _collect_celery_health
-
-        celery_health = _collect_celery_health()
-    except Exception as exc:
-        logger.warning("Dashboard celery health failed: %s", exc)
-        celery_health = {
-            "ok": False,
-            "workers": [],
-            "beat_healthy": False,
-            "detail": "Celery 状态不可用",
-        }
+    celery_health = _get_cached_celery_health()
 
     try:
         recent_log_rows = (
@@ -221,7 +254,18 @@ async def get_dashboard_overview(
     trend_total_runs = [trend_bucket[d]["total"] for d in trend_dates]
     trend_failed_runs = [trend_bucket[d]["failed"] for d in trend_dates]
 
-    notices = []
+    manual_notice_items = [item for item in list_notices() if item.get("enabled")]
+
+    notices = [
+        {
+            "id": item.get("id"),
+            "title": item.get("title") or "",
+            "time": _relative_time(_parse_iso_datetime(item.get("updated_at") or item.get("created_at"))),
+            "content": item.get("content") or "",
+            "source": "manual",
+        }
+        for item in manual_notice_items
+    ]
     scope_label = "当前范围"
     if group_name:
         scope_label = f"分组 {group_name}"
@@ -231,21 +275,30 @@ async def get_dashboard_overview(
     if offline_servers > 0:
         notices.append(
             {
+                "id": 0,
                 "title": f"当前有 {offline_servers} 台离线主机，建议检查网络或 JumpServer 资产状态",
                 "time": _relative_time(now),
+                "content": "",
+                "source": "system",
             }
         )
     if failed_runs > 0:
         notices.append(
             {
+                "id": 0,
                 "title": f"今日任务失败 {failed_runs} 次，请优先查看失败日志",
                 "time": _relative_time(now),
+                "content": "",
+                "source": "system",
             }
         )
     notices.append(
         {
+            "id": 0,
             "title": f"{scope_label}已启用 {enabled_tasks}/{total_tasks} 个定时任务",
             "time": _relative_time(now),
+            "content": "",
+            "source": "system",
         }
     )
     notices = notices[:3]
@@ -307,4 +360,74 @@ async def get_dashboard_overview(
                 "failed_runs": trend_failed_runs,
             },
         },
+    }
+
+
+@router.get("/notices")
+async def get_dashboard_notices(
+    current_user: UserResponse = Depends(get_current_user),
+):
+    _ = current_user
+    items = list_notices()
+    return {
+        "code": 200,
+        "message": "success",
+        "data": items,
+    }
+
+
+@router.post("/notices")
+async def create_dashboard_notice(
+    payload: dict = Body(...),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    _ = current_user
+    title = (payload.get("title") or "").strip()
+    content = (payload.get("content") or "").strip()
+    enabled = bool(payload.get("enabled", True))
+    if not title:
+        raise HTTPException(status_code=400, detail="公告标题不能为空")
+    item = create_notice(title=title, content=content, enabled=enabled)
+    return {
+        "code": 200,
+        "message": "创建成功",
+        "data": item,
+    }
+
+
+@router.put("/notices/{notice_id}")
+async def update_dashboard_notice(
+    notice_id: int,
+    payload: dict = Body(...),
+    current_user: UserResponse = Depends(get_current_user),
+):
+    _ = current_user
+    title = (payload.get("title") or "").strip()
+    content = (payload.get("content") or "").strip()
+    enabled = bool(payload.get("enabled", True))
+    if not title:
+        raise HTTPException(status_code=400, detail="公告标题不能为空")
+    item = update_notice(notice_id=notice_id, title=title, content=content, enabled=enabled)
+    if not item:
+        raise HTTPException(status_code=404, detail="公告不存在")
+    return {
+        "code": 200,
+        "message": "更新成功",
+        "data": item,
+    }
+
+
+@router.delete("/notices/{notice_id}")
+async def delete_dashboard_notice(
+    notice_id: int,
+    current_user: UserResponse = Depends(get_current_user),
+):
+    _ = current_user
+    deleted = delete_notice(notice_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="公告不存在")
+    return {
+        "code": 200,
+        "message": "删除成功",
+        "data": True,
     }

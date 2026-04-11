@@ -94,7 +94,7 @@
       </div>
     </Card>
 
-    <Row :gutter="12" class="section-gap">
+    <Row :gutter="8" class="section-gap">
       <Col v-for="item in kpis" :key="item.label" :xs="12" :sm="8" :md="6" :lg="6" :xl="3">
         <Card :bordered="false" class="kpi-card">
           <Statistic :title="item.label" :value="item.value" />
@@ -119,11 +119,16 @@
     <Row :gutter="12" class="section-gap">
       <Col :xs="24" :lg="8">
         <Card :bordered="false" title="系统公告" class="list-card">
+          <template #extra>
+            <Button type="link" size="small" @click="openNoticeManager">维护信息</Button>
+          </template>
           <List :data-source="notices" :split="false">
             <template #renderItem="{ item }">
               <ListItem>
                 <ListItemMeta :description="item.time">
-                  <template #title>{{ item.title }}</template>
+                  <template #title>
+                    <div class="notice-line">{{ item.content ? `${item.title} · ${item.content}` : item.title }}</div>
+                  </template>
                 </ListItemMeta>
               </ListItem>
             </template>
@@ -161,6 +166,51 @@
         </Card>
       </Col>
     </Row>
+
+    <Modal
+      v-model:open="noticeManageVisible"
+      title="维护公告信息"
+      width="760px"
+      :confirm-loading="noticeSubmitting"
+      @ok="saveNotice"
+      ok-text="保存"
+      cancel-text="关闭"
+    >
+      <div class="notice-form">
+        <Input v-model:value="noticeTitle" placeholder="公告标题" />
+        <InputTextArea v-model:value="noticeContent" :rows="3" placeholder="公告内容（可选）" />
+        <Space>
+          <TypographyText>启用显示</TypographyText>
+          <Switch v-model:checked="noticeEnabled" />
+          <Button v-if="editingNoticeId" size="small" @click="resetNoticeForm">取消编辑</Button>
+        </Space>
+      </div>
+
+      <List :loading="noticeListLoading" :data-source="noticeItems" class="notice-manage-list">
+        <template #renderItem="{ item }">
+          <ListItem>
+            <ListItemMeta>
+              <template #title>
+                <Space>
+                  <TypographyText>{{ item.title }}</TypographyText>
+                  <Tag :color="item.enabled ? 'green' : 'default'">{{ item.enabled ? '启用' : '停用' }}</Tag>
+                </Space>
+              </template>
+              <template #description>
+                <div>{{ item.content || '无内容' }}</div>
+                <TypographyText type="secondary">更新于 {{ item.updated_at }}</TypographyText>
+              </template>
+            </ListItemMeta>
+            <Space>
+              <Button size="small" @click="editNotice(item)">编辑</Button>
+              <Popconfirm title="确认删除该公告？" ok-text="删除" cancel-text="取消" @confirm="removeNotice(item.id)">
+                <Button size="small" danger>删除</Button>
+              </Popconfirm>
+            </Space>
+          </ListItem>
+        </template>
+      </List>
+    </Modal>
   </div>
 </template>
 
@@ -177,9 +227,19 @@ import {
   DesktopOutlined,
   FileTextOutlined,
 } from '@ant-design/icons-vue'
-import { Button, Card, Col, List, Row, Select, Space, Statistic, Tag, Timeline, Typography, message } from 'ant-design-vue'
+import { Button, Card, Col, Input, List, Modal, Popconfirm, Row, Select, Space, Statistic, Switch, Tag, Timeline, Typography, message } from 'ant-design-vue'
 import { getGroupList, getProjectList, type OpsGroup, type OpsProject } from '@/api/ops/group'
-import { getDashboardOverview, type DashboardEvent, type DashboardHealthItem, type DashboardNotice } from '@/api/ops/dashboard'
+import {
+  createDashboardNotice,
+  deleteDashboardNotice,
+  getDashboardNotices,
+  getDashboardOverview,
+  updateDashboardNotice,
+  type DashboardEvent,
+  type DashboardHealthItem,
+  type DashboardNotice,
+  type DashboardNoticeItem,
+} from '@/api/ops/dashboard'
 
 const router = useRouter()
 
@@ -189,6 +249,7 @@ const ListItemMeta = List.Item.Meta
 const TimelineItem = Timeline.Item
 const TypographyText = Typography.Text
 const TypographyTitle = Typography.Title
+const InputTextArea = Input.TextArea
 
 const loading = ref(false)
 const dashboardPrimary = '#ec4899'
@@ -267,7 +328,15 @@ const quickEntries = [
 ]
 const displayedQuickEntries = computed(() => quickEntries.slice(0, 6))
 
-const notices = ref<DashboardNotice[]>([{ title: '暂无公告', time: '刚刚' }])
+const notices = ref<DashboardNotice[]>([{ id: 0, title: '暂无公告', time: '刚刚', source: 'system' }])
+const noticeManageVisible = ref(false)
+const noticeListLoading = ref(false)
+const noticeSubmitting = ref(false)
+const noticeItems = ref<DashboardNoticeItem[]>([])
+const editingNoticeId = ref<number | null>(null)
+const noticeTitle = ref('')
+const noticeContent = ref('')
+const noticeEnabled = ref(true)
 const events = ref<DashboardEvent[]>([{ id: 0, log_id: 0, title: '暂无执行记录', time: '刚刚', color: 'blue' }])
 const health = ref<DashboardHealthItem[]>([
   { name: '计划任务调度', status: '待检测', color: 'gold', desc: '等待实时数据' },
@@ -384,7 +453,9 @@ const loadDashboard = async () => {
       totalTasks: summary.total_tasks,
     }
 
-    notices.value = res.data.notices.length ? res.data.notices : [{ title: '暂无公告', time: '刚刚' }]
+    notices.value = res.data.notices.length
+      ? res.data.notices
+      : [{ id: 0, title: '暂无公告', time: '刚刚', source: 'system' }]
     events.value = res.data.events.length
       ? res.data.events
       : [{ id: 0, log_id: 0, title: '暂无执行记录', time: '刚刚', color: 'blue' }]
@@ -405,6 +476,104 @@ const loadDashboard = async () => {
     message.error('仪表盘数据加载失败')
   } finally {
     loading.value = false
+  }
+}
+
+const resetNoticeForm = () => {
+  editingNoticeId.value = null
+  noticeTitle.value = ''
+  noticeContent.value = ''
+  noticeEnabled.value = true
+}
+
+const formatNoticeRelativeTime = (isoTime?: string) => {
+  if (!isoTime) return '刚刚'
+  const value = dayjs(isoTime)
+  if (!value.isValid()) return '刚刚'
+  const sec = dayjs().diff(value, 'second')
+  if (sec < 60) return '刚刚'
+  if (sec < 3600) return `${Math.floor(sec / 60)} 分钟前`
+  if (sec < 86400) return `${Math.floor(sec / 3600)} 小时前`
+  return `${Math.floor(sec / 86400)} 天前`
+}
+
+const applyManualNoticesToPanel = () => {
+  const manual = noticeItems.value
+    .filter((item) => item.enabled)
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      content: item.content || '',
+      time: formatNoticeRelativeTime(item.updated_at || item.created_at),
+      source: 'manual' as const,
+    }))
+  const system = notices.value.filter((item) => item.source === 'system')
+  const merged = [...manual, ...system].slice(0, 3)
+  notices.value = merged.length ? merged : [{ id: 0, title: '暂无公告', time: '刚刚', source: 'system' }]
+}
+
+const loadNoticeItems = async () => {
+  noticeListLoading.value = true
+  try {
+    const res = await getDashboardNotices()
+    noticeItems.value = res.data || []
+    applyManualNoticesToPanel()
+  } catch {
+    message.error('公告列表加载失败')
+  } finally {
+    noticeListLoading.value = false
+  }
+}
+
+const openNoticeManager = async () => {
+  noticeManageVisible.value = true
+  resetNoticeForm()
+  await loadNoticeItems()
+}
+
+const editNotice = (item: DashboardNoticeItem) => {
+  editingNoticeId.value = item.id
+  noticeTitle.value = item.title
+  noticeContent.value = item.content || ''
+  noticeEnabled.value = item.enabled
+}
+
+const saveNotice = async () => {
+  if (!noticeTitle.value.trim()) {
+    message.warning('请输入公告标题')
+    return
+  }
+  noticeSubmitting.value = true
+  try {
+    const payload = {
+      title: noticeTitle.value.trim(),
+      content: noticeContent.value.trim(),
+      enabled: noticeEnabled.value,
+    }
+    if (editingNoticeId.value) {
+      await updateDashboardNotice(editingNoticeId.value, payload)
+      message.success('公告已更新')
+    } else {
+      await createDashboardNotice(payload)
+      message.success('公告已新增')
+    }
+    await loadNoticeItems()
+    resetNoticeForm()
+    noticeManageVisible.value = false
+  } catch {
+    message.error('公告保存失败')
+  } finally {
+    noticeSubmitting.value = false
+  }
+}
+
+const removeNotice = async (noticeId: number) => {
+  try {
+    await deleteDashboardNotice(noticeId)
+    message.success('公告已删除')
+    await loadNoticeItems()
+  } catch {
+    message.error('公告删除失败')
   }
 }
 
@@ -760,13 +929,29 @@ onBeforeUnmount(() => {
 }
 
 .kpi-card {
-  margin-bottom: 12px;
-  border-radius: 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+}
+
+.kpi-card :deep(.ant-card-body) {
+  padding: 10px 12px;
+}
+
+.kpi-card :deep(.ant-statistic-title) {
+  margin-bottom: 2px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.kpi-card :deep(.ant-statistic-content) {
+  font-size: 22px;
+  line-height: 1.1;
 }
 
 .kpi-hint {
   display: inline-block;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.1;
 }
 
 .list-card {
@@ -796,6 +981,27 @@ onBeforeUnmount(() => {
 .event-link {
   padding: 0;
   height: auto;
+}
+
+.notice-line {
+  color: #1f2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.notice-manage-list {
+  max-height: 280px;
+  overflow-y: auto;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 8px;
 }
 
 @media (max-width: 991px) {

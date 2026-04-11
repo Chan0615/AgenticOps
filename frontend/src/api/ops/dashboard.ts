@@ -18,8 +18,20 @@ export interface DashboardSummary {
 }
 
 export interface DashboardNotice {
+  id: number
   title: string
   time: string
+  content?: string
+  source?: 'manual' | 'system'
+}
+
+export interface DashboardNoticeItem {
+  id: number
+  title: string
+  content: string
+  enabled: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface DashboardHealthItem {
@@ -66,6 +78,31 @@ export interface DashboardOverviewResponse {
   data: DashboardOverviewData
 }
 
+export interface DashboardNoticeListResponse {
+  code: number
+  message: string
+  data: DashboardNoticeItem[]
+}
+
 export const getDashboardOverview = (params?: { project_id?: number; group_id?: number }) => {
   return request.get<any, DashboardOverviewResponse>('/ops/dashboard/overview', { params })
+}
+
+export const getDashboardNotices = () => {
+  return request.get<any, DashboardNoticeListResponse>('/ops/dashboard/notices')
+}
+
+export const createDashboardNotice = (payload: { title: string; content?: string; enabled?: boolean }) => {
+  return request.post('/ops/dashboard/notices', payload)
+}
+
+export const updateDashboardNotice = (
+  noticeId: number,
+  payload: { title: string; content?: string; enabled?: boolean },
+) => {
+  return request.put(`/ops/dashboard/notices/${noticeId}`, payload)
+}
+
+export const deleteDashboardNotice = (noticeId: number) => {
+  return request.delete(`/ops/dashboard/notices/${noticeId}`)
 }
