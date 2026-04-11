@@ -62,11 +62,16 @@
 
         <Card :bordered="false" class="login-card">
           <div class="login-title-wrap">
-            <h1 class="login-title">欢迎回来</h1>
-            <p class="login-subtitle">登录 CHAN AgenticOps 平台</p>
+            <h1 class="login-title">{{ authMode === 'login' ? '欢迎回来' : '创建账号' }}</h1>
+            <p class="login-subtitle">{{ authMode === 'login' ? '登录 CHAN AgenticOps 平台' : '注册后即可进入平台' }}</p>
           </div>
 
-          <Form layout="vertical" :model="loginForm" @finish="handleLogin">
+          <div class="auth-mode-switch">
+            <Button :type="authMode === 'login' ? 'primary' : 'default'" @click="switchMode('login')">登录</Button>
+            <Button :type="authMode === 'register' ? 'primary' : 'default'" @click="switchMode('register')">注册</Button>
+          </div>
+
+          <Form v-if="authMode === 'login'" layout="vertical" :model="loginForm" @finish="handleLogin">
             <FormItem label="用户名" name="username" :rules="[{ required: true, message: '请输入用户名' }]">
               <Input v-model:value="loginForm.username" size="large" placeholder="请输入用户名" />
             </FormItem>
@@ -83,6 +88,42 @@
             <Alert v-if="error" :message="error" type="error" show-icon style="margin-bottom: 14px" />
 
             <Button html-type="submit" type="primary" block size="large" :loading="loading">登录</Button>
+          </Form>
+
+          <Form v-else layout="vertical" :model="registerForm" @finish="handleRegister">
+            <FormItem label="用户名" name="username" :rules="[{ required: true, message: '请输入用户名' }]">
+              <Input v-model:value="registerForm.username" size="large" placeholder="至少 3 位" />
+            </FormItem>
+
+            <FormItem label="邮箱" name="email" :rules="[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '邮箱格式不正确' }]">
+              <Input v-model:value="registerForm.email" size="large" placeholder="请输入邮箱" />
+            </FormItem>
+
+            <FormItem label="姓名（可选）" name="full_name">
+              <Input v-model:value="registerForm.full_name" size="large" placeholder="请输入姓名" />
+            </FormItem>
+
+            <FormItem label="密码" name="password" :rules="[{ required: true, message: '请输入密码' }, { min: 6, message: '密码至少 6 位' }]">
+              <InputPassword v-model:value="registerForm.password" size="large" placeholder="至少 6 位" />
+            </FormItem>
+
+            <FormItem
+              label="确认密码"
+              name="confirm_password"
+              :rules="[
+                { required: true, message: '请再次输入密码' },
+                {
+                  validator: (_rule, value) =>
+                    value === registerForm.password ? Promise.resolve() : Promise.reject('两次输入密码不一致'),
+                },
+              ]"
+            >
+              <InputPassword v-model:value="registerForm.confirm_password" size="large" placeholder="请再次输入密码" />
+            </FormItem>
+
+            <Alert v-if="error" :message="error" type="error" show-icon style="margin-bottom: 14px" />
+
+            <Button html-type="submit" type="primary" block size="large" :loading="loading">注册并进入</Button>
           </Form>
         </Card>
       </section>
@@ -104,8 +145,21 @@ const authStore = useAuthStore()
 
 const loading = ref(false)
 const error = ref('')
+const authMode = ref<'login' | 'register'>('login')
 const rememberMe = ref(true)
 const loginForm = reactive({ username: '', password: '' })
+const registerForm = reactive({
+  username: '',
+  email: '',
+  full_name: '',
+  password: '',
+  confirm_password: '',
+})
+
+function switchMode(mode: 'login' | 'register') {
+  authMode.value = mode
+  error.value = ''
+}
 
 async function handleLogin() {
   loading.value = true
@@ -115,6 +169,24 @@ async function handleLogin() {
     router.push('/dashboard')
   } catch (err: any) {
     error.value = err.response?.data?.detail || '登录失败，请检查用户名和密码'
+  } finally {
+    loading.value = false
+  }
+}
+
+async function handleRegister() {
+  loading.value = true
+  error.value = ''
+  try {
+    await authStore.register({
+      username: registerForm.username,
+      email: registerForm.email,
+      full_name: registerForm.full_name || undefined,
+      password: registerForm.password,
+    })
+    router.push('/dashboard')
+  } catch (err: any) {
+    error.value = err.response?.data?.detail || '注册失败，请检查输入信息'
   } finally {
     loading.value = false
   }
@@ -302,6 +374,13 @@ async function handleLogin() {
   border-radius: 20px;
   border: 1px solid #e6eefc;
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+.auth-mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .login-card::before {
