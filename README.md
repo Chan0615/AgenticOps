@@ -37,6 +37,12 @@
   - 一键回滚到指定版本（支持回滚备注）
 - 定时任务：Cron 调度、启停与手动触发
 - 执行日志：任务执行记录与结果查看
+- 运维看板（Dashboard）：
+  - 真实数据概览（用户、知识库、主机、任务、执行、会话）
+  - 近 7 天执行/失败趋势图
+  - 按项目/分组筛选下钻
+  - 系统脉冲可跳转日志详情
+  - 系统公告支持手工维护（CRUD）
 - 项目与分组：
   - 项目 CRUD（`/api/ops/projects`）
   - 分组 CRUD（`/api/ops/groups`）
@@ -51,6 +57,7 @@
 - 运维与设置模块已迁移至 Ant Design Vue
 - 登录页/个人页采用插画风视觉方案
 - 菜单图标已支持下拉可选与预览
+- 仪表盘支持插画风布局、快捷胶囊入口、AI 助手大入口
 - 任务创建页执行方式优化：
   - 选择脚本且命令留空时自动执行（Python -> `python3`，Shell -> `bash`）
   - 脚本下拉展示源文件名（如 `xxx.py` / `xxx.sh`）
@@ -147,6 +154,18 @@ npm run dev
   - 参数：`from_version_id`、`to_version_id`
 - `POST /api/ops/scripts/{script_id}/rollback`：回滚版本
   - body: `{"version_id": 12, "note": "回滚到稳定版本"}`
+
+## 运维看板 API（新增）
+
+- `GET /api/ops/dashboard/overview`：看板概览（支持筛选）
+  - query: `project_id`、`group_id`
+- `GET /api/ops/dashboard/notices`：公告列表
+- `POST /api/ops/dashboard/notices`：新增公告
+  - body: `{"title": "计划维护", "content": "周日 02:00-03:00", "enabled": true}`
+- `PUT /api/ops/dashboard/notices/{notice_id}`：更新公告
+- `DELETE /api/ops/dashboard/notices/{notice_id}`：删除公告
+
+公告默认使用本地文件持久化：`backend/data/dashboard_notices.json`
 
 ## 任务执行规则（当前）
 

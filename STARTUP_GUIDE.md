@@ -142,17 +142,45 @@ sudo systemctl enable --now agenticops-celery-worker
 sudo systemctl enable --now agenticops-celery-beat
 ```
 
-## 4. 运行检查清单
+## 4. 仪表盘公告维护（手工）
+
+### 4.1 页面入口
+- 登录后进入首页仪表盘（`/dashboard`）。
+- 在「系统公告」卡片右上角点击「维护信息」。
+
+### 4.2 常用操作
+- 新增：填写标题/内容 -> 选择是否启用 -> 点击保存。
+- 编辑：在维护弹窗列表中点击「编辑」-> 修改后保存。
+- 删除：在维护弹窗列表中点击「删除」。
+- 保存成功后会自动关闭弹窗，并刷新首页公告。
+
+### 4.3 数据存储位置
+- 公告数据默认持久化到：`backend/data/dashboard_notices.json`。
+- 该文件为运行数据，不建议手工改格式；建议通过页面维护。
+
+### 4.4 API 方式维护（可选）
+```bash
+# 列表
+curl -H "Authorization: Bearer <token>" http://localhost:8000/api/ops/dashboard/notices
+
+# 新增
+curl -X POST http://localhost:8000/api/ops/dashboard/notices \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"计划维护","content":"周日 02:00-03:00","enabled":true}'
+```
+
+## 5. 运行检查清单
 - `redis-server` 已启动且可连接。
 - `backend/config.yaml` 存在且配置完整。
 - `worker` 消费队列包含 `salt,scheduler`。
 - 任务调度依赖 `worker + beat` 同时在线。
 - 前端反向代理 `/api -> http://localhost:8000`（Vite 本地默认已配置）。
 
-## 5. 风险提示
+## 6. 风险提示
 - `python backend/init_db.py` 默认会清空并重建数据库（生产环境慎用）。
 - Windows 下 Celery 建议 `-P solo`，Linux 通常不需要。
 
-## 6. 相关文档
+## 7. 相关文档
 - systemd 服务模板：`SYSTEMD_SERVICES.md`
 - Nginx 反向代理与前端静态部署：`NGINX_DEPLOY.md`
