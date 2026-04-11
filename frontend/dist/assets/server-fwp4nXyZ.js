@@ -1,1 +1,0 @@
-import{a as s}from"./index-LWdCi1Sc.js";const o=e=>{const r={...e,page_size:Math.min(Math.max(e.page_size??20,1),100)};return s.get("/ops/servers",{params:r})},a=e=>s.post("/ops/servers",e),n=(e,r)=>s.put(`/ops/servers/${e}`,r),p=e=>s.delete(`/ops/servers/${e}`),c=e=>s.post("/ops/servers/test-connection",e);export{a as c,p as d,o as g,c as t,n as u};

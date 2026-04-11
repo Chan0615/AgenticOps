@@ -29,16 +29,17 @@
             <span class="task-tip-inline">自动刷新（10分钟/次）</span>
             <Switch v-model:checked="autoRefreshHealth" size="small" />
           </Space>
-          <Tag :color="schedulerHealth?.ok ? 'green' : 'red'">
-            Worker: {{ schedulerHealth?.ok ? '正常' : '异常' }}
+          <Tag :color="schedulerHealth ? (schedulerHealth.ok ? 'green' : 'red') : 'default'">
+            Worker: {{ schedulerHealth ? (schedulerHealth.ok ? '正常' : '异常') : '未检查' }}
           </Tag>
-          <Tag :color="schedulerHealth?.beat_healthy ? 'green' : 'orange'">
-            Scheduler队列: {{ schedulerHealth?.beat_healthy ? '正常' : '未消费' }}
+          <Tag :color="schedulerHealth ? (schedulerHealth.beat_healthy ? 'green' : 'orange') : 'default'">
+            Scheduler队列: {{ schedulerHealth ? (schedulerHealth.beat_healthy ? '正常' : '未消费') : '未检查' }}
           </Tag>
           <span v-if="schedulerHealth?.missing_queues?.length" class="task-tip-inline">
             缺失队列: {{ schedulerHealth.missing_queues.join(', ') }}
           </span>
           <span v-if="healthCheckedAt" class="task-tip-inline">检查时间: {{ healthCheckedAt }}</span>
+          <span v-else class="task-tip-inline">检查时间: 未检查</span>
         </Space>
       </div>
 
@@ -710,7 +711,7 @@ const handleDelete = async (id: number) => {
 
 onMounted(() => {
   loadTasks()
-  void Promise.allSettled([loadGroupMeta(), loadServerOptions(), loadScriptOptions(), loadSchedulerHealth()])
+  void Promise.allSettled([loadGroupMeta(), loadServerOptions(), loadScriptOptions()])
   startHealthTimer()
 })
 
