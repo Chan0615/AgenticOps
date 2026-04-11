@@ -14,6 +14,20 @@ from sqlalchemy import select
 logger = logging.getLogger(__name__)
 
 DEFAULT_REMOTE_SCRIPT_DIR = "/root/ChAn"
+MAX_FAILURE_LOG_CHARS = 2048
+
+
+def _truncate_text(text: str, max_chars: int = MAX_FAILURE_LOG_CHARS) -> str:
+    if not text:
+        return ""
+    if len(text) <= max_chars:
+        return text
+    return f"{text[:max_chars]}\n... (truncated, total={len(text)} chars)"
+
+
+def _build_failure_error(stderr: str, stdout: str) -> str:
+    raw_error = (stderr or "").strip() or (stdout or "").strip() or "执行失败"
+    return _truncate_text(raw_error)
 
 def _parse_run_all_result(output) -> tuple[bool, int, str, str]:
     if isinstance(output, dict):
@@ -137,8 +151,8 @@ async def _execute_salt_command_async(task_id: int, server_ids: list[int], comma
 
                 finished_at = datetime.now()
                 log.status = "success" if is_success else "failed"
-                log.output = stdout
-                log.error = None if is_success else (stderr or "执行失败")
+                log.output = None
+                log.error = None if is_success else _build_failure_error(stderr, stdout)
                 log.exit_code = exit_code
                 log.finished_at = finished_at
                 log.duration = (finished_at - started_at).total_seconds()
