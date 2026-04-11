@@ -118,7 +118,7 @@
       </Form>
     </Modal>
 
-    <Modal v-model:open="viewOpen" title="脚本详情" width="900px" :footer="null">
+    <Modal v-model:open="viewOpen" title="脚本详情" width="1200px" :footer="null" wrap-class-name="script-view-modal">
       <Descriptions bordered :column="2">
         <DescriptionsItem label="脚本名称">{{ viewData.name }}</DescriptionsItem>
         <DescriptionsItem label="脚本类型">
@@ -131,7 +131,9 @@
         <DescriptionsItem label="描述" :span="2">{{ viewData.description || '-' }}</DescriptionsItem>
       </Descriptions>
       <Divider>脚本内容</Divider>
-      <pre class="script-pre">{{ viewData.content || '暂无脚本内容' }}</pre>
+      <div class="script-pre-wrap">
+        <pre class="script-pre">{{ viewData.content || '暂无脚本内容' }}</pre>
+      </div>
     </Modal>
   </div>
 </template>
@@ -241,7 +243,7 @@ const distributingScript = ref<Script | null>(null)
 const serverOptions = ref<Server[]>([])
 const distributeForm = reactive({
   server_ids: [] as number[],
-  target_directory: '/opt/scripts',
+  target_directory: '/root/ChAn',
   file_name: '',
 })
 
@@ -425,7 +427,7 @@ const loadDistributeServers = async () => {
 const openDistribute = async (record: Script) => {
   distributingScript.value = record
   distributeForm.server_ids = []
-  distributeForm.target_directory = '/opt/scripts'
+  distributeForm.target_directory = '/root/ChAn'
   distributeForm.file_name = record.source_file_name || `${record.name}${record.script_type === 'python' ? '.py' : '.sh'}`
   distributeOpen.value = true
   await loadDistributeServers()
@@ -435,7 +437,7 @@ const resetDistributeForm = () => {
   distributeOpen.value = false
   distributingScript.value = null
   distributeForm.server_ids = []
-  distributeForm.target_directory = '/opt/scripts'
+  distributeForm.target_directory = '/root/ChAn'
   distributeForm.file_name = ''
 }
 
@@ -477,7 +479,12 @@ onMounted(async () => {
   background: #0f172a;
   color: #e2e8f0;
   border-radius: 8px;
-  white-space: pre-wrap;
-  word-break: break-word;
+  white-space: pre;
+  min-width: max-content;
+}
+
+.script-pre-wrap {
+  max-height: calc(100vh - 320px);
+  overflow: auto;
 }
 </style>

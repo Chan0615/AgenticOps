@@ -80,13 +80,16 @@ def _build_storage_path(file_name: str) -> Path:
 
 def _to_script_response(script, include_content: bool = False) -> ScriptResponse:
     file_path = script.content or ""
+    # Avoid async lazy-load in response serialization (MissingGreenlet)
+    project_rel = getattr(script, "__dict__", {}).get("project")
+    group_rel = getattr(script, "__dict__", {}).get("group")
     return ScriptResponse(
         id=script.id,
         name=script.name,
         project_id=script.project_id,
         group_id=script.group_id,
-        project_name=getattr(script.project, "name", None) if getattr(script, "project", None) else None,
-        group_name=getattr(script.group, "name", None) if getattr(script, "group", None) else None,
+        project_name=getattr(project_rel, "name", None) if project_rel is not None else None,
+        group_name=getattr(group_rel, "name", None) if group_rel is not None else None,
         description=script.description,
         script_type=script.script_type,
         parameters=script.parameters,
@@ -169,45 +172,65 @@ async def upload_script(
     current_user: UserResponse = Depends(get_current_user),
 ):
     """上传脚本文件并创建脚本记录"""
-    raw = await file.read()
-    if not raw:
-        raise HTTPException(status_code=400, detail="上传文件为空")
-
+    target_path: Optional[Path] = None
     try:
-        content = raw.decode("utf-8")
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="仅支持 UTF-8 文本脚本文件")
+        raw = await file.read()
+        if not raw:
+            raise HTTPException(status_code=400, detail="上传文件为空")
 
-    file_name = file.filename or "script.sh"
-    guessed_type = _infer_script_type(file_name)
-    final_name = name or (os.path.splitext(file_name)[0] or "script")
+        try:
+            content = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            raise HTTPException(status_code=400, detail="仅支持 UTF-8 文本脚本文件")
 
-    SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
-    ext = ".py" if (script_type or guessed_type) == "python" else ".sh"
-    storage_file_name = _sanitize_storage_filename(
-        upload_file_name=file_name,
-        fallback_stem=final_name,
-        forced_ext=ext,
-    )
-    target_path = _build_storage_path(storage_file_name)
-    target_path.write_text(content, encoding="utf-8")
+        file_name = file.filename or "script.sh"
+        guessed_type = _infer_script_type(file_name)
+        final_name = name or (os.path.splitext(file_name)[0] or "script")
 
-    script_in = ScriptCreate(
-        name=final_name,
-        project_id=project_id,
-        group_id=group_id,
-        description=description,
-        file_path=str(target_path),
-        script_type=script_type or guessed_type,
-        timeout=timeout,
-    )
-    try:
+        SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
+        ext = ".py" if (script_type or guessed_type) == "python" else ".sh"
+        storage_file_name = _sanitize_storage_filename(
+            upload_file_name=file_name,
+            fallback_stem=final_name,
+            forced_ext=ext,
+        )
+        target_path = _build_storage_path(storage_file_name)
+        target_path.write_text(content, encoding="utf-8")
+
+        script_in = ScriptCreate(
+            name=final_name,
+            project_id=project_id,
+            group_id=group_id,
+            description=description,
+            file_path=str(target_path),
+            script_type=script_type or guessed_type,
+            timeout=timeout,
+        )
         db_script = await script_crud.create_script(
             db, script_in, created_by=current_user.username
         )
     except ValueError as exc:
+        if target_path and target_path.exists():
+            try:
+                target_path.unlink()
+            except Exception:
+                pass
         raise HTTPException(status_code=400, detail=str(exc))
-    return _to_script_response(db_script, include_content=True)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("脚本上传失败: %s", exc)
+        if target_path and target_path.exists():
+            try:
+                target_path.unlink()
+            except Exception:
+                pass
+        raise HTTPException(status_code=500, detail="脚本上传失败，请查看后端日志")
+
+    fresh_script = await script_crud.get_script(db, db_script.id)
+    if not fresh_script:
+        raise HTTPException(status_code=500, detail="脚本创建后读取失败")
+    return _to_script_response(fresh_script, include_content=True)
 
 
 @router.post("/{script_id}/upload", response_model=ScriptResponse)
@@ -246,7 +269,13 @@ async def replace_script_file(
         script_id,
         ScriptUpdate(file_path=str(target_path)),
     )
-    return _to_script_response(updated, include_content=True)
+    if not updated:
+        raise HTTPException(status_code=404, detail="脚本不存在")
+
+    fresh_script = await script_crud.get_script(db, updated.id)
+    if not fresh_script:
+        raise HTTPException(status_code=500, detail="脚本更新后读取失败")
+    return _to_script_response(fresh_script, include_content=True)
 
 
 @router.put("/{script_id}", response_model=ScriptResponse)
@@ -264,7 +293,11 @@ async def update_script(
         raise HTTPException(status_code=400, detail=str(exc))
     if not db_script:
         raise HTTPException(status_code=404, detail="脚本不存在")
-    return _to_script_response(db_script, include_content=True)
+
+    fresh_script = await script_crud.get_script(db, db_script.id)
+    if not fresh_script:
+        raise HTTPException(status_code=500, detail="脚本更新后读取失败")
+    return _to_script_response(fresh_script, include_content=True)
 
 
 @router.delete("/{script_id}")
