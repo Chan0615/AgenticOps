@@ -351,9 +351,16 @@ const filteredServerOptions = computed(() => {
   return serverOptions.value.filter((s) => s.environment === selectedEnvironment.value)
 })
 
+const serverOptionMap = computed<Record<number, TaskServerOption>>(() => {
+  return serverOptions.value.reduce((acc, item) => {
+    acc[item.id] = item
+    return acc
+  }, {} as Record<number, TaskServerOption>)
+})
+
 const getTaskTargets = (task: Task) => {
   return (task.server_ids || []).map((id) => {
-    const server = serverOptions.value.find((s) => s.id === id)
+    const server = serverOptionMap.value[id]
     if (!server) {
       return { id, name: `主机#${id}`, envText: '未知环境' }
     }
@@ -410,7 +417,7 @@ const loadServerOptions = async () => {
 
 const loadScriptOptions = async () => {
   try {
-    const res = await getScriptList({ page: 1, page_size: 200 })
+    const res = await getScriptList({ page: 1, page_size: 100 })
     const items = res.data || []
     scriptOptions.value = items.map((s) => ({
       id: s.id,
@@ -666,13 +673,10 @@ const handleDelete = async (id: number) => {
   }
 }
 
-onMounted(async () => {
-  await loadGroupMeta()
-  await loadServerOptions()
-  await loadScriptOptions()
-  await loadSchedulerHealth()
+onMounted(() => {
+  loadTasks()
+  void Promise.allSettled([loadGroupMeta(), loadServerOptions(), loadScriptOptions(), loadSchedulerHealth()])
   startHealthTimer()
-  await loadTasks()
 })
 
 onUnmounted(() => {

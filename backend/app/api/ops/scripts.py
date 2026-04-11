@@ -44,6 +44,15 @@ def _infer_script_type(file_name: str) -> str:
     return "python" if file_name.lower().endswith(".py") else "shell"
 
 
+def _infer_script_name(input_name: Optional[str], file_name: str) -> str:
+    candidate = (input_name or "").strip()
+    if candidate:
+        return candidate
+
+    inferred = Path(file_name or "").name.strip()
+    return inferred or "script"
+
+
 def _read_script_file(file_path: str) -> str:
     path = Path(file_path)
     if not path.exists():
@@ -211,7 +220,7 @@ async def upload_script(
 
         file_name = file.filename or "script.sh"
         guessed_type = _infer_script_type(file_name)
-        final_name = name or (os.path.splitext(file_name)[0] or "script")
+        final_name = _infer_script_name(name, file_name)
 
         SCRIPT_STORAGE_DIR.mkdir(parents=True, exist_ok=True)
         ext = ".py" if (script_type or guessed_type) == "python" else ".sh"
@@ -256,7 +265,7 @@ async def upload_script(
     fresh_script = await script_crud.get_script(db, db_script.id)
     if not fresh_script:
         raise HTTPException(status_code=500, detail="脚本创建后读取失败")
-    return _to_script_response(fresh_script, include_content=True)
+    return _to_script_response(fresh_script, include_content=False)
 
 
 @router.post("/{script_id}/upload", response_model=ScriptResponse)
@@ -302,7 +311,7 @@ async def replace_script_file(
     fresh_script = await script_crud.get_script(db, updated.id)
     if not fresh_script:
         raise HTTPException(status_code=500, detail="脚本更新后读取失败")
-    return _to_script_response(fresh_script, include_content=True)
+    return _to_script_response(fresh_script, include_content=False)
 
 
 @router.put("/{script_id}", response_model=ScriptResponse)
@@ -329,7 +338,7 @@ async def update_script(
     fresh_script = await script_crud.get_script(db, db_script.id)
     if not fresh_script:
         raise HTTPException(status_code=500, detail="脚本更新后读取失败")
-    return _to_script_response(fresh_script, include_content=True)
+    return _to_script_response(fresh_script, include_content=False)
 
 
 @router.get("/{script_id}/versions", response_model=ScriptVersionListResponse)
@@ -447,7 +456,7 @@ async def rollback_script(
     fresh_script = await script_crud.get_script(db, updated.id)
     if not fresh_script:
         raise HTTPException(status_code=500, detail="脚本回滚后读取失败")
-    return _to_script_response(fresh_script, include_content=True)
+    return _to_script_response(fresh_script, include_content=False)
 
 
 @router.delete("/{script_id}")

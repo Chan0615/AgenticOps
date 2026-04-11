@@ -62,7 +62,11 @@ export interface TaskSchedulerHealthResponse {
  * 获取任务列表
  */
 export const getTaskList = (params: TaskListParams) => {
-  return request.get<any, TaskListResponse>('/ops/tasks', { params })
+  const safeParams = {
+    ...params,
+    page_size: Math.min(Math.max(params.page_size ?? 20, 1), 100),
+  }
+  return request.get<any, TaskListResponse>('/ops/tasks', { params: safeParams })
 }
 
 /**

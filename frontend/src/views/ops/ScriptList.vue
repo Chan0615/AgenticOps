@@ -49,8 +49,8 @@
       <Form :model="formData" layout="vertical">
         <Row :gutter="16">
           <Col :span="12">
-            <FormItem label="脚本名称" required>
-              <Input v-model:value="formData.name" placeholder="例如：日志清理脚本" />
+            <FormItem label="脚本名称（可选）">
+              <Input v-model:value="formData.name" placeholder="留空则自动使用文件名（含扩展名）" />
             </FormItem>
           </Col>
           <Col :span="12">
@@ -83,6 +83,9 @@
         <FormItem :label="isEdit ? '替换脚本文件（可选）' : '上传脚本文件'" :required="!isEdit">
           <Input type="file" @change="onFileInputChange" />
           <div v-if="selectedFileName" class="upload-tip">已选择：{{ selectedFileName }}</div>
+          <div v-if="selectedFileName && !isEdit && !formData.name?.trim()" class="upload-tip">
+            将自动命名为：{{ inferNameFromFilename(selectedFileName) }}
+          </div>
         </FormItem>
 
         <Row :gutter="16">
@@ -449,9 +452,14 @@ const onFileInputChange = (event: Event) => {
   selectedFileName.value = file?.name || ''
 }
 
+const inferNameFromFilename = (filename: string) => {
+  const normalized = filename.split(/[\\/]/).pop() || filename
+  return normalized.trim() || 'script'
+}
+
 const handleSubmit = async () => {
-  if (!formData.name || !formData.project_id || !formData.group_id) {
-    message.warning('请填写脚本名称并选择项目分组')
+  if (!formData.project_id || !formData.group_id) {
+    message.warning('请选择项目和分组')
     return
   }
   if (!isEdit.value && !selectedUploadFile.value) {
@@ -460,6 +468,7 @@ const handleSubmit = async () => {
   }
 
   try {
+    const trimmedName = formData.name?.trim()
     if (isEdit.value && editingId.value) {
       if (selectedUploadFile.value) {
         const fd = new FormData()
@@ -467,7 +476,7 @@ const handleSubmit = async () => {
         await replaceScriptFile(editingId.value, fd)
       }
       await updateScript(editingId.value, {
-        name: formData.name,
+        name: trimmedName || undefined,
         project_id: formData.project_id,
         group_id: formData.group_id,
         description: formData.description,
@@ -478,7 +487,7 @@ const handleSubmit = async () => {
     } else {
       const fd = new FormData()
       fd.append('file', selectedUploadFile.value as File)
-      fd.append('name', formData.name)
+      if (trimmedName) fd.append('name', trimmedName)
       fd.append('project_id', String(formData.project_id))
       fd.append('group_id', String(formData.group_id))
       if (formData.description) fd.append('description', formData.description)
