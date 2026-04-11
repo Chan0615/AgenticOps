@@ -12,7 +12,7 @@ import zhCN from 'ant-design-vue/es/locale/zh_CN'
 const themeConfig: ThemeConfig = {
   algorithm: theme.defaultAlgorithm,
   token: {
-    colorPrimary: '#52C41A',
+    colorPrimary: '#EC4899',
     colorInfo: '#4DABF7',
     colorSuccess: '#51CF66',
     colorWarning: '#FFD93D',

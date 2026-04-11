@@ -38,7 +38,11 @@ export interface ServerListResponse {
  * 获取服务器列表
  */
 export const getServerList = (params: ServerListParams) => {
-  return request.get<any, ServerListResponse>('/ops/servers', { params })
+  const safeParams = {
+    ...params,
+    page_size: Math.min(Math.max(params.page_size ?? 20, 1), 100),
+  }
+  return request.get<any, ServerListResponse>('/ops/servers', { params: safeParams })
 }
 
 /**

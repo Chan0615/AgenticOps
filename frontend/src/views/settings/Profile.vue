@@ -14,18 +14,18 @@
         </div>
         <div class="rounded-2xl border-2 border-surface-900/15 bg-white/80 p-3">
           <svg viewBox="0 0 520 220" class="w-full h-auto" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="个人中心插画">
-            <rect x="8" y="10" width="504" height="200" rx="24" fill="#eef7ff"/>
+            <rect x="8" y="10" width="504" height="200" rx="24" fill="#fff1f7"/>
             <circle cx="82" cy="58" r="24" fill="#fde68a"/>
-            <rect x="46" y="130" width="130" height="58" rx="14" fill="#dbeafe" stroke="#1e293b" stroke-width="2"/>
-            <circle cx="78" cy="158" r="12" fill="#60a5fa"/>
+            <rect x="46" y="130" width="130" height="58" rx="14" fill="#fce7f3" stroke="#1e293b" stroke-width="2"/>
+            <circle cx="78" cy="158" r="12" fill="#f472b6"/>
             <rect x="98" y="150" width="60" height="8" rx="4" fill="#334155"/>
             <rect x="98" y="164" width="44" height="8" rx="4" fill="#94a3b8"/>
             <rect x="196" y="40" width="276" height="148" rx="16" fill="#ffffff" stroke="#1e293b" stroke-width="2"/>
             <rect x="218" y="64" width="232" height="12" rx="6" fill="#e2e8f0"/>
-            <rect x="218" y="88" width="160" height="10" rx="5" fill="#bfdbfe"/>
-            <rect x="218" y="106" width="190" height="10" rx="5" fill="#bbf7d0"/>
+            <rect x="218" y="88" width="160" height="10" rx="5" fill="#fbcfe8"/>
+            <rect x="218" y="106" width="190" height="10" rx="5" fill="#f9a8d4"/>
             <rect x="218" y="124" width="128" height="10" rx="5" fill="#fde68a"/>
-            <rect x="218" y="148" width="88" height="26" rx="10" fill="#22c55e"/>
+            <rect x="218" y="148" width="88" height="26" rx="10" fill="#ec4899"/>
             <text x="246" y="166" fill="#fff" font-size="12" font-weight="700">SAVE</text>
             <circle cx="454" cy="42" r="18" fill="#c4b5fd"/>
           </svg>
@@ -51,7 +51,7 @@
               <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-xl shadow-brand-200/50 ring-4 ring-white">
                 <span class="text-4xl font-bold text-white">{{ userInitial }}</span>
               </div>
-              <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 rounded-full ring-2 ring-white flex items-center justify-center">
+              <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-brand-400 rounded-full ring-2 ring-white flex items-center justify-center">
                 <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>

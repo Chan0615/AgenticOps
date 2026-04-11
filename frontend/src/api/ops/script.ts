@@ -48,7 +48,11 @@ export interface ScriptListResponse {
  * 获取脚本列表
  */
 export const getScriptList = (params: ScriptListParams) => {
-  return request.get<any, ScriptListResponse>('/ops/scripts', { params })
+  const safeParams = {
+    ...params,
+    page_size: Math.min(Math.max(params.page_size ?? 20, 1), 100),
+  }
+  return request.get<any, ScriptListResponse>('/ops/scripts', { params: safeParams })
 }
 
 /**

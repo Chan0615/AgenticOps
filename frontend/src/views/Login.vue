@@ -129,9 +129,9 @@ async function handleLogin() {
   justify-content: center;
   padding: 20px;
   background:
-    radial-gradient(900px 500px at 10% 10%, rgba(59, 130, 246, 0.2), transparent 60%),
-    radial-gradient(900px 500px at 90% 0%, rgba(14, 165, 233, 0.18), transparent 60%),
-    linear-gradient(180deg, #eef5ff 0%, #f8fbff 100%);
+    radial-gradient(900px 500px at 10% 10%, rgba(244, 114, 182, 0.24), transparent 60%),
+    radial-gradient(900px 500px at 90% 0%, rgba(251, 113, 133, 0.2), transparent 60%),
+    linear-gradient(180deg, #fff4fa 0%, #fff9fc 100%);
 }
 
 .login-shell {
@@ -141,9 +141,9 @@ async function handleLogin() {
   grid-template-columns: 1.28fr 0.72fr;
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid #dbeafe;
+  border: 1px solid #fbcfe8;
   background: #fff;
-  box-shadow: 0 24px 60px rgba(30, 64, 175, 0.12);
+  box-shadow: 0 24px 60px rgba(190, 24, 93, 0.12);
 }
 
 .illustration-panel {
@@ -153,7 +153,7 @@ async function handleLogin() {
   justify-content: center;
   padding: 28px;
   color: #fff;
-  background: linear-gradient(155deg, #1d4ed8 0%, #2563eb 42%, #0ea5e9 100%);
+  background: linear-gradient(155deg, #db2777 0%, #ec4899 46%, #fb7185 100%);
   overflow: hidden;
 }
 
@@ -254,7 +254,7 @@ async function handleLogin() {
   height: 170px;
   border-radius: 24px;
   border: 3px solid #2c2c2c;
-  background: linear-gradient(145deg, #bfdbfe, #93c5fd);
+  background: linear-gradient(145deg, #fbcfe8, #f9a8d4);
   box-shadow: 6px 6px 0 #2c2c2c;
   transform: rotate(12deg);
 }
@@ -266,7 +266,7 @@ async function handleLogin() {
   height: 190px;
   border-radius: 50%;
   border: 3px solid #2c2c2c;
-  background: radial-gradient(circle at 35% 35%, #fde68a, #f59e0b);
+  background: radial-gradient(circle at 35% 35%, #fbcfe8, #ec4899);
   box-shadow: 6px 6px 0 #2c2c2c;
 }
 
@@ -285,13 +285,13 @@ async function handleLogin() {
 .note-top {
   top: 98px;
   right: 44px;
-  background: #d9f99d;
+  background: #fbcfe8;
 }
 
 .note-bottom {
   left: 42px;
   bottom: 84px;
-  background: #bae6fd;
+  background: #f5d0fe;
 }
 
 .login-card {
@@ -313,7 +313,7 @@ async function handleLogin() {
   height: 16px;
   border: 3px solid #2c2c2c;
   border-radius: 999px;
-  background: #86efac;
+  background: #f9a8d4;
   box-shadow: 3px 3px 0 #2c2c2c;
 }
 
@@ -327,7 +327,7 @@ async function handleLogin() {
   border: 3px solid #2c2c2c;
   border-right: none;
   border-radius: 12px 0 0 12px;
-  background: #67e8f9;
+  background: #fbcfe8;
 }
 
 .login-card :deep(.ant-input),
@@ -370,7 +370,7 @@ async function handleLogin() {
 }
 
 .forgot-link {
-  color: #2563eb;
+  color: #db2777;
   font-size: 13px;
 }
 
