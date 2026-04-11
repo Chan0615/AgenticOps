@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from contextlib import asynccontextmanager
 import asyncio
 import sys
 
 from app.core import config
+from app.core.request_context import reset_current_request, set_current_request
 from app.api.auth import auth_router
 from app.api.agent import rag_router
 from app.api.system import users_router, roles_router, menus_router
@@ -31,6 +33,19 @@ app = FastAPI(
     description="AgenticOps - 智能知识库平台",
     lifespan=lifespan,
 )
+
+
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        token = set_current_request(request)
+        try:
+            response = await call_next(request)
+            return response
+        finally:
+            reset_current_request(token)
+
+
+app.add_middleware(RequestContextMiddleware)
 
 # CORS配置
 app.add_middleware(

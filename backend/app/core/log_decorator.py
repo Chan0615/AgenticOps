@@ -6,11 +6,50 @@ import json
 import logging
 from typing import Optional, Callable, Any
 from fastapi import Request, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.common.log import create_log
+from app.core.request_context import get_current_request
 from app.core.security import get_current_user_from_request
 
 logger = logging.getLogger(__name__)
+
+
+def _serialize_for_log(data: Any) -> Any:
+    if data is None:
+        return None
+    if isinstance(data, BaseModel):
+        return data.model_dump(mode="json")
+    if isinstance(data, dict):
+        return data
+    if isinstance(data, (list, tuple)):
+        return [_serialize_for_log(item) for item in data]
+    if isinstance(data, (str, int, float, bool)):
+        return data
+    if hasattr(data, "dict") and callable(getattr(data, "dict")):
+        try:
+            return data.dict()
+        except Exception:
+            return str(data)
+    return str(data)
+
+
+def _extract_user_from_dependency(dep_user: Any) -> tuple[Optional[int], Optional[str]]:
+    if not dep_user:
+        return None, None
+    uid = getattr(dep_user, "id", None)
+    uname = getattr(dep_user, "username", None)
+    return uid, uname
+
+
+def _collect_fallback_request_params(kwargs: dict) -> Optional[dict]:
+    excluded_keys = {"db", "current_user", "request"}
+    payload: dict[str, Any] = {}
+    for key, value in kwargs.items():
+        if key in excluded_keys:
+            continue
+        payload[key] = _serialize_for_log(value)
+    return payload or None
 
 
 def log_operation(
@@ -47,6 +86,9 @@ def log_operation(
                     request = value
                 elif hasattr(value, '__class__') and 'AsyncSession' in str(type(value)):
                     db = value
+
+            if request is None:
+                request = get_current_request()
             
             # 获取用户信息
             user_id = None
@@ -59,6 +101,12 @@ def log_operation(
                         username = user.username
             except Exception as e:
                 logger.debug(f"获取用户信息失败: {e}")
+
+            if user_id is None or username is None:
+                dep_user = kwargs.get("current_user")
+                dep_user_id, dep_username = _extract_user_from_dependency(dep_user)
+                user_id = user_id if user_id is not None else dep_user_id
+                username = username if username is not None else dep_username
             
             # 获取请求信息
             method = request.method if request else None
@@ -77,6 +125,9 @@ def log_operation(
                     request_params = dict(request.query_params)
             except Exception as e:
                 logger.debug(f"获取请求参数失败: {e}")
+
+            if request_params is None:
+                request_params = _collect_fallback_request_params(kwargs)
             
             status_code = 200
             response_data = None
@@ -92,6 +143,9 @@ def log_operation(
                     status_code = 200
                 elif hasattr(result, 'status_code'):
                     status_code = result.status_code
+                    response_data = _serialize_for_log(result)
+                else:
+                    response_data = _serialize_for_log(result)
                 
                 return result
                 
