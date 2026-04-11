@@ -127,10 +127,10 @@
         </FormItem>
 
         <FormItem label="执行脚本（可选）">
-          <Select v-model:value="formData.script_id" allow-clear placeholder="选择脚本（会按脚本类型自动调用解释器）" @change="handleScriptChange">
+          <Select v-model:value="formData.script_id" allow-clear placeholder="选择脚本（默认按 /root/ChAn/<文件名> 执行）" @change="handleScriptChange">
             <SelectOption v-for="item in filteredScriptOptions" :key="item.id" :value="item.id">{{ item.name }} ({{ item.source_file_name || scriptDisplayName(item) }})</SelectOption>
           </Select>
-          <div class="task-tip">选中脚本且命令为空时，系统会自动执行：Python 用 `python3`，Shell 用 `bash`。</div>
+          <div class="task-tip">选中脚本且命令为空时，系统默认执行 `/root/ChAn/文件名`：Python 用 `python3`，Shell 用 `bash`。请先在脚本管理中分发到该目录。</div>
         </FormItem>
 
         <FormItem label="执行命令（可选）">
@@ -324,10 +324,10 @@ const selectedScript = computed(() => scriptOptions.value.find((s) => s.id === f
 
 const commandPlaceholder = computed(() => {
   if (selectedScript.value?.script_type === 'python') {
-    return "可留空自动执行 python3；或输入自定义命令，例如：python3 /root/ChAn/main.py --env prod"
+    return "可留空自动执行：python3 /root/ChAn/<脚本文件名>；或输入自定义命令，例如：python3 /root/ChAn/main.py --env prod"
   }
   if (selectedScript.value?.script_type === 'shell') {
-    return "可留空自动执行 bash；或输入自定义命令，例如：bash /root/ChAn/deploy.sh"
+    return "可留空自动执行：bash /root/ChAn/<脚本文件名>；或输入自定义命令，例如：bash /root/ChAn/deploy.sh"
   }
   return '不选脚本时请输入要执行的命令...'
 })
@@ -475,7 +475,10 @@ const handleTableChange = (pageInfo: any) => {
 }
 
 const openModal = async (record?: Task) => {
-  await loadServerOptions()
+  // 先打开弹窗，服务器列表后台刷新，避免点击后等待网络请求
+  if (!serverOptions.value.length && !loadingServers.value) {
+    loadServerOptions()
+  }
   if (record) {
     isEdit.value = true
     editingId.value = record.id
@@ -497,6 +500,11 @@ const openModal = async (record?: Task) => {
     isEdit.value = false
   }
   modalOpen.value = true
+
+  // 弹窗打开后异步刷新一次服务器列表（不阻塞交互）
+  if (!loadingServers.value) {
+    loadServerOptions()
+  }
 }
 
 const resetForm = () => {

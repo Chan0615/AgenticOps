@@ -3,6 +3,7 @@
 import asyncio
 import logging
 from datetime import datetime
+from pathlib import Path
 
 from celery_app import celery_app
 from app.db.database import AsyncSessionLocal
@@ -11,6 +12,8 @@ from app.services.salt_service import salt_service
 from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_REMOTE_SCRIPT_DIR = "/root/ChAn"
 
 _TASK_LOOP = None
 
@@ -56,28 +59,19 @@ async def _resolve_command(db, task_id: int, command: str) -> str:
     if not script:
         raise RuntimeError("关联脚本不存在")
 
-    script_source = script.content or ""
+    script_source = (script.content or "").strip()
     if not script_source:
         raise RuntimeError("关联脚本内容为空")
 
-    # 当前实现中脚本字段存储脚本文件路径。
-    script_text = ""
-    try:
-        from pathlib import Path
+    source_name = Path(script_source).name if script_source else ""
+    if not source_name:
+        suffix = ".py" if script.script_type == "python" else ".sh"
+        source_name = f"{script.name}{suffix}"
 
-        path = Path(script_source)
-        if path.exists():
-            script_text = path.read_text(encoding="utf-8")
-    except Exception:
-        script_text = ""
-
-    # 兼容历史数据：脚本字段直接存内容。
-    if not script_text:
-        script_text = script_source
-
+    remote_path = f"{DEFAULT_REMOTE_SCRIPT_DIR.rstrip('/')}/{source_name}"
     if script.script_type == "python":
-        return "python3 - <<'PY'\n" + script_text + "\nPY"
-    return "bash - <<'SH'\n" + script_text + "\nSH"
+        return f"python3 '{remote_path}'"
+    return f"bash '{remote_path}'"
 
 
 async def _execute_salt_command_async(task_id: int, server_ids: list[int], command: str):
