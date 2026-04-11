@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100vh-64px)] bg-white flex">
+  <div class="assistant-page bg-white flex">
     <aside class="w-80 border-r border-surface-200 bg-surface-50/60 flex flex-col">
       <div class="p-4 border-b border-surface-200">
         <button class="w-full new-chat-btn" @click="startNewChat">+ 新对话</button>
@@ -142,6 +142,16 @@ const sendMessage = async () => {
       currentConversationId.value = result.conversation_id
       await loadConversations()
     }
+  } catch (err: any) {
+    const backendDetail = err?.response?.data?.detail || err?.response?.data?.message
+    const timeoutHint = err?.code === 'ECONNABORTED' ? '请求超时（已加长超时，请稍后重试）' : ''
+    messages.value.push({
+      id: Date.now() + 2,
+      role: 'assistant',
+      content: backendDetail
+        ? `AI 服务调用失败：${backendDetail}`
+        : `AI 服务暂时不可用。${timeoutHint || '请检查后端 AI 配置（config.yaml 中 api_key/base_url/model）。'}`,
+    })
   } finally {
     sending.value = false
     await scrollToBottom()
@@ -154,6 +164,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.assistant-page {
+  height: calc(100vh - 96px);
+  min-height: 540px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+}
+
 .new-chat-btn {
   border: 1px solid #fbcfe8;
   background: #fff1f7;
@@ -193,4 +211,11 @@ onMounted(async () => {
 }
 
 .send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .assistant-page {
+    height: calc(100vh - 96px);
+    min-height: 480px;
+  }
+}
 </style>

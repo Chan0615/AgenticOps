@@ -20,7 +20,7 @@ export interface AssistantConversationDetail extends AssistantConversation {
 
 export const assistantApi = {
   chat: (data: { message: string; conversation_id?: number }) =>
-    api.post<any, { answer?: string; conversation_id?: number }>('/rag/chat', data),
+    api.post<any, { answer?: string; conversation_id?: number }>('/rag/chat', data, { timeout: 120000 }),
   getConversations: () => api.get<any, AssistantConversation[]>('/rag/conversations'),
   getConversation: (id: number) => api.get<any, AssistantConversationDetail>(`/rag/conversations/${id}`),
   deleteConversation: (id: number) => api.delete(`/rag/conversations/${id}`),
