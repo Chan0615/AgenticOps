@@ -3,6 +3,7 @@
  */
 
 export * from './server'
+export * from './dashboard'
 
 // TODO: 添加其他 API 导出
 // export * from './script'

@@ -198,8 +198,12 @@ const formatTask = (record: ExecutionLog) => {
 }
 
 const handleView = async (record: ExecutionLog) => {
+  await openDetailById(record.id)
+}
+
+const openDetailById = async (logId: number) => {
   try {
-    detailData.value = await getExecutionLogDetail(record.id)
+    detailData.value = await getExecutionLogDetail(logId)
     detailVisible.value = true
   } catch (error: any) {
     message.error(error.response?.data?.detail || '加载日志详情失败')
@@ -230,6 +234,7 @@ onMounted(() => {
   const queryTaskId = route.query.task_id
   const queryTaskName = route.query.task_name
   const queryRecentDays = route.query.recent_days
+  const queryLogId = route.query.log_id
 
   if (typeof queryTaskId === 'string' && queryTaskId.trim()) {
     searchParams.task_id = queryTaskId.trim()
@@ -242,6 +247,13 @@ onMounted(() => {
   }
 
   loadLogs()
+
+  if (typeof queryLogId === 'string' && queryLogId.trim()) {
+    const parsed = Number(queryLogId.trim())
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      openDetailById(parsed)
+    }
+  }
 })
 </script>
 

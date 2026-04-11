@@ -140,9 +140,28 @@ const iconMap: Record<string, Component> = {
 }
 
 const resolveMenuIcon = (icon?: string) => {
-  if (!icon) return undefined
+  if (!icon) return AppstoreOutlined
   const IconComponent = iconMap[icon] || AppstoreOutlined
-  return h(IconComponent)
+  return IconComponent
+}
+
+const resolveMenuTone = (key?: string) => {
+  const value = (key || '').toLowerCase()
+  if (value.includes('/dashboard')) return 'tone-dashboard'
+  if (value.includes('/assistant')) return 'tone-assistant'
+  if (value.includes('/rag')) return 'tone-rag'
+  if (value.includes('/ops/servers')) return 'tone-server'
+  if (value.includes('/ops/scripts')) return 'tone-script'
+  if (value.includes('/ops/tasks')) return 'tone-task'
+  if (value.includes('/ops/logs')) return 'tone-log'
+  if (value.includes('/ops/groups')) return 'tone-group'
+  if (value.includes('/settings')) return 'tone-settings'
+  return 'tone-default'
+}
+
+const buildMenuIcon = (icon?: string, key?: string) => {
+  const IconComponent = resolveMenuIcon(icon)
+  return h('span', { class: ['menu-icon-chip', resolveMenuTone(key)] }, [h(IconComponent)])
 }
 
 const buildMenuItems = (items: SysMenu[]): any[] => {
@@ -154,18 +173,18 @@ const buildMenuItems = (items: SysMenu[]): any[] => {
         return {
           key: item.code,
           label: item.name,
-          icon: resolveMenuIcon(item.icon),
+          icon: buildMenuIcon(item.icon, item.path || item.code),
           children: children.map((child) => ({
             key: child.path || child.code,
             label: child.name,
-            icon: resolveMenuIcon(child.icon),
+            icon: buildMenuIcon(child.icon, child.path || child.code),
           })),
         }
       }
       return {
         key: item.path || item.code,
         label: item.name,
-        icon: resolveMenuIcon(item.icon),
+        icon: buildMenuIcon(item.icon, item.path || item.code),
       }
     })
 }
@@ -274,4 +293,25 @@ onMounted(async () => {
 .user-area {
   cursor: pointer;
 }
+
+:deep(.menu-icon-chip) {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+:deep(.menu-icon-chip.tone-dashboard) { background: #dbeafe; color: #1d4ed8; }
+:deep(.menu-icon-chip.tone-assistant) { background: #fce7f3; color: #be185d; }
+:deep(.menu-icon-chip.tone-rag) { background: #fef3c7; color: #b45309; }
+:deep(.menu-icon-chip.tone-server) { background: #d1fae5; color: #047857; }
+:deep(.menu-icon-chip.tone-script) { background: #e0f2fe; color: #0e7490; }
+:deep(.menu-icon-chip.tone-task) { background: #ede9fe; color: #6d28d9; }
+:deep(.menu-icon-chip.tone-log) { background: #fee2e2; color: #b91c1c; }
+:deep(.menu-icon-chip.tone-group) { background: #fce7f3; color: #9d174d; }
+:deep(.menu-icon-chip.tone-settings) { background: #e2e8f0; color: #334155; }
+:deep(.menu-icon-chip.tone-default) { background: #f3f4f6; color: #4b5563; }
 </style>
