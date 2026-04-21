@@ -4,7 +4,8 @@ import logging
 from typing import Optional
 
 from app.api.agent.rag import router as rag_router
+from app.api.agent.system_chat import router as system_chat_router
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["rag_router"]
+__all__ = ["rag_router", "system_chat_router"]

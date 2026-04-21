@@ -97,12 +97,6 @@ const router = createRouter({
               name: 'ops-groups',
               component: () => import('@/views/ops/GroupManagement.vue'),
               meta: { title: '项目分组', keepAlive: false }
-            },
-            {
-              path: 'assistant',
-              name: 'ops-assistant',
-              component: () => import('@/views/ops/OpsAssistant.vue'),
-              meta: { title: '运维助手', keepAlive: false }
             }
           ]
         },
