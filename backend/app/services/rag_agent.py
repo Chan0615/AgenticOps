@@ -141,7 +141,8 @@ async def chat(
     messages = [{"role": "system", "content": AGENT_SYSTEM_PROMPT}]
 
     # 加入历史（最近 5 轮）
-    if conv.messages:
+    # 仅对已有对话加载历史；新建对话 messages 未 eager-load，直接跳过
+    if conversation_id and conv.messages:
         for msg in conv.messages[-10:]:
             messages.append({"role": msg.role, "content": msg.content})
 

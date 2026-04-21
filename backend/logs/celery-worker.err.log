@@ -1,0 +1,2978 @@
+[2026-04-14 10:49:17,433: WARNING/MainProcess] D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py:1022: UserWarning: Soft timeouts are not supported: on this platform: It does not have the SIGUSR1 signal.
+  warnings.warn(UserWarning(
+
+[2026-04-14 10:49:17,492: INFO/MainProcess] Connected to redis://:**@10.225.138.125:6579/20
+[2026-04-14 10:49:17,517: INFO/MainProcess] mingle: searching for neighbors
+[2026-04-14 10:49:17,799: INFO/SpawnPoolWorker-1] child process 20808 calling self.run()
+[2026-04-14 10:49:17,809: INFO/SpawnPoolWorker-4] child process 77620 calling self.run()
+[2026-04-14 10:49:17,809: INFO/SpawnPoolWorker-2] child process 121316 calling self.run()
+[2026-04-14 10:49:17,809: INFO/SpawnPoolWorker-3] child process 73244 calling self.run()
+[2026-04-14 10:49:18,269: ERROR/SpawnPoolWorker-2] Pool process <billiard.pool.Worker object at 0x00000258EA1648C0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,269: ERROR/SpawnPoolWorker-2] Pool process <billiard.pool.Worker object at 0x00000258EA1648C0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,275: ERROR/SpawnPoolWorker-1] Pool process <billiard.pool.Worker object at 0x00000200DFAB4890> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,275: ERROR/SpawnPoolWorker-1] Pool process <billiard.pool.Worker object at 0x00000200DFAB4890> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,275: ERROR/SpawnPoolWorker-3] Pool process <billiard.pool.Worker object at 0x000002334A954890> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,275: ERROR/SpawnPoolWorker-3] Pool process <billiard.pool.Worker object at 0x000002334A954890> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,281: ERROR/SpawnPoolWorker-4] Pool process <billiard.pool.Worker object at 0x000002764AD6A9F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,281: ERROR/SpawnPoolWorker-4] Pool process <billiard.pool.Worker object at 0x000002764AD6A9F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:18,359: ERROR/MainProcess] Process 'SpawnPoolWorker-4' pid:123348 exited with 'exitcode 1'
+[2026-04-14 10:49:18,360: ERROR/MainProcess] Process 'SpawnPoolWorker-3' pid:20528 exited with 'exitcode 1'
+[2026-04-14 10:49:18,360: ERROR/MainProcess] Process 'SpawnPoolWorker-2' pid:128596 exited with 'exitcode 1'
+[2026-04-14 10:49:18,360: ERROR/MainProcess] Process 'SpawnPoolWorker-1' pid:32708 exited with 'exitcode 1'
+[2026-04-14 10:49:18,666: INFO/MainProcess] mingle: all alone
+[2026-04-14 10:49:18,688: INFO/SpawnPoolWorker-6] child process 11288 calling self.run()
+[2026-04-14 10:49:18,689: INFO/SpawnPoolWorker-8] child process 109104 calling self.run()
+[2026-04-14 10:49:18,693: INFO/SpawnPoolWorker-7] child process 9768 calling self.run()
+[2026-04-14 10:49:18,726: INFO/SpawnPoolWorker-5] child process 20492 calling self.run()
+[2026-04-14 10:49:18,874: INFO/MainProcess] celery@YKZ202406166 ready.
+[2026-04-14 10:49:19,107: ERROR/SpawnPoolWorker-6] Pool process <billiard.pool.Worker object at 0x00000150511F49E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,107: ERROR/SpawnPoolWorker-6] Pool process <billiard.pool.Worker object at 0x00000150511F49E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,119: ERROR/SpawnPoolWorker-8] Pool process <billiard.pool.Worker object at 0x000001D7C8494B30> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,119: ERROR/SpawnPoolWorker-8] Pool process <billiard.pool.Worker object at 0x000001D7C8494B30> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,122: ERROR/SpawnPoolWorker-7] Pool process <billiard.pool.Worker object at 0x00000201C83D4B30> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,122: ERROR/SpawnPoolWorker-7] Pool process <billiard.pool.Worker object at 0x00000201C83D4B30> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,138: ERROR/SpawnPoolWorker-5] Pool process <billiard.pool.Worker object at 0x00000227E14E46E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,138: ERROR/SpawnPoolWorker-5] Pool process <billiard.pool.Worker object at 0x00000227E14E46E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,174: ERROR/MainProcess] Process 'SpawnPoolWorker-8' pid:72260 exited with 'exitcode 1'
+[2026-04-14 10:49:19,174: ERROR/MainProcess] Process 'SpawnPoolWorker-7' pid:73268 exited with 'exitcode 1'
+[2026-04-14 10:49:19,174: ERROR/MainProcess] Process 'SpawnPoolWorker-6' pid:20300 exited with 'exitcode 1'
+[2026-04-14 10:49:19,174: ERROR/MainProcess] Process 'SpawnPoolWorker-5' pid:20604 exited with 'exitcode 1'
+[2026-04-14 10:49:19,498: INFO/SpawnPoolWorker-9] child process 103556 calling self.run()
+[2026-04-14 10:49:19,507: INFO/SpawnPoolWorker-10] child process 75272 calling self.run()
+[2026-04-14 10:49:19,513: INFO/SpawnPoolWorker-12] child process 130012 calling self.run()
+[2026-04-14 10:49:19,520: INFO/SpawnPoolWorker-11] child process 106868 calling self.run()
+[2026-04-14 10:49:19,732: INFO/MainProcess] Task app.tasks.scheduler.check_and_execute_tasks[be5bcdd6-1d59-498a-ba14-6f4d06c36f4f] received
+[2026-04-14 10:49:19,732: WARNING/MainProcess] D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py:1503: UserWarning: Soft timeouts are not supported: on this platform: It does not have the SIGUSR1 signal.
+  warnings.warn(UserWarning(
+
+[2026-04-14 10:49:19,743: INFO/MainProcess] Task app.tasks.log_maintenance.archive_and_cleanup_execution_logs[acec9a1a-29e1-4ea4-a192-836c42f90ad5] received
+[2026-04-14 10:49:19,751: INFO/MainProcess] Task app.tasks.scheduler.check_and_execute_tasks[56708734-6f6c-4808-837a-d47c5ec0f72a] received
+[2026-04-14 10:49:19,759: INFO/MainProcess] Task app.tasks.scheduler.check_and_execute_tasks[1635f08d-38e1-4850-af87-4e28ade977a6] received
+[2026-04-14 10:49:19,962: ERROR/SpawnPoolWorker-9] Pool process <billiard.pool.Worker object at 0x000001AF2DC54410> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,962: ERROR/SpawnPoolWorker-10] Pool process <billiard.pool.Worker object at 0x000001EFA0304980> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,962: ERROR/SpawnPoolWorker-9] Pool process <billiard.pool.Worker object at 0x000001AF2DC54410> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,962: ERROR/SpawnPoolWorker-10] Pool process <billiard.pool.Worker object at 0x000001EFA0304980> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:19,991: ERROR/SpawnPoolWorker-11] Pool process <billiard.pool.Worker object at 0x000001A3C87843B0> error: OSError(9, '¾ä±úÎÞÐ§¡£', None, 6, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 7, in getvalue
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+[2026-04-14 10:49:19,991: ERROR/SpawnPoolWorker-11] Pool process <billiard.pool.Worker object at 0x000001A3C87843B0> error: OSError(9, '¾ä±úÎÞÐ§¡£', None, 6, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 7, in getvalue
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+[2026-04-14 10:49:20,089: ERROR/MainProcess] Process 'SpawnPoolWorker-11' pid:128964 exited with 'exitcode 1'
+[2026-04-14 10:49:20,089: ERROR/MainProcess] Process 'SpawnPoolWorker-10' pid:71288 exited with 'exitcode 1'
+[2026-04-14 10:49:20,090: ERROR/MainProcess] Process 'SpawnPoolWorker-9' pid:126400 exited with 'exitcode 1'
+[2026-04-14 10:49:20,401: INFO/SpawnPoolWorker-14] child process 29748 calling self.run()
+[2026-04-14 10:49:20,401: INFO/SpawnPoolWorker-15] child process 121392 calling self.run()
+[2026-04-14 10:49:20,428: INFO/SpawnPoolWorker-13] child process 102908 calling self.run()
+[2026-04-14 10:49:20,777: ERROR/SpawnPoolWorker-15] Pool process <billiard.pool.Worker object at 0x0000017B123C4AA0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:20,777: ERROR/SpawnPoolWorker-15] Pool process <billiard.pool.Worker object at 0x0000017B123C4AA0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:20,794: ERROR/SpawnPoolWorker-13] Pool process <billiard.pool.Worker object at 0x000001ED7BE64800> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:20,794: ERROR/SpawnPoolWorker-13] Pool process <billiard.pool.Worker object at 0x000001ED7BE64800> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:20,901: ERROR/MainProcess] Process 'SpawnPoolWorker-15' pid:121868 exited with 'exitcode 1'
+[2026-04-14 10:49:20,901: ERROR/MainProcess] Process 'SpawnPoolWorker-13' pid:68460 exited with 'exitcode 1'
+[2026-04-14 10:49:21,185: INFO/SpawnPoolWorker-16] child process 77576 calling self.run()
+[2026-04-14 10:49:21,185: INFO/SpawnPoolWorker-17] child process 20456 calling self.run()
+[2026-04-14 10:49:21,549: ERROR/SpawnPoolWorker-16] Pool process <billiard.pool.Worker object at 0x000001D67E204770> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:21,549: ERROR/SpawnPoolWorker-16] Pool process <billiard.pool.Worker object at 0x000001D67E204770> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:21,551: ERROR/SpawnPoolWorker-17] Pool process <billiard.pool.Worker object at 0x0000020F3E7C45C0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:21,551: ERROR/SpawnPoolWorker-17] Pool process <billiard.pool.Worker object at 0x0000020F3E7C45C0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:21,707: ERROR/MainProcess] Process 'SpawnPoolWorker-17' pid:123648 exited with 'exitcode 1'
+[2026-04-14 10:49:21,707: ERROR/MainProcess] Process 'SpawnPoolWorker-16' pid:119600 exited with 'exitcode 1'
+[2026-04-14 10:49:21,987: INFO/SpawnPoolWorker-18] child process 20736 calling self.run()
+[2026-04-14 10:49:22,022: INFO/SpawnPoolWorker-19] child process 9324 calling self.run()
+[2026-04-14 10:49:22,367: ERROR/SpawnPoolWorker-18] Pool process <billiard.pool.Worker object at 0x000001F9B1574AD0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:22,367: ERROR/SpawnPoolWorker-18] Pool process <billiard.pool.Worker object at 0x000001F9B1574AD0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:22,397: ERROR/SpawnPoolWorker-19] Pool process <billiard.pool.Worker object at 0x00000172C19D4830> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:22,397: ERROR/SpawnPoolWorker-19] Pool process <billiard.pool.Worker object at 0x00000172C19D4830> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:22,515: ERROR/MainProcess] Process 'SpawnPoolWorker-19' pid:19904 exited with 'exitcode 1'
+[2026-04-14 10:49:22,515: ERROR/MainProcess] Process 'SpawnPoolWorker-18' pid:19968 exited with 'exitcode 1'
+[2026-04-14 10:49:22,806: INFO/SpawnPoolWorker-20] child process 120940 calling self.run()
+[2026-04-14 10:49:22,807: INFO/SpawnPoolWorker-21] child process 122156 calling self.run()
+[2026-04-14 10:49:23,187: ERROR/SpawnPoolWorker-20] Pool process <billiard.pool.Worker object at 0x0000024666BB47A0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:23,187: ERROR/SpawnPoolWorker-20] Pool process <billiard.pool.Worker object at 0x0000024666BB47A0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:23,188: ERROR/SpawnPoolWorker-21] Pool process <billiard.pool.Worker object at 0x000001A7DE424980> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:23,188: ERROR/SpawnPoolWorker-21] Pool process <billiard.pool.Worker object at 0x000001A7DE424980> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:23,322: ERROR/MainProcess] Process 'SpawnPoolWorker-21' pid:126896 exited with 'exitcode 1'
+[2026-04-14 10:49:23,323: ERROR/MainProcess] Process 'SpawnPoolWorker-20' pid:11052 exited with 'exitcode 1'
+[2026-04-14 10:49:23,653: INFO/SpawnPoolWorker-22] child process 105816 calling self.run()
+[2026-04-14 10:49:23,654: INFO/SpawnPoolWorker-23] child process 70564 calling self.run()
+[2026-04-14 10:49:24,127: ERROR/SpawnPoolWorker-22] Pool process <billiard.pool.Worker object at 0x0000020A89D44920> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:24,127: ERROR/SpawnPoolWorker-22] Pool process <billiard.pool.Worker object at 0x0000020A89D44920> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:24,134: ERROR/SpawnPoolWorker-23] Pool process <billiard.pool.Worker object at 0x000001DE78A947D0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:24,134: ERROR/SpawnPoolWorker-23] Pool process <billiard.pool.Worker object at 0x000001DE78A947D0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:24,931: ERROR/MainProcess] Process 'SpawnPoolWorker-23' pid:24888 exited with 'exitcode 1'
+[2026-04-14 10:49:24,938: ERROR/MainProcess] Process 'SpawnPoolWorker-22' pid:71152 exited with 'exitcode 1'
+[2026-04-14 10:49:25,253: INFO/SpawnPoolWorker-24] child process 20744 calling self.run()
+[2026-04-14 10:49:25,254: INFO/SpawnPoolWorker-25] child process 129032 calling self.run()
+[2026-04-14 10:49:25,663: ERROR/SpawnPoolWorker-25] Pool process <billiard.pool.Worker object at 0x0000021AA80849E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:25,663: ERROR/SpawnPoolWorker-24] Pool process <billiard.pool.Worker object at 0x000001A2D9834770> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:25,663: ERROR/SpawnPoolWorker-25] Pool process <billiard.pool.Worker object at 0x0000021AA80849E0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:25,663: ERROR/SpawnPoolWorker-24] Pool process <billiard.pool.Worker object at 0x000001A2D9834770> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:25,746: ERROR/MainProcess] Process 'SpawnPoolWorker-25' pid:25872 exited with 'exitcode 1'
+[2026-04-14 10:49:25,746: ERROR/MainProcess] Process 'SpawnPoolWorker-24' pid:113216 exited with 'exitcode 1'
+[2026-04-14 10:49:26,068: INFO/SpawnPoolWorker-26] child process 3516 calling self.run()
+[2026-04-14 10:49:26,122: INFO/SpawnPoolWorker-27] child process 20788 calling self.run()
+[2026-04-14 10:49:26,515: ERROR/SpawnPoolWorker-26] Pool process <billiard.pool.Worker object at 0x00000244DA774E90> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:26,515: ERROR/SpawnPoolWorker-26] Pool process <billiard.pool.Worker object at 0x00000244DA774E90> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:26,553: ERROR/MainProcess] Process 'SpawnPoolWorker-26' pid:20692 exited with 'exitcode 1'
+[2026-04-14 10:49:26,564: ERROR/SpawnPoolWorker-27] Pool process <billiard.pool.Worker object at 0x000001DA19DE4440> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:26,564: ERROR/SpawnPoolWorker-27] Pool process <billiard.pool.Worker object at 0x000001DA19DE4440> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:26,896: INFO/SpawnPoolWorker-28] child process 77392 calling self.run()
+[2026-04-14 10:49:27,289: ERROR/SpawnPoolWorker-28] Pool process <billiard.pool.Worker object at 0x000002419E414860> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:27,289: ERROR/SpawnPoolWorker-28] Pool process <billiard.pool.Worker object at 0x000002419E414860> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:27,357: ERROR/MainProcess] Process 'SpawnPoolWorker-28' pid:128368 exited with 'exitcode 1'
+[2026-04-14 10:49:27,358: ERROR/MainProcess] Process 'SpawnPoolWorker-27' pid:20636 exited with 'exitcode 1'
+[2026-04-14 10:49:27,703: INFO/SpawnPoolWorker-29] child process 20668 calling self.run()
+[2026-04-14 10:49:27,734: INFO/SpawnPoolWorker-30] child process 127576 calling self.run()
+[2026-04-14 10:49:28,138: ERROR/SpawnPoolWorker-30] Pool process <billiard.pool.Worker object at 0x000001C7032948F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:28,138: ERROR/SpawnPoolWorker-30] Pool process <billiard.pool.Worker object at 0x000001C7032948F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:28,166: ERROR/MainProcess] Process 'SpawnPoolWorker-30' pid:18040 exited with 'exitcode 1'
+[2026-04-14 10:49:28,448: INFO/SpawnPoolWorker-31] child process 121900 calling self.run()
+[2026-04-14 10:49:28,805: ERROR/SpawnPoolWorker-31] Pool process <billiard.pool.Worker object at 0x0000015BCBE04740> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:28,805: ERROR/SpawnPoolWorker-31] Pool process <billiard.pool.Worker object at 0x0000015BCBE04740> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:28,970: ERROR/MainProcess] Process 'SpawnPoolWorker-31' pid:18112 exited with 'exitcode 1'
+[2026-04-14 10:49:29,285: INFO/SpawnPoolWorker-32] child process 125112 calling self.run()
+[2026-04-14 10:49:29,634: ERROR/SpawnPoolWorker-32] Pool process <billiard.pool.Worker object at 0x0000023D7D354BC0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:29,634: ERROR/SpawnPoolWorker-32] Pool process <billiard.pool.Worker object at 0x0000023D7D354BC0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 118, in __exit__
+    return self._semlock.__exit__(*args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 6] ¾ä±úÎÞÐ§¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:29,773: ERROR/MainProcess] Process 'SpawnPoolWorker-32' pid:102800 exited with 'exitcode 1'
+[2026-04-14 10:49:30,078: INFO/SpawnPoolWorker-33] child process 73452 calling self.run()
+[2026-04-14 10:49:30,464: ERROR/SpawnPoolWorker-33] Pool process <billiard.pool.Worker object at 0x000001E902E0F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:30,464: ERROR/SpawnPoolWorker-33] Pool process <billiard.pool.Worker object at 0x000001E902E0F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:30,578: ERROR/MainProcess] Process 'SpawnPoolWorker-33' pid:8748 exited with 'exitcode 1'
+[2026-04-14 10:49:30,897: INFO/SpawnPoolWorker-34] child process 124464 calling self.run()
+[2026-04-14 10:49:31,260: ERROR/SpawnPoolWorker-34] Pool process <billiard.pool.Worker object at 0x00000214DBCCF0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:31,260: ERROR/SpawnPoolWorker-34] Pool process <billiard.pool.Worker object at 0x00000214DBCCF0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:31,382: ERROR/MainProcess] Process 'SpawnPoolWorker-34' pid:128780 exited with 'exitcode 1'
+[2026-04-14 10:49:31,683: INFO/SpawnPoolWorker-35] child process 20600 calling self.run()
+[2026-04-14 10:49:32,075: ERROR/SpawnPoolWorker-35] Pool process <billiard.pool.Worker object at 0x00000143A1EE4860> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:32,075: ERROR/SpawnPoolWorker-35] Pool process <billiard.pool.Worker object at 0x00000143A1EE4860> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:32,185: ERROR/MainProcess] Process 'SpawnPoolWorker-35' pid:125620 exited with 'exitcode 1'
+[2026-04-14 10:49:32,508: INFO/SpawnPoolWorker-36] child process 102908 calling self.run()
+[2026-04-14 10:49:32,870: ERROR/SpawnPoolWorker-36] Pool process <billiard.pool.Worker object at 0x000002471DD7F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:32,870: ERROR/SpawnPoolWorker-36] Pool process <billiard.pool.Worker object at 0x000002471DD7F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:32,989: ERROR/MainProcess] Process 'SpawnPoolWorker-36' pid:117916 exited with 'exitcode 1'
+[2026-04-14 10:49:33,283: INFO/SpawnPoolWorker-37] child process 105548 calling self.run()
+[2026-04-14 10:49:33,651: ERROR/SpawnPoolWorker-37] Pool process <billiard.pool.Worker object at 0x000001AFAADC4800> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:33,651: ERROR/SpawnPoolWorker-37] Pool process <billiard.pool.Worker object at 0x000001AFAADC4800> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:33,793: ERROR/MainProcess] Process 'SpawnPoolWorker-37' pid:116116 exited with 'exitcode 1'
+[2026-04-14 10:49:34,120: INFO/SpawnPoolWorker-38] child process 123728 calling self.run()
+[2026-04-14 10:49:34,529: ERROR/SpawnPoolWorker-38] Pool process <billiard.pool.Worker object at 0x000001D8AF0248F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:34,529: ERROR/SpawnPoolWorker-38] Pool process <billiard.pool.Worker object at 0x000001D8AF0248F0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:34,596: ERROR/MainProcess] Process 'SpawnPoolWorker-38' pid:112168 exited with 'exitcode 1'
+[2026-04-14 10:49:34,887: INFO/SpawnPoolWorker-39] child process 20968 calling self.run()
+[2026-04-14 10:49:35,303: ERROR/SpawnPoolWorker-39] Pool process <billiard.pool.Worker object at 0x000001F7E43B4290> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:35,303: ERROR/SpawnPoolWorker-39] Pool process <billiard.pool.Worker object at 0x000001F7E43B4290> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:35,401: ERROR/MainProcess] Process 'SpawnPoolWorker-39' pid:25636 exited with 'exitcode 1'
+[2026-04-14 10:49:35,771: INFO/SpawnPoolWorker-40] child process 127856 calling self.run()
+[2026-04-14 10:49:36,202: ERROR/SpawnPoolWorker-40] Pool process <billiard.pool.Worker object at 0x00000270F508F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:36,202: ERROR/SpawnPoolWorker-40] Pool process <billiard.pool.Worker object at 0x00000270F508F0B0> error: PermissionError(13, '¾Ü¾ø·ÃÎÊ¡£', None, 5, None)
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 473, in receive
+    ready, req = _receive(1.0)
+                 ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 445, in _recv
+    return True, loads(get_payload())
+                       ^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\queues.py", line 394, in get_payload
+    with self._rlock:
+         ^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\synchronize.py", line 115, in __enter__
+    return self._semlock.__enter__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 351, in workloop
+    req = wait_for_job()
+          ^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 480, in receive
+    raise SystemExit(EX_FAILURE)
+SystemExit: 1
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 292, in __call__
+    sys.exit(self.workloop(pid=pid))
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 396, in workloop
+    self._ensure_messages_consumed(completed=completed)
+  File "D:\00_ChAn_Workspace\AgenticOps\backend\.venv\Lib\site-packages\billiard\pool.py", line 406, in _ensure_messages_consumed
+    if self.on_ready_counter.value >= completed:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 3, in getvalue
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£
+[2026-04-14 10:49:37,007: ERROR/MainProcess] Process 'SpawnPoolWorker-40' pid:19976 exited with 'exitcode 1'
+[2026-04-14 10:49:37,460: INFO/SpawnPoolWorker-41] child process 3516 calling self.run()

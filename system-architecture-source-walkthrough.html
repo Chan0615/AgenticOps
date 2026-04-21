@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgenticOps 系统架构解析（含主要源码）</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --title: #10233d;
+      --text: #233246;
+      --muted: #5e6c7b;
+      --line: #d7e0ec;
+      --brand: #0e4a7a;
+      --brand-soft: #edf5fd;
+      --ok: #126c37;
+      --warn: #8b5a00;
+      --risk: #a52d2d;
+      --radius: 12px;
+      --shadow: 0 6px 18px rgba(19, 39, 66, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.55;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .head {
+      background: linear-gradient(130deg, #f8fbff, #edf5fd);
+      border-bottom: 1px solid var(--line);
+      padding: 18px 22px;
+    }
+
+    .head h1 {
+      margin: 0;
+      color: var(--title);
+      font-size: 1.7rem;
+    }
+
+    .head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 980px;
+      font-size: 0.95rem;
+    }
+
+    .chips { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .chip {
+      border: 1px solid #c8d8ea;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      color: #2e4b68;
+      background: #fff;
+    }
+
+    .body { padding: 16px 18px 18px; }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.06rem;
+      color: #153e63;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 0.96rem;
+      color: #234f77;
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fcfeff;
+      padding: 12px;
+    }
+
+    .flow {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+    }
+
+    .step {
+      border: 1px solid #cfdcec;
+      border-radius: 8px;
+      background: #fafdff;
+      padding: 10px;
+      text-align: center;
+      font-size: 0.83rem;
+      position: relative;
+    }
+
+    .step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #7292b0;
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--brand-soft);
+      color: #16466f;
+      font-weight: 600;
+    }
+
+    code {
+      background: #eef4fb;
+      color: #244a70;
+      border: 1px solid #d6e2f0;
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 0.83rem;
+      word-break: break-word;
+    }
+
+    pre {
+      margin: 8px 0 0;
+      border: 1px solid #d7e1ef;
+      border-radius: 9px;
+      background: #f6f9fe;
+      padding: 11px;
+      font-size: 0.8rem;
+      line-height: 1.48;
+      overflow-x: auto;
+    }
+
+    ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+    li { margin-bottom: 5px; }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 1px 7px;
+      font-size: 0.72rem;
+      border: 1px solid transparent;
+      margin-left: 6px;
+      vertical-align: 1px;
+    }
+
+    .ok { color: var(--ok); border-color: rgba(18, 108, 55, 0.35); background: rgba(18, 108, 55, 0.08); }
+    .warn { color: var(--warn); border-color: rgba(139, 90, 0, 0.35); background: rgba(139, 90, 0, 0.08); }
+    .risk { color: var(--risk); border-color: rgba(165, 45, 45, 0.35); background: rgba(165, 45, 45, 0.08); }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 8px;
+    }
+
+    .toc a {
+      text-decoration: none;
+      color: #1d4e7a;
+      background: #f3f8ff;
+      border: 1px solid #d4e1f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      display: block;
+    }
+
+    .footer {
+      font-size: 0.82rem;
+      color: #6a7988;
+      text-align: right;
+      padding: 2px 2px 0;
+    }
+
+    @media (max-width: 1120px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+      .step:not(:last-child)::after { content: ""; }
+      .toc { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      body { padding: 10px; }
+      .head, .body { padding: 12px; }
+      .toc { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <div class="head">
+        <h1>AgenticOps 系统架构解析（含主要源码讲解）</h1>
+        <p>这份文档用于给团队做系统讲解，重点解释“系统怎么跑起来、核心链路怎么实现、关键代码在哪、后续怎么演进”。内容基于当前仓库源码梳理，可直接用于技术分享或评审会。</p>
+        <div class="chips">
+          <span class="chip">Frontend: Vue3 + TS + Vite + Ant Design Vue</span>
+          <span class="chip">Backend: FastAPI + SQLAlchemy Async</span>
+          <span class="chip">Task: Celery Worker/Beat + Redis</span>
+          <span class="chip">Ops Execute: Salt API + JumpServer API</span>
+        </div>
+      </div>
+      <div class="body">
+        <div class="toc">
+          <a href="#overview">01 架构总览</a>
+          <a href="#source-map">02 主要源码地图</a>
+          <a href="#flow">03 关键业务链路</a>
+          <a href="#model">04 核心数据模型</a>
+          <a href="#runtime">05 运行拓扑与启动</a>
+          <a href="#quality">06 质量与风险</a>
+          <a href="#roadmap">07 演进建议</a>
+          <a href="#talk">08 讲解话术顺序</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="overview">
+      <div class="body">
+        <h2>01) 架构总览</h2>
+        <div class="grid-3">
+          <article class="panel">
+            <h3>表现层（Web）</h3>
+            <ul>
+              <li>路由在 <code>frontend/src/router/index.ts</code>，将业务分成 dashboard/ops/rag/settings。</li>
+              <li>统一 API 请求在 <code>frontend/src/api/index.ts</code>，自动带 Bearer Token。</li>
+              <li>Vite 代理 <code>/api -> http://localhost:8000</code>（<code>frontend/vite.config.ts</code>）。</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>控制层（FastAPI）</h3>
+            <ul>
+              <li>应用入口 <code>backend/app/main.py</code>，挂载 auth/system/agent/ops 路由。</li>
+              <li>Ops 总路由聚合在 <code>backend/app/api/ops/__init__.py</code>。</li>
+              <li>接口风格以 <code>/api/ops/*</code> 为主，前后端契约一致。</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>执行层（异步任务）</h3>
+            <ul>
+              <li>Celery 配置在 <code>backend/celery_app.py</code>，队列拆分为 salt/scheduler/jumpserver。</li>
+              <li>执行逻辑在 <code>backend/app/tasks/salt_tasks.py</code>。</li>
+              <li>定时扫描在 <code>backend/app/tasks/scheduler.py</code>，每分钟检查一次。</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="source-map">
+      <div class="body">
+        <h2>02) 主要源码地图（讲解时直接按这个表走）</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>模块</th>
+              <th>核心文件</th>
+              <th>主要实现点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>应用启动</td>
+              <td><code>backend/app/main.py</code></td>
+              <td>FastAPI 实例、CORS、中间件、路由注册、健康检查。</td>
+            </tr>
+            <tr>
+              <td>配置中心</td>
+              <td><code>backend/app/core/config.py</code></td>
+              <td>启动时读取 <code>backend/config.yaml</code>；缺失则直接报错终止。</td>
+            </tr>
+            <tr>
+              <td>数据库层</td>
+              <td><code>backend/app/db/database.py</code></td>
+              <td>SQLAlchemy Async Engine、Session 工厂、依赖注入 <code>get_db()</code>。</td>
+            </tr>
+            <tr>
+              <td>认证鉴权</td>
+              <td><code>backend/app/api/auth/auth.py</code></td>
+              <td>JWT 登录、刷新、<code>get_current_user</code> 校验用户状态。</td>
+            </tr>
+            <tr>
+              <td>运维路由聚合</td>
+              <td><code>backend/app/api/ops/__init__.py</code></td>
+              <td>挂载 servers/groups/scripts/tasks/logs/dashboard 子路由。</td>
+            </tr>
+            <tr>
+              <td>服务器管理</td>
+              <td><code>backend/app/api/ops/servers.py</code><br><code>backend/app/crud/ops/server.py</code></td>
+              <td>服务器 CRUD、JumpServer 连通性测试、Salt ping 测试。</td>
+            </tr>
+            <tr>
+              <td>脚本管理</td>
+              <td><code>backend/app/api/ops/scripts.py</code></td>
+              <td>脚本上传/版本对比/回滚/分发；脚本文件落地在后端 storage。</td>
+            </tr>
+            <tr>
+              <td>任务管理</td>
+              <td><code>backend/app/api/ops/tasks.py</code><br><code>backend/app/crud/ops/task.py</code></td>
+              <td>Cron 校验与预览、任务 CRUD、手动触发、健康检查、同步调度。</td>
+            </tr>
+            <tr>
+              <td>执行任务</td>
+              <td><code>backend/app/tasks/salt_tasks.py</code><br><code>backend/app/services/salt_service.py</code></td>
+              <td>调用 Salt <code>cmd.run_all</code>，按服务器写入执行日志，聚合 success/failed。</td>
+            </tr>
+            <tr>
+              <td>执行日志</td>
+              <td><code>backend/app/api/ops/logs.py</code><br><code>backend/app/crud/ops/log.py</code></td>
+              <td>日志列表/详情查询，支持任务名、服务器关键字、时间范围过滤。</td>
+            </tr>
+            <tr>
+              <td>前端入口</td>
+              <td><code>frontend/src/main.ts</code><br><code>frontend/src/layouts/MainLayout.vue</code></td>
+              <td>挂载 Pinia + Router，菜单按后端权限动态加载。</td>
+            </tr>
+            <tr>
+              <td>前端业务页</td>
+              <td><code>frontend/src/views/ops/TaskList.vue</code><br><code>frontend/src/views/ops/LogList.vue</code></td>
+              <td>任务创建触发、日志查询与详情展示。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="flow">
+      <div class="body">
+        <h2>03) 关键业务链路（系统主要实现方式）</h2>
+        <div class="panel" style="margin-bottom:10px;">
+          <h3>A. 手动触发任务链路（最核心）</h3>
+          <div class="flow">
+            <div class="step">TaskList.vue<br>点击“测试/触发”</div>
+            <div class="step">POST /ops/tasks/trigger<br>tasks.py</div>
+            <div class="step">execute_salt_command.delay<br>投递 Celery</div>
+            <div class="step">salt_tasks.py<br>逐台执行 cmd.run_all</div>
+            <div class="step">写 ops_task_execution_log<br>running/success/failed</div>
+            <div class="step">LogList.vue 查询<br>/ops/logs/execution</div>
+          </div>
+          <pre>关键代码位置：
+- backend/app/api/ops/tasks.py -> trigger_task()
+- backend/app/tasks/salt_tasks.py -> execute_salt_command()
+- backend/app/api/ops/logs.py -> list_execution_logs()</pre>
+        </div>
+
+        <div class="grid-2">
+          <article class="panel">
+            <h3>B. 定时任务链路</h3>
+            <ul>
+              <li>Beat 每 60 秒触发 <code>check_and_execute_tasks</code>（<code>backend/celery_app.py</code>）。</li>
+              <li><code>backend/app/tasks/scheduler.py</code> 读取启用任务，判断 <code>next_run_at</code> 是否到期。</li>
+              <li>到期任务走与手动触发同一执行路径，保持一致性。</li>
+            </ul>
+            <pre>重点：手动触发和定时触发最终复用同一 Salt 执行任务，减少双实现风险。</pre>
+          </article>
+
+          <article class="panel">
+            <h3>C. 脚本分发链路</h3>
+            <ul>
+              <li>脚本先上传到后端存储目录（<code>scripts.py</code>）。</li>
+              <li>分发时读取脚本文本，base64 编码后远程落盘并 <code>chmod +x</code>。</li>
+              <li>分发结果按服务器返回，支持部分成功（HTTP 207）。</li>
+            </ul>
+            <pre>关键接口：POST /api/ops/scripts/{script_id}/distribute
+关键实现：backend/app/api/ops/scripts.py:505+</pre>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="model">
+      <div class="body">
+        <h2>04) 核心数据模型（backend/app/models/ops.py）</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>模型</th>
+              <th>关键字段</th>
+              <th>作用</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Server</code></td>
+              <td>hostname, salt_minion_id, environment, status</td>
+              <td>维护目标机器信息，执行时选择 Salt target 与环境。</td>
+            </tr>
+            <tr>
+              <td><code>Script</code></td>
+              <td>name, content(文件路径), script_type, timeout</td>
+              <td>脚本元数据；真实内容在文件系统，支持版本化。</td>
+            </tr>
+            <tr>
+              <td><code>ScheduledTask</code></td>
+              <td>server_ids, cron_expression, command, script_id, enabled</td>
+              <td>定义“在哪些服务器、按什么规则执行什么命令/脚本”。</td>
+            </tr>
+            <tr>
+              <td><code>TaskExecutionLog</code></td>
+              <td>task_id, server_id, status, command, error, duration</td>
+              <td>执行审计主表，一次任务会按服务器维度产生多条记录。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="runtime">
+      <div class="body">
+        <h2>05) 运行拓扑与启动顺序</h2>
+        <div class="grid-2">
+          <article class="panel">
+            <h3>进程拓扑</h3>
+            <ul>
+              <li>API：<code>uvicorn app.main:app --reload --port 8000</code></li>
+              <li>Worker：<code>celery -A celery_app worker --loglevel=info -Q salt,scheduler</code></li>
+              <li>Beat：<code>celery -A celery_app beat --loglevel=info</code></li>
+              <li>Frontend：<code>npm run dev</code>（5173）</li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>配置关键点</h3>
+            <ul>
+              <li><code>backend/config.yaml</code> 必须存在，否则导入配置即失败<span class="tag risk">强依赖</span></li>
+              <li>Salt 环境参数来自 <code>saltstack</code> 节点。</li>
+              <li>JumpServer 参数来自 <code>jumpserver</code> 节点。</li>
+              <li>Redis 同时承担 Celery broker/result backend。</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="quality">
+      <div class="body">
+        <h2>06) 当前质量与风险评估</h2>
+        <div class="grid-2">
+          <article class="panel">
+            <h3>已具备能力</h3>
+            <ul>
+              <li>前后端契约清晰，核心运维链路完整<span class="tag ok">可用</span></li>
+              <li>手动触发与定时触发复用执行路径<span class="tag ok">一致性好</span></li>
+              <li>脚本管理支持版本对比与回滚<span class="tag ok">可审计</span></li>
+            </ul>
+          </article>
+          <article class="panel">
+            <h3>主要风险</h3>
+            <ul>
+              <li>后端缺少系统化测试和 CI<span class="tag risk">高</span></li>
+              <li>实时日志仅有“结果查询”，缺少 host 文件 tail<span class="tag warn">中</span></li>
+              <li>执行命令/路径安全校验仍需持续加强<span class="tag warn">中</span></li>
+              <li>DB 初始化脚本默认强破坏性<span class="tag risk">高</span></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="roadmap">
+      <div class="body">
+        <h2>07) 演进建议（贴近你当前需求）</h2>
+        <ul>
+          <li>P0：新增 <code>/api/ops/logs/execution/{log_id}/tail</code>，手工输入日志路径 + 2s 轮询，先解决“不同主机路径不统一”的现实问题。</li>
+          <li>P0：前端日志详情增加“实时查看”区域（开始/停止、最后刷新时间、自动滚动）。</li>
+          <li>P1：构建最小 CI（前端 build + 后端 API smoke test + 核心任务触发回归）。</li>
+          <li>P1：为任务、日志高频筛选字段补索引与慢查询监控。</li>
+          <li>P2：在并发上来后再升级 SSE/WebSocket，避免过早复杂化。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card" id="talk">
+      <div class="body">
+        <h2>08) 给别人讲解时建议顺序（15~20 分钟）</h2>
+        <ol style="margin:0; padding-left:20px; font-size:0.92rem;">
+          <li>先讲目标：这是一个“统一运维控制面 + 异步执行引擎”的平台。</li>
+          <li>再讲分层：前端控制面、FastAPI 编排层、Celery 调度层、Salt/JumpServer 执行接入层。</li>
+          <li>重点讲一条主链路：点击触发任务 -> Celery -> Salt -> 执行日志 -> 前端查看。</li>
+          <li>讲源码地图：按本文第 02 节逐个文件说明职责，别人能马上定位代码。</li>
+          <li>最后讲风险与路线：实时日志、测试 CI、安全校验是下一阶段重点。</li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="footer">文档版本：Architecture Walkthrough v1.0（基于当前仓库源码）</div>
+  </main>
+</body>
+</html>

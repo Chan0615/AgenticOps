@@ -1,0 +1,23 @@
+ 
+ -------------- celery@YKZ202406166 v5.6.3 (recovery)
+--- ***** ----- 
+-- ******* ---- Windows-11-10.0.26200-SP0 2026-04-14 10:49:17
+- *** --- * --- 
+- ** ---------- [config]
+- ** ---------- .> app:         agentic_ops:0x21f2a01d3a0
+- ** ---------- .> transport:   redis://:**@10.225.138.125:6579/20
+- ** ---------- .> results:     redis://:**@10.225.138.125:6579/20
+- *** --- * --- .> concurrency: 4 (prefork)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** ----- 
+ -------------- [queues]
+                .> salt             exchange=salt(direct) key=salt
+                .> scheduler        exchange=scheduler(direct) key=scheduler
+
+[tasks]
+  . app.tasks.jumpserver_tasks.execute_jumpserver_command
+  . app.tasks.log_maintenance.archive_and_cleanup_execution_logs
+  . app.tasks.salt_tasks.execute_salt_command
+  . app.tasks.salt_tasks.test_salt_connection
+  . app.tasks.scheduler.check_and_execute_tasks
+

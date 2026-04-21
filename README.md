@@ -1,6 +1,6 @@
-# AgenticOps 智能运维与知识库平台
+# AgenticOps 智能运维平台
 
-基于 FastAPI + Vue 3 的一体化平台，覆盖系统权限、RAG 知识库、运维资产管理、脚本分发、定时任务与执行日志。
+基于 FastAPI + Vue 3 的一体化智能运维平台，覆盖系统权限、RAG 知识库、运维资产管理、脚本分发、定时任务与执行日志，并内置**运维 AI 助手**——通过自然语言对话即可完成所有运维操作，同时支持通过 MCP 协议与 Claude Desktop 等 AI 工具直接集成。
 
 ## 技术栈
 
@@ -10,14 +10,17 @@
 - Redis + Celery（worker/beat）
 - JWT（python-jose）认证
 - YAML 配置中心（`backend/config.yaml`）
+- AI 集成：OpenAI 兼容接口（支持 DeepSeek / 阿里云 Qwen / OpenAI）、Function Calling、SSE 流式输出
 - RAG 相关：LangChain、FAISS、Sentence Transformers
-- 运维集成：Salt、JumpServer API（连接验证与运维流程）
+- 运维集成：SaltStack API（多环境）、JumpServer API（连接验证与运维流程）
+- MCP：Model Context Protocol（供 Claude Desktop / Cursor 等工具直接调用）
 
 ### 前端
 - Vue 3 + TypeScript + Vite
-- Ant Design Vue（已从 Arco 迁移）
+- Ant Design Vue 4.x
 - Pinia + Vue Router + Axios
 - TailwindCSS（辅助样式）
+- marked.js（Markdown 渲染）
 
 ## 已开发功能
 
@@ -28,47 +31,62 @@
 - 登录/鉴权：JWT 登录与会话态管理
 
 ### 运维模块（`/api/ops/*`）
-- 服务器管理：资产维护、连接测试
-- 脚本管理：脚本上传、编辑、分发
-- 脚本版本管理：
-  - 版本表与版本号自动递增（初始上传生成 `v1`）
-  - 版本历史列表、版本内容查看
-  - 版本对比（unified diff）
-  - 一键回滚到指定版本（支持回滚备注）
-- 定时任务：Cron 调度、启停与手动触发
+- 服务器管理：资产维护、连接测试（JumpServer / SaltStack）
+- 脚本管理：脚本上传、编辑、通过 Salt 分发到目标服务器
+- 脚本版本管理：版本号自动递增、历史查看、版本对比（unified diff）、一键回滚
+- 定时任务：Cron 调度（Celery Beat）、启停、手动触发
+- 自然语言转 Cron：中文描述自动转换为标准 Cron 表达式
 - 执行日志：任务执行记录与结果查看
-- 运维看板（Dashboard）：
-  - 真实数据概览（用户、知识库、主机、任务、执行、会话）
-  - 近 7 天执行/失败趋势图
-  - 按项目/分组筛选下钻
-  - 系统脉冲可跳转日志详情
-  - 系统公告支持手工维护（CRUD）
-- 项目与分组：
-  - 项目 CRUD（`/api/ops/projects`）
-  - 分组 CRUD（`/api/ops/groups`）
-  - 脚本/任务支持项目与分组维度过滤
-  - 系统默认项目/分组禁删（前后端双重保护）
+- 运维看板：真实数据概览、近 7 天趋势图、系统公告管理
+- 项目与分组：脚本/任务按项目维度组织管理
 
-### 知识库与助手
-- RAG 知识库管理
-- 聊天问答与系统助手页面
+### 运维 AI 助手（`/api/ops/ai/*`）
 
-### 前端体验升级
-- 运维与设置模块已迁移至 Ant Design Vue
-- 登录页/个人页采用插画风视觉方案
-- 菜单图标已支持下拉可选与预览
-- 仪表盘支持插画风布局、快捷胶囊入口、AI 助手大入口
-- 任务创建页执行方式优化：
-  - 选择脚本且命令留空时自动执行（Python -> `python3`，Shell -> `bash`）
-  - 脚本下拉展示源文件名（如 `xxx.py` / `xxx.sh`）
+通过自然语言对话完成所有运维操作，与页面功能等价。
 
-## 计划开发功能
+**只读操作（AI 自主执行）**
+- 查询服务器列表（支持环境、状态过滤）
+- 搜索脚本库
+- 查询定时任务（启用/禁用状态筛选）
+- 查询执行日志（任务名、服务器、状态过滤）
+- 解析 Cron 表达式含义
+- 自然语言转 Cron 表达式
 
-- 更细粒度权限（按钮级、数据范围）
-- 操作审计与安全追踪
-- 运维看板与告警能力增强
-- 任务编排与批量执行体验优化
-- 更多 AI 辅助运维能力（建议、排障、解释）
+**写操作（AI 生成方案，用户确认后执行）**
+- 在指定服务器上执行 Shell 命令/脚本
+- 创建新的定时任务
+- 启用/禁用定时任务
+
+**交互特性**
+- 支持 SSE 流式输出（逐字显示 AI 回复）
+- 多轮对话历史持久化
+- 写操作确认弹窗，防止误操作
+- 快捷提示入口，降低上手成本
+
+### 知识库与 RAG 助手
+- RAG 知识库管理（文档上传、分块、检索）
+- AI 问答（基于知识库内容）与通用系统助手
+
+### MCP Server（`backend/mcp_server.py`）
+
+将运维工具能力以 Model Context Protocol 对外暴露，供 Claude Desktop、Cursor 等工具直接调用。
+
+```json
+// claude_desktop_config.json
+{
+  "mcpServers": {
+    "agenticops": {
+      "command": "python",
+      "args": ["D:\\path\\to\\AgenticOps\\backend\\mcp_server.py"],
+      "env": {
+        "CONFIG_FILE": "D:\\path\\to\\AgenticOps\\backend\\config.yaml"
+      }
+    }
+  }
+}
+```
+
+安装依赖：`pip install mcp`
 
 ## 项目结构
 
@@ -76,23 +94,44 @@
 AgenticOps/
 ├─ backend/
 │  ├─ app/
-│  │  ├─ api/           # auth / system / ops / rag 等路由
-│  │  ├─ crud/
-│  │  ├─ models/
+│  │  ├─ api/
+│  │  │  ├─ auth/          # 登录、Token 刷新
+│  │  │  ├─ system/        # 用户、角色、菜单
+│  │  │  ├─ agent/         # RAG 知识库 & 问答
+│  │  │  ├─ common/        # 操作日志
+│  │  │  └─ ops/           # 运维核心 + AI 助手
+│  │  │     ├─ servers.py
+│  │  │     ├─ scripts.py
+│  │  │     ├─ tasks.py
+│  │  │     ├─ logs.py
+│  │  │     ├─ dashboard.py
+│  │  │     └─ ai_chat.py  # 运维 AI 助手路由
+│  │  ├─ core/
+│  │  │  ├─ ai.py          # 公共 LLM 调用层（Function Calling）
+│  │  │  ├─ config.py
+│  │  │  └─ security.py
+│  │  ├─ crud/             # 数据访问层
+│  │  ├─ models/           # ORM 模型
+│  │  ├─ rag/
+│  │  │  └─ tools.py       # 工具集（基础工具 + 运维工具）
 │  │  ├─ schemas/
-│  │  ├─ services/
-│  │  └─ core/
+│  │  │  └─ ops_agent.py   # AI 助手请求/响应 Schema
+│  │  └─ services/
+│  │     ├─ ops_agent.py   # 运维 AI 对话核心服务
+│  │     ├─ rag_agent.py   # RAG 知识库对话服务
+│  │     ├─ salt_service.py
+│  │     └─ jumpserver_service.py
+│  ├─ mcp_server.py        # MCP stdio 服务器
 │  ├─ config.yaml.example
 │  ├─ init_db.py
 │  └─ requirements.txt
 └─ frontend/
-   ├─ src/
-   │  ├─ api/
-   │  ├─ views/
-   │  ├─ layouts/
-   │  ├─ router/
-   │  └─ stores/
-   └─ package.json
+   └─ src/
+      ├─ api/ops/
+      │  └─ ai.ts           # 运维 AI API 客户端（含 SSE）
+      ├─ views/ops/
+      │  └─ OpsAssistant.vue # 运维 AI 助手页面
+      └─ router/index.ts
 ```
 
 ## 快速开始
@@ -108,7 +147,7 @@ AgenticOps/
 ```bash
 cd backend
 
-# 首次：复制配置文件
+# 首次：复制配置文件并填写数据库/AI 配置
 cp config.yaml.example config.yaml
 
 # 安装依赖
@@ -117,13 +156,13 @@ pip install -r requirements.txt
 # 初始化数据库（注意：该脚本默认会重建表，请先确认环境）
 python init_db.py
 
-# 启动 API
-uvicorn app.main:app --reload --port 8000
+# 启动 API（推荐限制热重载目录，避免上传脚本触发重启）
+uvicorn app.main:app --reload --reload-dir app --port 8000
 
-# 新终端：启动 celery worker
+# 新终端：启动 Celery Worker（定时任务执行）
 celery -A celery_app worker --loglevel=info -Q salt,scheduler
 
-# 新终端：启动 celery beat
+# 新终端：启动 Celery Beat（定时任务调度）
 celery -A celery_app beat --loglevel=info
 ```
 
@@ -135,83 +174,153 @@ npm install
 npm run dev
 ```
 
-访问：`http://localhost:5173`
+访问：`http://localhost:5173`，默认账号：`admin / admin123`
+
+### 3) 配置 AI 功能
+
+编辑 `backend/config.yaml`，填写 AI 服务配置（三选一）：
+
+```yaml
+ai:
+  qwen:                         # 阿里云 DashScope（推荐）
+    enabled: true
+    api_key: "sk-xxx"
+    base_url: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    model: "qwen-max"
+
+  deepseek:                     # DeepSeek
+    enabled: false
+    api_key: "sk-xxx"
+    base_url: "https://api.deepseek.com/v1"
+    model: "deepseek-chat"
+
+  openai:                       # OpenAI
+    enabled: false
+    api_key: "sk-xxx"
+    base_url: "https://api.openai.com/v1"
+    model: "gpt-4o"
+```
+
+### 4) 启用运维 AI 助手菜单
+
+在「菜单管理」页面添加一条菜单记录：
+
+| 字段 | 值 |
+|------|-----|
+| 名称 | 运维助手 |
+| 路径 | `/ops/assistant` |
+| 图标 | `RobotOutlined` |
+| 上级菜单 | 运维管理 |
+
+## AI 助手使用示例
+
+```
+用户：查看所有生产环境的服务器
+
+AI：共找到 12 台服务器（显示前 12 台）：
+- ID:1 | web-prod-01 | 192.168.1.10 | 环境:production | 状态:online
+- ID:2 | web-prod-02 | 192.168.1.11 | 环境:production | 状态:online
+...
+
+用户：最近有没有执行失败的任务？
+
+AI：共找到 3 条失败记录：
+- ❌ [01-15 03:00] 数据库备份 @ db-prod-01(192.168.2.1) | 耗时:- | 退出码:1
+...
+
+用户：帮我在 web-prod-01 上执行 systemctl restart nginx
+
+AI：我需要执行一个操作，请确认后继续：
+    在 1 台服务器上执行命令：
+    $ systemctl restart nginx
+    目标服务器 ID：[1]
+
+    [确认执行]  [取消]
+
+用户：（点击确认）
+
+AI：✅ 操作已执行：
+    ✅ web-prod-01(192.168.1.10): 成功
+```
 
 ## 关键说明
 
-- 后端本地入口建议使用：`backend/app/main.py`（命令：`uvicorn app.main:app --reload --port 8000`）
-- `backend/config.yaml` 为本地配置文件，已 gitignore，请勿提交敏感信息
-- 旧版 `/server/*` 路由已迁移到 `/ops/*`
-- 旧 SSH WebSocket 本地直连能力已下线为兼容提示，运维连接主流程基于 JumpServer API
-- 开发模式建议限制热重载目录，避免上传脚本触发后端自动重启：
-  - `uvicorn app.main:app --reload --reload-dir app --port 8000`
+- 后端入口：`backend/app/main.py`，命令：`uvicorn app.main:app --reload --port 8000`
+- `backend/config.yaml` 为本地配置，已 gitignore，请勿提交敏感信息
+- `python init_db.py` 默认会**销毁重建**所有表，请谨慎在生产环境执行
+- 旧版 `/server/*` 路由已迁移至 `/ops/*`；旧 SSH WebSocket 直连已下线
 
-## 脚本版本 API（新增）
+## API 路由一览
 
-- `GET /api/ops/scripts/{script_id}/versions`：版本列表
-- `GET /api/ops/scripts/{script_id}/versions/{version_id}`：版本详情（含脚本内容）
-- `GET /api/ops/scripts/{script_id}/versions/compare`：版本对比
-  - 参数：`from_version_id`、`to_version_id`
-- `POST /api/ops/scripts/{script_id}/rollback`：回滚版本
-  - body: `{"version_id": 12, "note": "回滚到稳定版本"}`
+### 认证
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/login` | 登录 |
+| POST | `/api/auth/refresh` | 刷新 Token |
+| GET  | `/api/auth/me` | 当前用户信息 |
 
-## 运维看板 API（新增）
+### 运维 AI 助手
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/ops/ai/chat` | 对话（非流式） |
+| POST | `/api/ops/ai/chat/stream` | 对话（SSE 流式） |
+| POST | `/api/ops/ai/confirm` | 确认执行写操作 |
+| GET  | `/api/ops/ai/conversations` | 对话列表 |
+| GET  | `/api/ops/ai/conversations/{id}` | 对话详情 |
+| DELETE | `/api/ops/ai/conversations/{id}` | 删除对话 |
 
-- `GET /api/ops/dashboard/overview`：看板概览（支持筛选）
-  - query: `project_id`、`group_id`
-- `GET /api/ops/dashboard/notices`：公告列表
-- `POST /api/ops/dashboard/notices`：新增公告
-  - body: `{"title": "计划维护", "content": "周日 02:00-03:00", "enabled": true}`
-- `PUT /api/ops/dashboard/notices/{notice_id}`：更新公告
-- `DELETE /api/ops/dashboard/notices/{notice_id}`：删除公告
+### 运维模块
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET/POST | `/api/ops/servers` | 服务器列表/创建 |
+| POST | `/api/ops/servers/test-connection` | 测试连通性 |
+| GET/POST | `/api/ops/scripts` | 脚本列表/上传 |
+| GET | `/api/ops/scripts/{id}/versions` | 版本列表 |
+| GET | `/api/ops/scripts/{id}/versions/compare` | 版本对比 |
+| POST | `/api/ops/scripts/{id}/rollback` | 版本回滚 |
+| POST | `/api/ops/scripts/{id}/distribute` | 分发到服务器 |
+| GET/POST | `/api/ops/tasks` | 定时任务列表/创建 |
+| POST | `/api/ops/tasks/{id}/toggle` | 启用/禁用任务 |
+| POST | `/api/ops/tasks/trigger` | 手动触发任务 |
+| POST | `/api/ops/tasks/cron/natural` | 自然语言转 Cron |
+| GET  | `/api/ops/logs/execution` | 执行日志列表 |
+| GET  | `/api/ops/dashboard/overview` | 看板概览 |
 
-公告默认使用本地文件持久化：`backend/data/dashboard_notices.json`
+### 知识库（RAG）
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET/POST | `/api/rag/knowledge-bases` | 知识库管理 |
+| POST | `/api/rag/knowledge-bases/{id}/documents` | 上传文档 |
+| POST | `/api/rag/chat` | AI 问答（非流式） |
+| POST | `/api/rag/chat/stream` | AI 问答（SSE 流式） |
 
-## 任务执行规则（当前）
-
-- 有 `command`：优先执行 `command`
-- 无 `command` 且有 `script_id`：自动从脚本生成执行命令
-  - Python 脚本：使用 `python3` 执行
-  - Shell 脚本：使用 `bash` 执行
-- 两者都为空：任务校验失败，不允许创建
-
-## 分页参数限制（避免 422）
-
-后端对部分列表接口限制了 `page_size`，超过会返回 422：
-
-- `/api/ops/servers`：`page_size <= 100`
-- `/api/ops/scripts`：`page_size <= 100`
-- `/api/ops/tasks`：`page_size <= 100`
-- `/api/ops/logs/*`：`page_size <= 100`
-- `/api/ops/projects`：`page_size <= 200`
-- `/api/ops/groups`：建议 `page_size <= 200`
+完整文档：后端启动后访问 `http://localhost:8000/docs`
 
 ## 可用脚本
 
 ### 前端
-- `npm run dev`：开发模式
-- `npm run build`：生产构建
-- `npm run typecheck`：类型检查
+```bash
+npm run dev        # 开发模式
+npm run build      # 生产构建
+npm run typecheck  # TypeScript 类型检查
+```
 
 ### 后端
-- `python init_db.py`：初始化/重建数据库
-- `python add_server_menu.py`：旧菜单 `/server/*` 迁移到 `/ops/*`
-- `python add_ops_project_group.py`：项目/分组数据迁移脚本
+```bash
+python init_db.py               # 初始化/重建数据库（⚠️ 破坏性）
+python add_server_menu.py       # 旧菜单 /server/* → /ops/* 迁移
+python mcp_server.py            # 启动 MCP Server（需 pip install mcp）
+```
 
-## 下一步建议（可直接排期）
+## 下一步规划
 
 - 凭据中心（主机凭据加密、轮换、权限隔离）
-- 运维审批流（高风险任务强制审批）
-- 任务模板库（重启、巡检、清理、发布）
-- 告警中心（阈值、通知渠道、告警收敛）
-- 主机自动发现与 CMDB/云资源同步
+- 运维审批流（高风险任务强制审批，替代当前前端确认框）
+- 告警中心（阈值触发、通知渠道、告警收敛）
 - 任务批量编排（分批执行、并发控制、失败回滚）
-
-## API 文档
-
-后端启动后：
-- Swagger：`http://localhost:8000/docs`
-- ReDoc：`http://localhost:8000/redoc`
+- 主机自动发现与 CMDB 同步
+- AI 助手多工具并行调用（当前每次处理一个工具调用）
+- 向量化检索升级（FAISS/Milvus 替代当前 MySQL LIKE 检索）
 
 ## License
 

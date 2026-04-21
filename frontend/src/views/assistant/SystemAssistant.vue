@@ -6,15 +6,20 @@
       </div>
 
       <div class="flex-1 overflow-auto px-2 py-3 space-y-1">
-        <button
+        <div
           v-for="conv in conversations"
           :key="conv.id"
           class="conversation-item"
           :class="{ active: currentConversationId === conv.id }"
           @click="openConversation(conv.id)"
         >
-          <span class="truncate">{{ conv.title || `会话 ${conv.id}` }}</span>
-        </button>
+          <span class="truncate flex-1">{{ conv.title || `会话 ${conv.id}` }}</span>
+          <span
+            class="delete-btn"
+            title="删除会话"
+            @click.stop="deleteConversation(conv.id)"
+          >×</span>
+        </div>
       </div>
     </aside>
 
@@ -119,6 +124,19 @@ const startNewChat = () => {
   inputText.value = ''
 }
 
+const deleteConversation = async (id: number) => {
+  try {
+    await assistantApi.deleteConversation(id)
+    conversations.value = conversations.value.filter((c) => c.id !== id)
+    if (currentConversationId.value === id) {
+      currentConversationId.value = null
+      messages.value = []
+    }
+  } catch {
+    // 删除失败静默处理
+  }
+}
+
 const sendMessage = async () => {
   const text = inputText.value.trim()
   if (!text || sending.value) return
@@ -184,6 +202,8 @@ onMounted(async () => {
 
 .conversation-item {
   width: 100%;
+  display: flex;
+  align-items: center;
   text-align: left;
   border: 1px solid transparent;
   background: transparent;
@@ -191,6 +211,7 @@ onMounted(async () => {
   padding: 9px 10px;
   font-size: 13px;
   color: #475569;
+  cursor: pointer;
 }
 
 .conversation-item:hover { background: #f8fafc; }
@@ -198,6 +219,27 @@ onMounted(async () => {
   background: #fdf2f8;
   color: #9d174d;
   border-color: #fbcfe8;
+}
+
+.delete-btn {
+  display: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #94a3b8;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.conversation-item:hover .delete-btn {
+  display: inline-block;
 }
 
 .send-btn {
