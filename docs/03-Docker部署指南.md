@@ -84,23 +84,70 @@ docker compose exec app python init_pgvector.py
 
 ## 三、环境变量
 
-可通过 `.env` 文件或环境变量自定义端口和密码：
+Docker Compose 中 `${VARIABLE:-default}` 语法会自动读取环境变量。有三种方式设置：
+
+### 方式 1：.env 文件（推荐）
+
+在项目根目录创建 `.env` 文件（与 `docker-compose.yml` 同级），Docker Compose 会自动加载：
 
 ```bash
-# .env 文件（放在项目根目录）
-MYSQL_ROOT_PASSWORD=your_password
+# 创建 .env 文件
+cat <<'EOF' > .env
+# MySQL
+MYSQL_ROOT_PASSWORD=agenticops123
 MYSQL_DATABASE=kefu_ai
 MYSQL_PORT=3306
 
+# Redis
 REDIS_PORT=6379
 
+# pgvector
 PG_USER=agenticops
-PG_PASSWORD=your_password
+PG_PASSWORD=agenticops123
 PG_DATABASE=agenticops_vector
 PG_PORT=5432
 
+# Nginx 对外端口
 HTTP_PORT=80
+EOF
 ```
+
+> `.env` 文件已在 `.gitignore` 中，不会被提交到代码仓库。
+
+### 方式 2：启动时指定
+
+```bash
+# 单个变量
+HTTP_PORT=8080 docker compose up -d
+
+# 多个变量
+MYSQL_ROOT_PASSWORD=mypass123 HTTP_PORT=8080 docker compose up -d
+```
+
+### 方式 3：export 到 shell 环境
+
+```bash
+export MYSQL_ROOT_PASSWORD=mypass123
+export HTTP_PORT=8080
+docker compose up -d
+```
+
+### 变量说明
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `MYSQL_ROOT_PASSWORD` | `agenticops123` | MySQL root 密码 |
+| `MYSQL_DATABASE` | `kefu_ai` | MySQL 数据库名 |
+| `MYSQL_PORT` | `3306` | MySQL 对外映射端口 |
+| `REDIS_PORT` | `6379` | Redis 对外映射端口 |
+| `PG_USER` | `agenticops` | pgvector 用户名 |
+| `PG_PASSWORD` | `agenticops123` | pgvector 密码 |
+| `PG_DATABASE` | `agenticops_vector` | pgvector 数据库名 |
+| `PG_PORT` | `5432` | pgvector 对外映射端口 |
+| `HTTP_PORT` | `80` | Nginx 对外 HTTP 端口 |
+
+> **注意**：`.env` 中的变量只影响 `docker-compose.yml` 里的 `${VAR:-default}` 占位符。
+> 后端应用读取的是 `backend/config.yaml`，两者需要保持一致。
 
 ## 四、常用命令
 
