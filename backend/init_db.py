@@ -77,6 +77,12 @@ async def create_tables(force_reset: bool = False):
     )
     # 导入操作日志模块的模型
     from app.models.log import OperationLog  # noqa: F401
+    # 导入智能问数模块的模型
+    from app.models.dataquery import (  # noqa: F401
+        DataSource,
+        TableMetadata,
+        QueryHistory,
+    )
 
     engine = create_async_engine(config.DATABASE_URL, echo=False)
     async with engine.begin() as conn:
@@ -289,13 +295,71 @@ async def seed_data():
                 "component": "rag/KnowledgeBase",
                 "description": "知识库文档管理",
             },
+            # ---- 智能问数 ----
+            {
+                "name": "智能问数",
+                "code": "dataquery",
+                "path": "/dataquery",
+                "icon": "ConsoleSql",
+                "type": "directory",
+                "sort_order": 2,
+                "parent_id": None,
+                "description": "智能问数模块",
+            },
+            {
+                "name": "数据源管理",
+                "code": "dataquery:datasources",
+                "path": "/dataquery/datasources",
+                "icon": "Database",
+                "type": "menu",
+                "sort_order": 1,
+                "parent_code": "dataquery",
+                "component": "dataquery/DataSourceList",
+                "description": "管理数据库连接与表结构",
+            },
+            {
+                "name": "智能问数",
+                "code": "dataquery:chat",
+                "path": "/dataquery/chat",
+                "icon": "Search",
+                "type": "menu",
+                "sort_order": 2,
+                "parent_code": "dataquery",
+                "component": "dataquery/QueryChat",
+                "description": "自然语言查询数据库",
+            },
+            {
+                "name": "数据源创建",
+                "code": "dataquery:datasource:create",
+                "type": "button",
+                "sort_order": 1,
+                "parent_code": "dataquery:datasources",
+                "description": "创建数据源连接",
+            },
+            {
+                "name": "数据源编辑",
+                "code": "dataquery:datasource:edit",
+                "type": "button",
+                "sort_order": 2,
+                "parent_code": "dataquery:datasources",
+                "description": "编辑数据源连接",
+            },
+            {
+                "name": "数据源删除",
+                "code": "dataquery:datasource:delete",
+                "type": "button",
+                "sort_order": 3,
+                "parent_code": "dataquery:datasources",
+                "description": "删除数据源连接",
+            },
+            # ---- 运维管理 ----
             {
                 "name": "运维管理",
                 "code": "ops",
                 "path": "/ops",
                 "icon": "Tool",
                 "type": "directory",
-                "sort_order": 2,
+                "sort_order": 3,
                 "parent_id": None,
                 "description": "运维管理模块",
             },
@@ -424,7 +488,7 @@ async def seed_data():
                 "path": "/system",
                 "icon": "Setting",
                 "type": "directory",
-                "sort_order": 3,
+                "sort_order": 4,
                 "parent_id": None,
                 "description": "系统管理模块",
             },

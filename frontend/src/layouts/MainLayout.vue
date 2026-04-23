@@ -71,12 +71,15 @@ import {
   BookOutlined,
   ClockCircleOutlined,
   CodeOutlined,
+  ConsoleSqlOutlined,
   DashboardOutlined,
+  DatabaseOutlined,
   DesktopOutlined,
   FileTextOutlined,
   MenuOutlined,
   MessageOutlined,
   RobotOutlined,
+  SearchOutlined,
   SettingOutlined,
   TeamOutlined,
   ToolOutlined,
@@ -137,6 +140,12 @@ const iconMap: Record<string, Component> = {
   TeamOutlined,
   Menu: MenuOutlined,
   MenuOutlined,
+  ConsoleSql: ConsoleSqlOutlined,
+  ConsoleSqlOutlined,
+  Database: DatabaseOutlined,
+  DatabaseOutlined,
+  Search: SearchOutlined,
+  SearchOutlined,
 }
 
 const resolveMenuIcon = (icon?: string) => {
@@ -150,6 +159,7 @@ const resolveMenuTone = (key?: string) => {
   if (value.includes('/dashboard')) return 'tone-dashboard'
   if (value.includes('/assistant')) return 'tone-assistant'
   if (value.includes('/rag')) return 'tone-rag'
+  if (value.includes('/dataquery')) return 'tone-dataquery'
   if (value.includes('/ops/servers')) return 'tone-server'
   if (value.includes('/ops/scripts')) return 'tone-script'
   if (value.includes('/ops/tasks')) return 'tone-task'
@@ -313,5 +323,6 @@ onMounted(async () => {
 :deep(.menu-icon-chip.tone-log) { background: #fee2e2; color: #b91c1c; }
 :deep(.menu-icon-chip.tone-group) { background: #fce7f3; color: #9d174d; }
 :deep(.menu-icon-chip.tone-settings) { background: #e2e8f0; color: #334155; }
+:deep(.menu-icon-chip.tone-dataquery) { background: #ede9fe; color: #6d28d9; }
 :deep(.menu-icon-chip.tone-default) { background: #f3f4f6; color: #4b5563; }
 </style>

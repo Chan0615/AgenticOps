@@ -60,6 +60,29 @@ const router = createRouter({
           redirect: '/ops/servers'
         },
         {
+          path: 'dataquery',
+          component: () => import('@/layouts/BlankLayout.vue'),
+          meta: { title: '智能问数' },
+          children: [
+            {
+              path: '',
+              redirect: '/dataquery/datasources'
+            },
+            {
+              path: 'datasources',
+              name: 'dataquery-datasources',
+              component: () => import('@/views/dataquery/DataSourceList.vue'),
+              meta: { title: '数据源管理', keepAlive: false }
+            },
+            {
+              path: 'chat',
+              name: 'dataquery-chat',
+              component: () => import('@/views/dataquery/QueryChat.vue'),
+              meta: { title: '智能问数', keepAlive: false }
+            }
+          ]
+        },
+        {
           path: 'ops',
           component: () => import('@/layouts/BlankLayout.vue'),
           meta: { title: '运维管理' },

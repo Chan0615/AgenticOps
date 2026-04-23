@@ -12,6 +12,7 @@ from app.api.agent import rag_router, system_chat_router
 from app.api.system import users_router, roles_router, menus_router
 from app.api.common.logs import router as logs_router
 from app.api.ops import router as ops_router
+from app.api.dataquery import router as dataquery_router
 from app.db.database import engine
 
 
@@ -65,6 +66,7 @@ app.include_router(rag_router, prefix="/api")
 app.include_router(system_chat_router, prefix="/api")
 app.include_router(logs_router, prefix="/api")
 app.include_router(ops_router)  # Ops 模块路由（服务器/脚本/任务/日志）
+app.include_router(dataquery_router)  # 智能问数模块路由（数据源/NL2SQL）
 
 
 @app.get("/")
