@@ -24,6 +24,15 @@ redis:
     db: 20
     cache_prefix: agenticops
 
+# PostgreSQL + pgvector (RAG 向量数据库)
+# 安装部署参考：PGVECTOR_INSTALL.md
+pgvector:
+  host: "10.225.138.183"
+  port: 5432
+  user: "agenticops"
+  password: "agenticops123"
+  database: "agenticops_vector"
+
 jwt:
   secret_key: "change-me-to-a-random-string"
   algorithm: HS256
