@@ -1,60 +1,81 @@
 # Docker 部署指南
 
-使用 Docker Compose 一键部署 AgenticOps 全栈服务。
+使用 Docker Compose 部署 AgenticOps 应用服务。
 
 ## 前提条件
 
 - Docker 20.10+
 - Docker Compose v2+
-- 服务器内存 4GB+
+- 服务器内存 2GB+（仅应用服务） / 4GB+（全量部署）
 
-## 一、快速开始
+## 部署模式选择
+
+| 模式 | 文件 | 说明 | 适用场景 |
+|------|------|------|---------|
+| **应用模式（默认）** | `docker-compose.yml` | 只部署 app/worker/beat/nginx，使用外部已有数据库 | 已有 MySQL/Redis/pgvector |
+| **全量模式** | `docker-compose.full.yml` | 全部服务在 Docker 内运行，包括数据库 | 全新服务器 |
+
+---
+
+## 一、获取代码
 
 ```bash
-# 1. 获取代码（二选一）
-
 # 方式 A：Git 克隆
 git clone <your-repo-url> AgenticOps
 cd AgenticOps
 
 # 方式 B：本地打包上传（国内服务器推荐）
-# 本地执行：
-#   tar -czf AgenticOps.tar.gz --exclude=node_modules --exclude=.venv --exclude=__pycache__ --exclude=dist --exclude=.git AgenticOps
-#   scp AgenticOps.tar.gz root@<服务器IP>:/opt/
-# 服务器执行：
-#   cd /opt && tar -xzf AgenticOps.tar.gz && cd AgenticOps
+# ---- 本地 Windows/Mac 执行 ----
+tar -czf AgenticOps.tar.gz \
+  --exclude=node_modules --exclude=.venv \
+  --exclude=__pycache__ --exclude=dist --exclude=.git \
+  AgenticOps
+scp AgenticOps.tar.gz root@<服务器IP>:/opt/
 
-# 2. 准备配置文件
-cp backend/config.yaml.example backend/config.yaml
+# ---- 服务器上执行 ----
+cd /opt
+tar -xzf AgenticOps.tar.gz
+rm -f AgenticOps.tar.gz
+cd AgenticOps
 ```
 
-编辑 `backend/config.yaml`，**将数据库地址改为 Docker 容器名**：
+## 二、应用模式部署（使用外部数据库）
+
+适用于已有 MySQL、Redis、pgvector 的情况。Docker 只跑应用服务。
+
+### 2.1 准备配置文件
+
+```bash
+cp backend/config.yaml.example backend/config.yaml
+vi backend/config.yaml
+```
+
+填入外部数据库的**真实 IP 地址**（不能用 `localhost`，容器内的 localhost 指向容器自己）：
 
 ```yaml
 mysql:
   default:
-    host: mysql          # Docker 容器名，不是 IP
+    host: 10.225.138.121        # 外部 MySQL 真实 IP
     port: 3306
     user: root
-    password: "agenticops123"
+    password: "your_password"
     database: kefu_ai
 
 redis:
   default:
-    host: redis          # Docker 容器名
-    port: 6379
-    password: ""         # Docker 默认无密码
-    db: 0
-    cache_prefix: agenticops
+    host: 10.225.138.125        # 外部 Redis 真实 IP
+    port: 6579
+    password: "your_password"
+    db: 20
+    cache_prefix: agenticops_
 
 pgvector:
-  host: pgvector         # Docker 容器名
+  host: 10.225.138.183          # 外部 pgvector 真实 IP
   port: 5432
   user: agenticops
   password: "agenticops123"
   database: agenticops_vector
 
-# AI 配置照常填写
 ai:
   qwen:
     enabled: true
@@ -63,214 +84,276 @@ ai:
     model: "qwen-max"
 ```
 
-```bash
-# 3. 启动所有服务
-docker compose up -d
+### 2.2 启动
 
-# 4. 等待所有服务就绪（约 30 秒）
+```bash
+# 构建并启动（app + worker + beat + nginx）
+docker compose up -d --build
+
+# 查看状态（4 个服务都应该是 Up）
 docker compose ps
 
-# 5. 初始化数据库（首次部署）
+# 首次部署：初始化数据库
 docker compose exec app python init_db.py
-
-# 6. 初始化 pgvector 向量表
 docker compose exec app python init_pgvector.py
 ```
 
-访问 `http://<server-ip>`，默认账号 `admin / admin123`。
+访问 `http://<服务器IP>:8080`，默认账号 `admin / admin123`。
 
-## 二、服务说明
+### 2.3 服务列表
 
 | 服务 | 容器名 | 端口 | 说明 |
 |------|--------|------|------|
 | app | agenticops-app | 8000 | FastAPI 后端 |
-| worker | agenticops-worker | - | Celery Worker（任务执行） |
-| beat | agenticops-beat | - | Celery Beat（定时调度） |
+| worker | agenticops-worker | - | Celery Worker |
+| beat | agenticops-beat | - | Celery Beat |
+| nginx | agenticops-nginx | 8080 | Nginx 反向代理 |
+
+---
+
+## 三、全量模式部署（Docker 内自建数据库）
+
+适用于全新服务器，所有服务全部在 Docker 内运行。
+
+### 3.1 准备配置文件
+
+```bash
+cp backend/config.yaml.example backend/config.yaml
+vi backend/config.yaml
+```
+
+数据库地址使用 **Docker 容器名**（Compose 内部网络自动解析）：
+
+```yaml
+mysql:
+  default:
+    host: mysql               # 容器名，不是 IP
+    port: 3306
+    user: root
+    password: "agenticops123"
+    database: kefu_ai
+
+redis:
+  default:
+    host: redis               # 容器名
+    port: 6379
+    password: ""
+    db: 0
+    cache_prefix: agenticops
+
+pgvector:
+  host: pgvector              # 容器名
+  port: 5432
+  user: agenticops
+  password: "agenticops123"
+  database: agenticops_vector
+```
+
+### 3.2 启动
+
+```bash
+# 指定全量模式的 compose 文件
+docker compose -f docker-compose.full.yml up -d --build
+
+# 等待数据库健康检查通过（约 30 秒）
+docker compose -f docker-compose.full.yml ps
+
+# 首次部署：初始化
+docker compose -f docker-compose.full.yml exec app python init_db.py
+docker compose -f docker-compose.full.yml exec app python init_pgvector.py
+```
+
+### 3.3 全量模式服务列表
+
+| 服务 | 容器名 | 端口 | 说明 |
+|------|--------|------|------|
+| app | agenticops-app | 8000 | FastAPI 后端 |
+| worker | agenticops-worker | - | Celery Worker |
+| beat | agenticops-beat | - | Celery Beat |
+| nginx | agenticops-nginx | 8080 | Nginx 反向代理 |
 | mysql | agenticops-mysql | 3306 | MySQL 主数据库 |
 | redis | agenticops-redis | 6379 | Redis 队列 |
 | pgvector | agenticops-pgvector | 5432 | pgvector 向量数据库 |
-| nginx | agenticops-nginx | 80 | Nginx 反向代理 |
 
-## 三、环境变量
+---
 
-Docker Compose 中 `${VARIABLE:-default}` 语法会自动读取环境变量。有三种方式设置：
+## 四、环境变量
 
-### 方式 1：.env 文件（推荐）
-
-在项目根目录创建 `.env` 文件（与 `docker-compose.yml` 同级），Docker Compose 会自动加载：
+通过 `.env` 文件自定义端口和密码（仅全量模式需要）：
 
 ```bash
-# 创建 .env 文件
 cat <<'EOF' > .env
-# MySQL
+# MySQL（全量模式）
 MYSQL_ROOT_PASSWORD=agenticops123
 MYSQL_DATABASE=kefu_ai
 MYSQL_PORT=3306
 
-# Redis
+# Redis（全量模式）
 REDIS_PORT=6379
 
-# pgvector
+# pgvector（全量模式）
 PG_USER=agenticops
 PG_PASSWORD=agenticops123
 PG_DATABASE=agenticops_vector
 PG_PORT=5432
 
 # Nginx 对外端口
-HTTP_PORT=80
+HTTP_PORT=8080
 EOF
 ```
-
-> `.env` 文件已在 `.gitignore` 中，不会被提交到代码仓库。
-
-### 方式 2：启动时指定
-
-```bash
-# 单个变量
-HTTP_PORT=8080 docker compose up -d
-
-# 多个变量
-MYSQL_ROOT_PASSWORD=mypass123 HTTP_PORT=8080 docker compose up -d
-```
-
-### 方式 3：export 到 shell 环境
-
-```bash
-export MYSQL_ROOT_PASSWORD=mypass123
-export HTTP_PORT=8080
-docker compose up -d
-```
-
-### 变量说明
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `MYSQL_ROOT_PASSWORD` | `agenticops123` | MySQL root 密码 |
 | `MYSQL_DATABASE` | `kefu_ai` | MySQL 数据库名 |
-| `MYSQL_PORT` | `3306` | MySQL 对外映射端口 |
-| `REDIS_PORT` | `6379` | Redis 对外映射端口 |
+| `MYSQL_PORT` | `3306` | MySQL 对外端口 |
+| `REDIS_PORT` | `6379` | Redis 对外端口 |
 | `PG_USER` | `agenticops` | pgvector 用户名 |
 | `PG_PASSWORD` | `agenticops123` | pgvector 密码 |
 | `PG_DATABASE` | `agenticops_vector` | pgvector 数据库名 |
-| `PG_PORT` | `5432` | pgvector 对外映射端口 |
-| `HTTP_PORT` | `80` | Nginx 对外 HTTP 端口 |
+| `PG_PORT` | `5432` | pgvector 对外端口 |
+| `HTTP_PORT` | `8080` | Nginx 对外 HTTP 端口 |
 
-> **注意**：`.env` 中的变量只影响 `docker-compose.yml` 里的 `${VAR:-default}` 占位符。
-> 后端应用读取的是 `backend/config.yaml`，两者需要保持一致。
+> `.env` 中的变量只影响 `docker-compose.yml` 的占位符，后端应用读的是 `config.yaml`，两者需要对应。
 
-## 四、常用命令
+---
+
+## 五、常用命令
 
 ```bash
-# 启动所有服务
+# 启动
 docker compose up -d
 
-# 停止所有服务
+# 停止
 docker compose down
 
+# 重启单个服务
+docker compose restart app
+
 # 查看日志
-docker compose logs -f app       # API 日志
-docker compose logs -f worker    # Worker 日志
-docker compose logs -f beat      # Beat 日志
+docker compose logs -f app
+docker compose logs -f worker
+docker compose logs -f beat
 
 # 进入容器
 docker compose exec app bash
 
-# 重启单个服务
-docker compose restart app
-docker compose restart worker
-
-# 重新构建（代码更新后）
-docker compose build
-docker compose up -d
-
-# 查看服务状态
+# 查看状态
 docker compose ps
-```
-
-## 五、数据持久化
-
-所有数据通过 Docker Volume 持久化，删除容器不会丢失数据：
-
-| Volume | 说明 |
-|--------|------|
-| `mysql_data` | MySQL 数据文件 |
-| `redis_data` | Redis 持久化数据 |
-| `pgvector_data` | pgvector 向量数据 |
-| `app_uploads` | 上传的文档文件 |
-| `app_logs` | 应用日志 |
-
-```bash
-# 查看 volume
-docker volume ls | grep agenticops
-
-# ⚠️ 完全清理（包括数据）
-docker compose down -v
 ```
 
 ## 六、更新部署
 
 ```bash
-cd AgenticOps
-
-# 拉取最新代码
+# 方式 A：Git 更新
 git pull
+
+# 方式 B：本地打包上传
+# 本地: tar + scp
+# 服务器:
+cp backend/config.yaml /tmp/config.yaml.bak    # 备份配置
+tar -xzf AgenticOps.tar.gz                      # 解压覆盖
+cp /tmp/config.yaml.bak backend/config.yaml     # 恢复配置
 
 # 重新构建并启动
 docker compose build
 docker compose up -d
 
-# 运行迁移脚本（如果有新模块）
+# 运行增量迁移（如果有新模块）
 docker compose exec app python add_dataquery_menu.py
 docker compose exec app python init_pgvector.py
 ```
 
-## 七、使用外部数据库
+## 七、数据持久化
 
-如果你已有 MySQL / Redis / PostgreSQL，不需要 Docker Compose 里的数据库服务。
+| Volume | 说明 |
+|--------|------|
+| `app_uploads` | 上传的文档文件 |
+| `app_logs` | 应用日志 |
+| `mysql_data` | MySQL 数据（全量模式） |
+| `redis_data` | Redis 数据（全量模式） |
+| `pgvector_data` | pgvector 向量数据（全量模式） |
 
-编辑 `docker-compose.yml`，注释掉 `mysql`、`redis`、`pgvector` 服务，并删除 `app` 和 `worker` 的 `depends_on` 部分。
+```bash
+# 查看 volume
+docker volume ls | grep agenticops
 
-在 `backend/config.yaml` 中填入外部数据库的真实 IP 和端口。
+# ⚠️ 完全清理（包括数据，慎用）
+docker compose down -v
+```
 
 ## 八、HTTPS
 
-### 方法 A：前置 Nginx + Certbot
-
-在宿主机上安装 Nginx + Certbot，反向代理到 Docker 的 80 端口：
+在宿主机上安装 Nginx + Certbot，反向代理到 Docker 的 8080 端口：
 
 ```bash
 sudo apt install -y nginx certbot python3-certbot-nginx
+
+# Nginx 配置
+cat <<'EOF' | sudo tee /etc/nginx/sites-available/agenticops
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # SSE 支持
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+    }
+
+    client_max_body_size 50m;
+}
+EOF
+
+sudo ln -sf /etc/nginx/sites-available/agenticops /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# 自动配置 SSL
 sudo certbot --nginx -d your-domain.com
 ```
 
-### 方法 B：Traefik
-
-将 `docker-compose.yml` 中的 nginx 服务替换为 Traefik，自动管理 SSL 证书。
-
 ## 九、问题排查
 
-### 容器启动失败
+### 容器状态为 Created 但没有 Up
 
 ```bash
-# 查看具体错误
-docker compose logs app
-docker compose logs mysql
+# 查看失败原因
+docker compose logs <服务名>
 
-# MySQL 未就绪时 app 会报连接错误，等待 healthcheck 通过后重试
-docker compose restart app
+# 常见原因：端口被占用
+# 解决：修改 .env 中的端口，或停掉占用端口的服务
+docker compose down
+# 修改端口后重新启动
+docker compose up -d
 ```
 
 ### 数据库连接失败
 
-确认 `config.yaml` 中的 host 使用的是 Docker 容器名（如 `mysql`）而不是 `localhost` 或外部 IP。
+- **应用模式**：确认 `config.yaml` 中的 host 是外部数据库的**真实 IP**，不是 `localhost`
+- **全量模式**：确认 `config.yaml` 中的 host 是**容器名**（`mysql` / `redis` / `pgvector`）
+- 容器内 `127.0.0.1` 指向容器自己，不是宿主机
 
 ### 端口冲突
 
-如果 3306/6379/5432/80 端口被占用，在 `.env` 文件中修改映射端口：
+```bash
+# 查看端口占用
+ss -tlnp | grep -E '3306|6379|5432|8080'
+
+# 修改 .env 避开冲突端口
+HTTP_PORT=9090
+```
+
+### 构建失败
 
 ```bash
-MYSQL_PORT=3307
-REDIS_PORT=6380
-PG_PORT=5433
-HTTP_PORT=8080
+# 查看构建日志
+docker compose build --no-cache
+
+# 清理旧镜像
+docker image prune -f
 ```
