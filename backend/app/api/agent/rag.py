@@ -434,10 +434,10 @@ async def list_conversations(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """获取对话列表"""
-    convs = await conv_crud.get_conversations(db, current_user.id)
-    if kb_id is not None:
-        convs = [c for c in convs if c.kb_id == kb_id]
+    """获取对话列表（只返回 RAG 知识库相关的对话）"""
+    convs = await conv_crud.get_conversations(
+        db, current_user.id, kb_id=kb_id, rag_only=True
+    )
     return [ConversationResponse.model_validate(c) for c in convs]
 
 

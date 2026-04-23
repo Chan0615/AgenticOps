@@ -118,9 +118,8 @@ async def list_conversations(
     db: AsyncSession = Depends(get_db),
 ):
     """获取当前用户的系统助手对话列表（kb_id=None 的对话）"""
-    convs = await conv_crud.get_conversations(db, current_user.id)
-    sys_convs = [c for c in convs if c.kb_id is None]
-    return [ConversationItem.model_validate(c) for c in sys_convs]
+    convs = await conv_crud.get_conversations(db, current_user.id, system_only=True)
+    return [ConversationItem.model_validate(c) for c in convs]
 
 
 @router.get("/conversations/{conv_id}")
