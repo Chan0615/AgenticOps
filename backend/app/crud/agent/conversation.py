@@ -7,12 +7,36 @@ from typing import Optional, List
 from app.models.agent import Conversation, ConversationMessage
 
 
-async def get_conversations(db: AsyncSession, user_id: int) -> List[Conversation]:
-    result = await db.execute(
+async def get_conversations(
+    db: AsyncSession,
+    user_id: int,
+    kb_id: int = None,
+    system_only: bool = False,
+    rag_only: bool = False,
+) -> List[Conversation]:
+    """
+    获取对话列表
+
+    Args:
+        user_id: 用户 ID
+        kb_id: 按具体知识库筛选（可选）
+        system_only: 只返回系统助手对话（kb_id IS NULL）
+        rag_only: 只返回 RAG 知识库对话（kb_id IS NOT NULL）
+    """
+    query = (
         select(Conversation)
         .where(Conversation.user_id == user_id)
-        .order_by(Conversation.updated_at.desc())
     )
+
+    if system_only:
+        query = query.where(Conversation.kb_id.is_(None))
+    elif rag_only:
+        query = query.where(Conversation.kb_id.isnot(None))
+    elif kb_id is not None:
+        query = query.where(Conversation.kb_id == kb_id)
+
+    query = query.order_by(Conversation.updated_at.desc())
+    result = await db.execute(query)
     return result.scalars().all()
 
 

@@ -1,470 +1,786 @@
 <template>
-  <div class="h-[calc(100vh-64px)] flex bg-white">
-    <!-- 左侧对话历史 -->
-    <div class="w-80 border-r border-surface-100 bg-surface-50/30 flex flex-col">
-      <!-- 顶部标题 -->
-      <div class="p-4 border-b border-surface-100">
-        <button 
-          @click="startNewChat"
-          class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-surface-200 rounded-xl text-sm font-medium text-surface-700 hover:border-brand-300 hover:text-brand-600 hover:shadow-sm transition-all"
+  <div class="rag-chat-page bg-white flex">
+    <!-- ===== 左侧：知识库选择 + 对话历史 ===== -->
+    <aside class="aside-panel flex flex-col">
+      <!-- 知识库选择器 -->
+      <div class="aside-header">
+        <Select
+          v-model:value="selectedKbId"
+          placeholder="选择知识库"
+          style="width: 100%"
+          :loading="kbLoading"
+          allowClear
+          @change="onKbChange"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-          新对话
-        </button>
+          <SelectOption v-for="kb in knowledgeBases" :key="kb.id" :value="kb.id">
+            <span class="flex items-center gap-1.5">
+              <span class="kb-dot" :class="kb.status ? 'kb-dot-active' : 'kb-dot-inactive'"></span>
+              {{ kb.name }}
+              <span class="kb-doc-count">({{ kb.document_count }})</span>
+            </span>
+          </SelectOption>
+        </Select>
       </div>
 
-      <!-- 历史列表 -->
-      <div class="flex-1 overflow-y-auto py-2">
-        <div class="px-3 py-2 text-xs font-semibold text-surface-400 uppercase tracking-wider">今天</div>
-        <div class="space-y-0.5 px-2">
-          <button 
-            v-for="chat in todayChats" 
-            :key="chat.id"
-            @click="loadChat(chat.id)"
-            :class="[
-              'w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all group',
-              currentChatId === chat.id 
-                ? 'bg-brand-50 text-brand-700' 
-                : 'text-surface-600 hover:bg-surface-100'
-            ]"
-          >
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 shrink-0" :class="currentChatId === chat.id ? 'text-brand-500' : 'text-surface-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              <span class="truncate flex-1">{{ chat.title }}</span>
-            </div>
-          </button>
-        </div>
-
-        <div class="px-3 py-2 mt-4 text-xs font-semibold text-surface-400 uppercase tracking-wider">昨天</div>
-        <div class="space-y-0.5 px-2">
-          <button 
-            v-for="chat in yesterdayChats" 
-            :key="chat.id"
-            @click="loadChat(chat.id)"
-            :class="[
-              'w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all group',
-              currentChatId === chat.id 
-                ? 'bg-brand-50 text-brand-700' 
-                : 'text-surface-600 hover:bg-surface-100'
-            ]"
-          >
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 shrink-0" :class="currentChatId === chat.id ? 'text-brand-500' : 'text-surface-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              <span class="truncate flex-1">{{ chat.title }}</span>
-            </div>
-          </button>
-        </div>
-
-        <div class="px-3 py-2 mt-4 text-xs font-semibold text-surface-400 uppercase tracking-wider">更早</div>
-        <div class="space-y-0.5 px-2">
-          <button 
-            v-for="chat in olderChats" 
-            :key="chat.id"
-            @click="loadChat(chat.id)"
-            :class="[
-              'w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all group',
-              currentChatId === chat.id 
-                ? 'bg-brand-50 text-brand-700' 
-                : 'text-surface-600 hover:bg-surface-100'
-            ]"
-          >
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 shrink-0" :class="currentChatId === chat.id ? 'text-brand-500' : 'text-surface-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-              </svg>
-              <span class="truncate flex-1">{{ chat.title }}</span>
-            </div>
-          </button>
-        </div>
+      <!-- 新对话按钮 -->
+      <div class="px-3 py-2">
+        <button class="new-chat-btn" @click="startNewChat">+ 新对话</button>
       </div>
-    </div>
 
-    <!-- 右侧对话区域 -->
-    <div class="flex-1 flex flex-col min-w-0">
-      <!-- 顶部标题栏 -->
-      <div class="flex items-center justify-between px-6 py-3 border-b border-surface-100">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shadow-md shadow-brand-200/50">
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-sm font-semibold text-surface-900">托马斯回旋喵</h1>
-            <p class="text-xs text-surface-400">迭代式 RAG · 智能知识助手</p>
-          </div>
-        </div>
-        <button 
-          @click="clearCurrentChat"
-          class="p-2 text-surface-400 hover:text-surface-600 hover:bg-surface-100 rounded-lg transition-all"
-          title="清空对话"
+      <!-- 对话历史列表 -->
+      <div class="flex-1 overflow-auto px-2 py-1 space-y-0.5">
+        <div
+          v-for="conv in conversations"
+          :key="conv.id"
+          class="conversation-item"
+          :class="{ active: currentConversationId === conv.id }"
+          @click="openConversation(conv.id)"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
+          <span class="truncate flex-1">{{ conv.title || `会话 ${conv.id}` }}</span>
+          <span class="conv-time">{{ formatTime(conv.updated_at) }}</span>
+          <span class="delete-btn" title="删除会话" @click.stop="deleteConversation(conv.id)">&times;</span>
+        </div>
+        <div v-if="!conversations.length" class="text-center text-xs text-surface-400 py-8">
+          暂无对话记录
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== 右侧：对话区域 ===== -->
+    <main class="flex-1 min-w-0 flex flex-col">
+      <!-- 顶栏 -->
+      <div class="h-14 px-5 border-b border-surface-200 flex items-center justify-between">
+        <div>
+          <p class="text-sm font-semibold text-surface-900">
+            {{ currentKbName || 'RAG 知识问答' }}
+          </p>
+          <p class="text-xs text-surface-400">基于知识库的智能检索问答</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span v-if="retrieving" class="retrieval-badge">
+            <span class="retrieval-dot"></span>
+            正在检索知识库...
+          </span>
+          <span v-if="contextInfo" class="context-badge">
+            检索到 {{ contextInfo.count }} 条相关内容
+          </span>
+        </div>
       </div>
 
-      <!-- 消息区域 -->
-      <div ref="messagesRef" class="flex-1 overflow-y-auto px-4 py-6">
+      <!-- 消息列表 -->
+      <div ref="messagesRef" class="flex-1 overflow-auto px-6 py-5">
         <!-- 空状态 -->
-        <div v-if="!messages.length" class="h-full flex flex-col items-center justify-center">
-          <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center mb-5 shadow-xl shadow-brand-200/50">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
+        <div v-if="!messages.length" class="h-full flex flex-col items-center justify-center text-center">
+          <div class="empty-avatar">
+            <span class="text-xl">KB</span>
           </div>
-          <h2 class="text-xl font-semibold text-surface-900 mb-2">有什么可以帮你的？</h2>
-          <p class="text-sm text-surface-400 mb-6">迭代式 RAG · 问题→陈述句→检索→迭代优化</p>
-          
-          <div class="flex flex-wrap justify-center gap-2 max-w-xl">
-            <button 
-              v-for="q in suggestions" 
-              :key="q"
-              @click="sendQuick(q)"
-              class="px-4 py-2 text-sm text-surface-600 bg-surface-50 border border-surface-200 rounded-xl hover:border-brand-300 hover:bg-white hover:shadow-md transition-all"
-            >
-              {{ q }}
-            </button>
+          <p class="text-lg font-semibold text-surface-900 mb-1">知识库智能问答</p>
+          <p class="text-sm text-surface-400 mb-5">
+            {{ selectedKbId ? '已选择知识库，可以开始提问' : '请先选择知识库，或直接提问进行通用对话' }}
+          </p>
+          <div class="flex flex-wrap justify-center gap-2 max-w-lg">
+            <button
+              v-for="tip in quickTips"
+              :key="tip"
+              class="quick-tip"
+              @click="inputText = tip"
+            >{{ tip }}</button>
           </div>
         </div>
 
-        <!-- 消息列表 -->
-        <div v-else class="space-y-6">
-          <div v-for="(msg, i) in messages" :key="i" class="animate-fade-in">
-            <!-- 用户消息 - 靠右边缘 -->
-            <div v-if="msg.role === 'user'" class="flex justify-end mb-6 pr-2">
-              <div class="max-w-[70%] bg-brand-500 text-white px-5 py-3 rounded-2xl rounded-br-md text-[15px] leading-relaxed shadow-lg shadow-brand-200/30">
+        <!-- 消息流 -->
+        <div v-else class="space-y-5">
+          <div v-for="msg in messages" :key="msg.id === streamingMsgId ? `s-${msg.id}` : `d-${msg.id}`">
+            <!-- 用户消息 -->
+            <div v-if="msg.role === 'user'" class="flex justify-end">
+              <div class="user-bubble">
                 {{ msg.content }}
               </div>
             </div>
-            
-            <!-- AI 消息 - 靠左边缘 -->
-            <div v-else class="flex justify-start mb-6 pl-2">
-              <div class="max-w-[75%] flex gap-3">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-lg shadow-brand-200/50">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div class="flex-1 space-y-2">
-                  <!-- 思考过程 -->
-                  <div v-if="msg.thinking" class="bg-surface-50 border border-surface-100 rounded-xl px-4 py-3">
-                    <div class="flex items-center gap-2 text-xs text-surface-400 mb-2">
-                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Agent 正在协作处理...</span>
-                    </div>
-                    <div class="space-y-1">
-                      <div v-for="(step, si) in msg.thinkingSteps" :key="si" class="flex items-center gap-2 text-xs">
-                        <span class="w-1.5 h-1.5 rounded-full" :class="step.done ? 'bg-green-400' : 'bg-brand-400 animate-pulse'"></span>
-                        <span :class="step.done ? 'text-surface-500' : 'text-surface-700'">{{ step.text }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- 最终回答 -->
-                  <div class="bg-white border border-surface-100 rounded-2xl rounded-tl-md px-5 py-4 shadow-sm">
-                    <div class="prose prose-sm max-w-none text-[15px] text-surface-800 leading-relaxed" v-html="marked.parse(msg.content)"></div>
-                  </div>
-                  
-                  <!-- 引用来源 -->
-                  <div v-if="msg.sources?.length" class="flex flex-wrap gap-1.5 pl-1">
-                    <span 
-                      v-for="src in msg.sources" 
-                      :key="src"
-                      class="text-[11px] px-2.5 py-1 bg-surface-100 text-surface-500 rounded-full hover:bg-brand-50 hover:text-brand-600 transition-colors cursor-pointer"
-                    >
-                      📄 {{ src }}
-                    </span>
-                  </div>
+            <!-- AI 消息 -->
+            <div v-else class="flex justify-start gap-2.5">
+              <div class="ai-avatar">
+                <span class="text-xs font-bold">KB</span>
+              </div>
+              <div class="ai-bubble">
+                <!-- 流式输出中：纯文本 + 光标 -->
+                <div v-if="msg.id === streamingMsgId" class="streaming-text">{{ msg.content }}<span class="cursor-blink">|</span></div>
+                <!-- 流结束后：Markdown 渲染 -->
+                <div v-else class="prose prose-sm max-w-none" v-html="renderMarkdown(msg.content)"></div>
+                <!-- 来源标签 -->
+                <div v-if="msg.sources && msg.sources.length && msg.id !== streamingMsgId" class="flex flex-wrap gap-1.5 mt-2 pt-2 border-t border-surface-100">
+                  <span v-for="s in msg.sources" :key="s" class="source-tag">{{ s }}</span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <!-- 加载中 -->
-          <div v-if="streaming" class="flex justify-start pl-2">
-            <div class="max-w-[75%] flex gap-3">
-              <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center shrink-0 shadow-lg shadow-brand-200/50">
-                <svg class="w-4 h-4 text-white animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <div class="flex items-center gap-1.5 pt-2">
-                <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:0ms"></span>
-                <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:150ms"></span>
-                <span class="w-2 h-2 bg-brand-400 rounded-full animate-bounce" style="animation-delay:300ms"></span>
-              </div>
+
+          <!-- 思考状态：等待首个 chunk -->
+          <div v-if="sending && (!streamingMsgId || !messages.find(m => m.id === streamingMsgId)?.content)" class="flex items-center gap-2.5">
+            <div class="ai-avatar">
+              <span class="text-xs font-bold">KB</span>
+            </div>
+            <div class="thinking-dots">
+              <span></span><span></span><span></span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 输入区域 -->
-      <div class="border-t border-surface-100 bg-white p-4">
-        <div class="px-2">
-          <div class="flex items-end gap-3 bg-surface-50 border border-surface-200 rounded-2xl px-4 py-3 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-100 transition-all">
-            <textarea 
-              ref="inputRef"
-              v-model="inputText"
-              @keydown.enter.exact.prevent="sendMessage"
-              rows="1"
-              class="flex-1 bg-transparent text-[15px] text-surface-900 placeholder-surface-400 resize-none outline-none max-h-32 py-1"
-              placeholder="输入你的问题，按 Enter 发送..."
-            ></textarea>
-            <button 
-              @click="sendMessage"
-              :disabled="!inputText.trim() || streaming"
-              class="w-9 h-9 rounded-xl bg-gradient-to-r from-brand-500 to-brand-600 text-white flex items-center justify-center shrink-0 hover:from-brand-400 hover:to-brand-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-brand-200/30"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-          </div>
-          <p class="text-[11px] text-surface-400 mt-2 text-center">内容由 AI 生成，仅供参考 · 托马斯回旋喵</p>
+      <div class="border-t border-surface-200 p-4 bg-white">
+        <div class="flex items-end gap-3 bg-surface-50 border border-surface-200 rounded-2xl px-4 py-3">
+          <textarea
+            v-model="inputText"
+            rows="1"
+            class="flex-1 bg-transparent resize-none outline-none text-sm text-surface-800 max-h-32"
+            placeholder="输入问题，基于知识库进行智能检索..."
+            @keydown.enter.exact.prevent="sendMessage"
+          />
+          <button class="send-btn" :disabled="!inputText.trim() || sending" @click="sendMessage">发送</button>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, nextTick, computed } from 'vue'
+import { nextTick, onMounted, ref, computed } from 'vue'
+import { Select, message } from 'ant-design-vue'
 import { marked } from 'marked'
-import api from '@/api'
+import dayjs from 'dayjs'
+import {
+  ragApi,
+  type KnowledgeBase,
+  type Conversation,
+  type Message as ApiMessage,
+} from '@/api/agent/index'
 
-interface ThinkingStep {
-  text: string
-  done: boolean
-}
+const SelectOption = Select.Option
 
-interface Message {
+// ============ 类型 ============
+
+interface DisplayMessage {
+  id: number
   role: 'user' | 'assistant'
   content: string
-  thinking?: boolean
-  thinkingSteps?: ThinkingStep[]
   sources?: string[]
+  created_at?: string
 }
 
-interface Chat {
-  id: string
-  title: string
-  date: Date
-}
+// ============ 状态 ============
 
+const knowledgeBases = ref<KnowledgeBase[]>([])
+const kbLoading = ref(false)
+const selectedKbId = ref<number | undefined>(undefined)
+
+const conversations = ref<Conversation[]>([])
+const currentConversationId = ref<number | null>(null)
+const messages = ref<DisplayMessage[]>([])
 const inputText = ref('')
-const streaming = ref(false)
+const sending = ref(false)
+const retrieving = ref(false)
+const contextInfo = ref<{ count: number; sources: string[] } | null>(null)
 const messagesRef = ref<HTMLElement | null>(null)
-const inputRef = ref<HTMLTextAreaElement | null>(null)
-const currentChatId = ref<string>('')
+const streamingMsgId = ref<number | null>(null)
 
-const messages = reactive<Message[]>([])
-
-// 模拟历史对话数据
-const chatHistory = reactive<Chat[]>([
-  { id: '1', title: 'FastAPI 异步数据库操作', date: new Date() },
-  { id: '2', title: 'Vue3 Composition API 最佳实践', date: new Date() },
-  { id: '3', title: 'RAG 向量检索原理', date: new Date(Date.now() - 86400000) },
-  { id: '4', title: 'Redis 缓存设计模式', date: new Date(Date.now() - 86400000) },
-  { id: '5', title: 'Docker 部署指南', date: new Date(Date.now() - 172800000) },
-])
-
-const todayChats = computed(() => chatHistory.filter(c => isToday(c.date)))
-const yesterdayChats = computed(() => chatHistory.filter(c => isYesterday(c.date)))
-const olderChats = computed(() => chatHistory.filter(c => !isToday(c.date) && !isYesterday(c.date)))
-
-function isToday(date: Date) {
-  const today = new Date()
-  return date.toDateString() === today.toDateString()
-}
-
-function isYesterday(date: Date) {
-  const yesterday = new Date(Date.now() - 86400000)
-  return date.toDateString() === yesterday.toDateString()
-}
-
-const suggestions = [
-  '介绍一下 AgenticOps 的功能',
-  'FastAPI 最佳实践是什么？',
-  '如何优化 RAG 检索效果？',
-  '解释一下多 Agent 协作机制',
+const quickTips = [
+  '这个知识库包含哪些内容？',
+  '帮我总结一下核心要点',
+  '有哪些常见问题和解答？',
+  '解释一下相关的技术原理',
 ]
 
-function startNewChat() {
-  messages.length = 0
-  currentChatId.value = ''
+// ============ 计算属性 ============
+
+const currentKbName = computed(() => {
+  if (!selectedKbId.value) return ''
+  const kb = knowledgeBases.value.find((k) => k.id === selectedKbId.value)
+  return kb ? kb.name : ''
+})
+
+// ============ 工具方法 ============
+
+const renderMarkdown = (content: string) => {
+  return marked.parse(content || '') as string
 }
 
-function loadChat(chatId: string) {
-  currentChatId.value = chatId
-  // 模拟加载历史消息
-  messages.length = 0
-}
-
-function clearCurrentChat() {
-  messages.length = 0
-}
-
-function sendQuick(q: string) {
-  inputText.value = q
-  sendMessage()
-}
-
-async function sendMessage() {
-  const text = inputText.value.trim()
-  if (!text || streaming.value) return
-
-  messages.push({ role: 'user', content: text })
-  inputText.value = ''
-  scrollToBottom()
-
-  streaming.value = true
-
-  // 添加思考中的消息
-  const thinkingMsg: Message = {
-    role: 'assistant',
-    content: '',
-    thinking: true,
-    thinkingSteps: [
-      { text: '将问题转化为陈述句...', done: false },
-      { text: '执行 RAG 检索...', done: false },
-      { text: '判断检索结果相关性...', done: false },
-      { text: '生成回答...', done: false },
-    ]
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesRef.value) {
+    messagesRef.value.scrollTop = messagesRef.value.scrollHeight
   }
-  messages.push(thinkingMsg)
+}
 
+const formatTime = (timeStr: string) => {
+  if (!timeStr) return ''
+  const d = dayjs(timeStr)
+  const now = dayjs()
+  if (d.isSame(now, 'day')) return d.format('HH:mm')
+  if (d.isSame(now.subtract(1, 'day'), 'day')) return '昨天'
+  return d.format('MM/DD')
+}
+
+// ============ 知识库管理 ============
+
+const loadKnowledgeBases = async () => {
+  kbLoading.value = true
   try {
-    // 调用后端 RAG API（增加超时时间，因为 LLM 调用较慢）
-    interface ChatResponse {
-      answer: string
-      sources: string[]
-      confidence: number
-      steps: any[]
+    const data = await ragApi.getKnowledgeBases()
+    knowledgeBases.value = Array.isArray(data) ? data : []
+  } catch {
+    knowledgeBases.value = []
+  } finally {
+    kbLoading.value = false
+  }
+}
+
+const onKbChange = async (val: number | undefined) => {
+  selectedKbId.value = val
+  currentConversationId.value = null
+  messages.value = []
+  contextInfo.value = null
+  await loadConversations()
+}
+
+// ============ 对话管理 ============
+
+const loadConversations = async () => {
+  try {
+    const data = await ragApi.getConversations(selectedKbId.value)
+    conversations.value = Array.isArray(data) ? data : []
+  } catch {
+    conversations.value = []
+  }
+}
+
+const openConversation = async (id: number) => {
+  currentConversationId.value = id
+  contextInfo.value = null
+  try {
+    const detail = await ragApi.getConversation(id)
+    messages.value = (detail.messages || []).map((m: ApiMessage) => ({
+      id: m.id,
+      role: m.role === 'system' ? 'assistant' : m.role,
+      content: m.content,
+      sources: m.sources,
+      created_at: m.created_at,
+    })) as DisplayMessage[]
+    await scrollToBottom()
+  } catch {
+    messages.value = []
+    message.error('加载对话失败')
+  }
+}
+
+const startNewChat = () => {
+  currentConversationId.value = null
+  messages.value = []
+  inputText.value = ''
+  contextInfo.value = null
+  retrieving.value = false
+}
+
+const deleteConversation = async (id: number) => {
+  try {
+    await ragApi.deleteConversation(id)
+    conversations.value = conversations.value.filter((c) => c.id !== id)
+    if (currentConversationId.value === id) {
+      currentConversationId.value = null
+      messages.value = []
     }
-    const response = await api.post('/rag/chat', {
+    message.success('已删除')
+  } catch {
+    message.error('删除失败')
+  }
+}
+
+// ============ 发送消息（SSE 流式） ============
+
+const sendMessage = async () => {
+  const text = inputText.value.trim()
+  if (!text || sending.value) return
+
+  messages.value.push({ id: Date.now(), role: 'user', content: text })
+  inputText.value = ''
+  sending.value = true
+  retrieving.value = false
+  contextInfo.value = null
+  await scrollToBottom()
+
+  // 预创建 AI 消息占位
+  const aiMsgId = Date.now() + 1
+  messages.value.push({ id: aiMsgId, role: 'assistant', content: '', sources: [] })
+  streamingMsgId.value = aiMsgId
+
+  await ragApi.chatStream(
+    {
       message: text,
-      conversation_id: currentChatId.value || undefined
-    }, { timeout: 60000 }) as ChatResponse
-    
-    console.log('RAG API 响应:', response)
-    
-    // 更新思考步骤为完成
-    thinkingMsg.thinkingSteps?.forEach(step => step.done = true)
-    await new Promise(r => setTimeout(r, 300))
-    
-    // 移除思考状态，显示最终回答
-    messages.pop()
-    messages.push({
-      role: 'assistant',
-      content: response.answer || '抱歉，未能获取到有效回答',
-      sources: response.sources || []
-    })
-    
-    // 添加到历史记录
-    if (!currentChatId.value) {
-      const newChat: Chat = {
-        id: Date.now().toString(),
-        title: text.slice(0, 20) + (text.length > 20 ? '...' : ''),
-        date: new Date()
-      }
-      chatHistory.unshift(newChat)
-      currentChatId.value = newChat.id
-    }
-  } catch (e: any) {
-    messages.pop()
-    console.error('RAG API 错误:', e)
-    console.error('错误响应:', e.response)
-    console.error('错误详情:', e.response?.data)
-    const errorMsg = e.response?.data?.detail || e.message || '抱歉，服务暂时不可用，请稍后重试。'
-    messages.push({
-      role: 'assistant',
-      content: `请求失败：${errorMsg}`,
-    })
-  }
-
-  streaming.value = false
-  scrollToBottom()
-}
-
-function generateReply(question: string): Message {
-  // 检查是否是时间相关问题
-  const timeKeywords = ['现在', '今天', '明天', '昨天', '时间', '几点', '日期', '星期', '周日', '周一', '周二', '周三', '周四', '周五', '周六']
-  const isTimeQuestion = timeKeywords.some(kw => question.includes(kw))
-  
-  if (isTimeQuestion) {
-    const now = new Date()
-    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
-    const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-    const dateStr = now.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
-    const weekday = weekdays[now.getDay()]
-    
-    return {
-      role: 'assistant',
-      content: `⏰ 当前时间：${timeStr}\n📅 ${dateStr} ${weekday}\n\n🔧 这是通过 **Tool 工具调用** 获取的实时信息（get_current_time）`,
-      sources: ['工具调用']
-    }
-  }
-  
-  // 检查是否是计算问题
-  const calcKeywords = ['计算', '等于', '多少', '加', '减', '乘', '除']
-  if (calcKeywords.some(kw => question.includes(kw))) {
-    return {
-      role: 'assistant',
-      content: `🧮 计算结果：42\n\n🔧 这是通过 **Tool 工具调用** 计算得出的结果（calculate）`,
-      sources: ['工具调用']
-    }
-  }
-  
-  // 检查是否是问候语
-  const greetKeywords = ['你好', '您好', 'hello', 'hi', '在吗']
-  if (greetKeywords.some(kw => question.toLowerCase().includes(kw))) {
-    return {
-      role: 'assistant',
-      content: '你好！我是托马斯回旋喵，你的智能知识助手。\n\n我可以：\n• 🔍 通过知识库检索专业信息\n• ⏰ 查询当前时间等实时信息\n• 🧮 进行简单的数学计算\n\n有什么可以帮你的吗？',
-      sources: ['模型回答']
-    }
-  }
-
-  const replies: Record<string, Message> = {
-    '介绍一下 AgenticOps 的功能': {
-      role: 'assistant',
-      content: 'AgenticOps 是一个基于**迭代式 RAG** 的智能知识管理平台：\n\n**核心能力：**\n• 查询转换器 - 问题→陈述句\n• 检索 Agent - 语义检索相关文档\n• 相关性检查器 - 评估检索结果\n• 迭代优化 - 不相关时重新检索\n\n**技术栈：** FastAPI + Vue3 + 阿里云通义千问 + 向量数据库',
-      sources: ['系统介绍', '架构文档']
+      kb_id: selectedKbId.value,
+      conversation_id: currentConversationId.value || undefined,
     },
-    '解释一下多 Agent 协作机制': {
-      role: 'assistant',
-      content: '迭代式 RAG 的核心流程：\n\n1️⃣ **查询转换** - 将问题转化为陈述句\n2️⃣ **语义检索** - 基于陈述句检索相关文档\n3️⃣ **相关性判断** - 评估检索结果质量\n4️⃣ **迭代优化** - 不相关时生成新陈述句重新检索\n\n如果知识库中没有相关信息，会直接使用大模型回答。',
-      sources: ['Agent 架构设计']
+    {
+      onRetrieving() {
+        retrieving.value = true
+      },
+
+      onContext(info: { count: number; sources: string[] }) {
+        retrieving.value = false
+        contextInfo.value = info
+        // 将来源信息附加到 AI 消息
+        const aiMsg = messages.value.find((m) => m.id === aiMsgId)
+        if (aiMsg) {
+          aiMsg.sources = info.sources
+        }
+      },
+
+      onChunk(chunk: string) {
+        retrieving.value = false
+        const aiMsg = messages.value.find((m) => m.id === aiMsgId)
+        if (aiMsg) {
+          aiMsg.content += chunk
+          scrollToBottom()
+        }
+      },
+
+      onDone(info: { conversation_id: number; sources: string[]; retrieved_chunks: number }) {
+        if (info.conversation_id) {
+          currentConversationId.value = info.conversation_id
+        }
+        const aiMsg = messages.value.find((m) => m.id === aiMsgId)
+        if (aiMsg) {
+          if (info.sources && info.sources.length) {
+            aiMsg.sources = info.sources
+          }
+          if (!aiMsg.content) {
+            messages.value = messages.value.filter((m) => m.id !== aiMsgId)
+          }
+        }
+        streamingMsgId.value = null
+        messages.value = [...messages.value]
+        sending.value = false
+        retrieving.value = false
+        loadConversations()
+        nextTick(() => scrollToBottom())
+      },
+
+      onError(error: string) {
+        const idx = messages.value.findIndex((m) => m.id === aiMsgId)
+        if (idx !== -1) {
+          messages.value[idx] = { ...messages.value[idx], content: `请求失败：${error}` }
+        }
+        streamingMsgId.value = null
+        messages.value = [...messages.value]
+        sending.value = false
+        retrieving.value = false
+        message.error('对话请求失败')
+        nextTick(() => scrollToBottom())
+      },
     },
-  }
-
-  return replies[question] || {
-    role: 'assistant',
-    content: `关于「${question}」，我已通过迭代式 RAG 完成检索和分析。
-
-检索 Agent 从知识库中找到相关文档，相关性检查器评估了匹配度，最终为你生成这个回复。
-
-如需了解更多细节，可以继续追问。`,
-    sources: ['知识库检索结果']
-  }
+  )
 }
 
-function scrollToBottom() {
-  nextTick(() => {
-    if (messagesRef.value) {
-      messagesRef.value.scrollTop = messagesRef.value.scrollHeight
-    }
-  })
-}
+// ============ 初始化 ============
+
+onMounted(async () => {
+  await loadKnowledgeBases()
+  await loadConversations()
+})
 </script>
+
+<style scoped>
+.rag-chat-page {
+  height: calc(100vh - 96px);
+  min-height: 540px;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+}
+
+/* ===== 左侧面板 ===== */
+.aside-panel {
+  width: 280px;
+  border-right: 1px solid #e2e8f0;
+  background: #fffbf0;
+}
+
+.aside-header {
+  padding: 14px 12px 10px;
+  border-bottom: 1px solid #fde68a;
+}
+
+.kb-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.kb-dot-active {
+  background: #22c55e;
+}
+.kb-dot-inactive {
+  background: #d1d5db;
+}
+.kb-doc-count {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-left: 2px;
+}
+
+.new-chat-btn {
+  width: 100%;
+  border: 1px solid #fde68a;
+  background: #fef9ee;
+  color: #92400e;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.new-chat-btn:hover {
+  background: #fef3c7;
+  border-color: #fbbf24;
+}
+
+/* 对话列表 */
+.conversation-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.conversation-item:hover {
+  background: #fefce8;
+}
+.conversation-item.active {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.conv-time {
+  font-size: 10px;
+  color: #94a3b8;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.delete-btn {
+  display: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #94a3b8;
+  cursor: pointer;
+  margin-left: 2px;
+}
+.delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.conversation-item:hover .delete-btn {
+  display: inline-block;
+}
+.conversation-item:hover .conv-time {
+  display: none;
+}
+
+/* ===== 顶栏状态徽章 ===== */
+.retrieval-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #92400e;
+  font-weight: 500;
+}
+.retrieval-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: pulse-dot 1s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.context-badge {
+  display: inline-flex;
+  align-items: center;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #16a34a;
+  font-weight: 500;
+}
+
+/* ===== 空状态 ===== */
+.empty-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #fef3c7;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.quick-tip {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #92400e;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.quick-tip:hover {
+  background: #fef3c7;
+  border-color: #fbbf24;
+  color: #78350f;
+}
+
+/* ===== 消息气泡 ===== */
+.user-bubble {
+  max-width: 72%;
+  background: #f59e0b;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 16px;
+  border-bottom-right-radius: 6px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+.ai-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #fef3c7;
+  color: #b45309;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ai-bubble {
+  max-width: 78%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border-bottom-left-radius: 6px;
+  font-size: 14px;
+  color: #334155;
+}
+
+/* 来源标签 */
+.source-tag {
+  display: inline-block;
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+/* ===== 思考动画 ===== */
+.thinking-dots {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+}
+.thinking-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f59e0b;
+  animation: thinking 1.2s infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes thinking {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ===== 流式输出 ===== */
+.streaming-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.65;
+}
+.cursor-blink {
+  display: inline;
+  color: #f59e0b;
+  animation: blink 0.8s step-end infinite;
+  font-weight: 300;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ===== 发送按钮 ===== */
+.send-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.send-btn:hover {
+  opacity: 0.9;
+}
+.send-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 900px) {
+  .rag-chat-page {
+    height: calc(100vh - 96px);
+    min-height: 480px;
+  }
+  .aside-panel {
+    width: 220px;
+  }
+}
+
+/* ===== Markdown prose 样式 ===== */
+.prose :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+}
+.prose :deep(thead) {
+  background: #fffbeb;
+}
+.prose :deep(th) {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 2px solid #fde68a;
+  white-space: nowrap;
+}
+.prose :deep(td) {
+  padding: 7px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #475569;
+}
+.prose :deep(tr:hover td) {
+  background: #fffbeb;
+}
+.prose :deep(code) {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+.prose :deep(pre) {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 10px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.prose :deep(pre code) {
+  background: none;
+  color: inherit;
+  padding: 0;
+  font-size: inherit;
+}
+.prose :deep(ul),
+.prose :deep(ol) {
+  padding-left: 1.4em;
+  margin: 6px 0;
+}
+.prose :deep(li) {
+  margin: 3px 0;
+  line-height: 1.6;
+}
+.prose :deep(p) {
+  margin: 6px 0;
+  line-height: 1.65;
+}
+.prose :deep(strong) {
+  font-weight: 600;
+  color: #1e293b;
+}
+.prose :deep(h1),
+.prose :deep(h2),
+.prose :deep(h3),
+.prose :deep(h4) {
+  font-weight: 600;
+  color: #0f172a;
+  margin: 12px 0 6px;
+  line-height: 1.4;
+}
+.prose :deep(h3) { font-size: 15px; }
+.prose :deep(h4) { font-size: 14px; }
+.prose :deep(blockquote) {
+  border-left: 3px solid #fde68a;
+  padding-left: 12px;
+  margin: 8px 0;
+  color: #92400e;
+  font-style: italic;
+}
+.prose :deep(hr) {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 12px 0;
+}
+.prose :deep(a) {
+  color: #d97706;
+  text-decoration: none;
+}
+.prose :deep(a:hover) {
+  text-decoration: underline;
+}
+</style>

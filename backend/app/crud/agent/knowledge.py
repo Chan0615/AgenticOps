@@ -3,7 +3,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, update
 from typing import Optional, List
-from app.models.agent import KnowledgeBase, Document
+from app.models.agent import KnowledgeBase, Document, AgentDocumentChunk
 
 
 async def get_kb_list(
@@ -59,9 +59,12 @@ async def update_kb_counts(db: AsyncSession, kb_id: int):
     doc_count = (
         await db.execute(select(func.count(Document.id)).where(Document.kb_id == kb_id))
     ).scalar() or 0
+    chunk_count = (
+        await db.execute(select(func.count(AgentDocumentChunk.id)).where(AgentDocumentChunk.kb_id == kb_id))
+    ).scalar() or 0
     await db.execute(
         update(KnowledgeBase)
         .where(KnowledgeBase.id == kb_id)
-        .values(document_count=doc_count)
+        .values(document_count=doc_count, chunk_count=chunk_count)
     )
     await db.commit()

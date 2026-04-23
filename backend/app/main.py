@@ -22,10 +22,21 @@ if sys.platform.startswith("win"):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 启动时不再自动创建表，改为手动运行 init_db.py 初始化
-    # await init_db()  # 已禁用自动初始化，避免创建未使用的 Agent 表
+    # 启动时初始化 pgvector 向量表（幂等操作）
+    try:
+        from app.db.pgvector import init_tables, close_pool as close_pgvector
+        await init_tables()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"pgvector 初始化跳过: {e}")
     yield
+    # 关闭连接池
     await engine.dispose()
+    try:
+        from app.db.pgvector import close_pool as close_pgvector
+        await close_pgvector()
+    except Exception:
+        pass
 
 
 app = FastAPI(

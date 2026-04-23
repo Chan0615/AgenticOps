@@ -1,573 +1,822 @@
 <template>
-  <div class="h-full flex flex-col">
-    <!-- 页头 -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-xl font-bold text-surface-900">知识库管理</h2>
-        <p class="text-sm text-surface-400 mt-0.5">管理 RAG 知识库文档与向量索引</p>
+  <div class="kb-page ant-illustration-page">
+    <div class="kb-layout">
+      <!-- 左侧知识库列表 -->
+      <div class="kb-sidebar">
+        <div class="kb-sidebar-header">
+          <span class="kb-sidebar-title">知识库</span>
+          <Button type="primary" size="small" @click="openCreateKBModal">新建</Button>
+        </div>
+        <div class="kb-sidebar-list">
+          <Spin v-if="kbLoading" style="display: block; text-align: center; padding: 32px 0" />
+          <div v-else-if="!knowledgeBases.length" class="kb-sidebar-empty">
+            暂无知识库，请点击「新建」创建
+          </div>
+          <div
+            v-for="kb in knowledgeBases"
+            :key="kb.id"
+            class="kb-sidebar-item"
+            :class="{ active: selectedKB?.id === kb.id }"
+            @click="selectKB(kb)"
+          >
+            <div class="kb-sidebar-item-row">
+              <div class="kb-sidebar-item-name">{{ kb.name }}</div>
+              <div class="kb-sidebar-item-meta">
+                <span>{{ kb.document_count }} 文档</span>
+                <span>·</span>
+                <span>{{ kb.chunk_count }} 片段</span>
+              </div>
+            </div>
+            <div v-if="kb.description" class="kb-sidebar-item-desc">{{ kb.description }}</div>
+            <div class="kb-sidebar-item-actions" @click.stop>
+              <Button type="text" size="small" @click="openEditKBModal(kb)">编辑</Button>
+              <Popconfirm title="确定删除该知识库？删除后不可恢复。" @confirm="handleDeleteKB(kb.id)">
+                <Button type="text" size="small" danger>删除</Button>
+              </Popconfirm>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-3">
-        <button 
-          @click="showUploadModal = true"
-          class="px-4 py-2.5 bg-gradient-to-r from-brand-500 to-brand-600 text-white text-sm font-medium rounded-xl shadow-lg shadow-brand-200/50 hover:shadow-brand-300/50 hover:from-brand-400 hover:to-brand-500 transition-all duration-200 flex items-center gap-2"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-          上传文档
-        </button>
-        <button 
-          @click="rebuildIndex"
-          :disabled="rebuilding"
-          class="px-4 py-2.5 bg-white border border-surface-200 text-surface-700 text-sm font-medium rounded-xl hover:border-brand-300 hover:text-brand-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50"
-        >
-          <svg class="w-4 h-4" :class="rebuilding ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          {{ rebuilding ? '重建中...' : '重建索引' }}
-        </button>
+
+      <!-- 右侧主区域 -->
+      <div class="kb-main">
+        <!-- 未选中状态 -->
+        <div v-if="!selectedKB" class="kb-main-empty">
+          <div class="kb-main-empty-icon">
+            <DatabaseOutlined style="font-size: 48px; color: #cbd5e1" />
+          </div>
+          <div class="kb-main-empty-text">请从左侧选择一个知识库</div>
+        </div>
+
+        <!-- 已选中 -->
+        <template v-else>
+          <!-- 统计卡片 -->
+          <Row :gutter="16" class="kb-stats-row">
+            <Col :span="6">
+              <Card :bordered="false" class="kb-stat-card">
+                <Statistic title="文档总数" :value="kbStats.document_count" :value-style="{ color: '#1677ff' }">
+                  <template #prefix><FileTextOutlined /></template>
+                </Statistic>
+              </Card>
+            </Col>
+            <Col :span="6">
+              <Card :bordered="false" class="kb-stat-card">
+                <Statistic title="片段总数" :value="kbStats.chunk_count" :value-style="{ color: '#722ed1' }">
+                  <template #prefix><BlockOutlined /></template>
+                </Statistic>
+              </Card>
+            </Col>
+            <Col :span="6">
+              <Card :bordered="false" class="kb-stat-card">
+                <Statistic title="已索引片段" :value="kbStats.indexed_chunks" :value-style="{ color: '#52c41a' }">
+                  <template #prefix><CheckCircleOutlined /></template>
+                </Statistic>
+              </Card>
+            </Col>
+            <Col :span="6">
+              <Card :bordered="false" class="kb-stat-card">
+                <Statistic title="已索引文档" :value="kbStats.indexed_docs" :value-style="{ color: '#13c2c2' }">
+                  <template #prefix><FolderOpenOutlined /></template>
+                </Statistic>
+              </Card>
+            </Col>
+          </Row>
+
+          <!-- 工具栏 -->
+          <Card :bordered="false" class="kb-toolbar-card">
+            <Space>
+              <Button type="primary" @click="openUploadModal">上传文档</Button>
+              <Button @click="openAddTextModal">添加文本</Button>
+            </Space>
+          </Card>
+
+          <!-- 文档列表 -->
+          <Card :bordered="false" class="kb-doc-card">
+            <Table
+              :columns="docColumns"
+              :data-source="documents"
+              :loading="docLoading"
+              :pagination="false"
+              row-key="id"
+              size="middle"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.key === 'title'">
+                  <span class="doc-title">{{ record.title }}</span>
+                </template>
+                <template v-else-if="column.key === 'doc_type'">
+                  <Tag :color="docTypeColor(record.doc_type)">{{ record.doc_type }}</Tag>
+                </template>
+                <template v-else-if="column.key === 'chunk_count'">
+                  {{ record.chunk_count ?? 0 }}
+                </template>
+                <template v-else-if="column.key === 'status'">
+                  <Badge
+                    :status="record.status ? 'success' : 'warning'"
+                    :text="record.status ? '已索引' : '未索引'"
+                  />
+                </template>
+                <template v-else-if="column.key === 'created_at'">
+                  {{ dayjs(record.created_at).format('YYYY-MM-DD HH:mm') }}
+                </template>
+                <template v-else-if="column.key === 'action'">
+                  <Space>
+                    <Button type="link" size="small" @click="handleViewChunks(record)">片段</Button>
+                    <Button type="link" size="small" :loading="reindexingId === record.id" @click="handleReindex(record)">
+                      重新索引
+                    </Button>
+                    <Popconfirm title="确定删除此文档？" @confirm="handleDeleteDoc(record.id)">
+                      <Button type="link" size="small" danger>删除</Button>
+                    </Popconfirm>
+                  </Space>
+                </template>
+              </template>
+              <template #emptyText>
+                <div class="kb-doc-empty">暂无文档，请点击「上传文档」或「添加文本」</div>
+              </template>
+            </Table>
+          </Card>
+        </template>
       </div>
     </div>
 
-    <!-- 统计卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-2xl border border-surface-100 p-5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center">
-            <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-surface-900">{{ stats.totalDocs }}</p>
-            <p class="text-xs text-surface-400">文档总数</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl border border-surface-100 p-5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-surface-900">{{ stats.indexedDocs }}</p>
-            <p class="text-xs text-surface-400">已索引</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl border border-surface-100 p-5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-surface-900">{{ stats.pendingDocs }}</p>
-            <p class="text-xs text-surface-400">待处理</p>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl border border-surface-100 p-5">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
-            <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-2xl font-bold text-surface-900">{{ stats.totalChunks }}</p>
-            <p class="text-xs text-surface-400">向量片段</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 文档列表 -->
-    <div class="flex-1 bg-white rounded-2xl border border-surface-100 overflow-hidden flex flex-col">
-      <!-- 搜索栏 -->
-      <div class="p-4 border-b border-surface-100 flex items-center gap-4">
-        <div class="w-80 relative">
-          <svg class="w-4 h-4 text-surface-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input 
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索文档名称..."
-            class="w-full h-10 pl-10 pr-4 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
-          />
-        </div>
-        <select 
-          v-model="filterStatus"
-          class="h-10 px-4 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-700 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-all"
-        >
-          <option value="">全部状态</option>
-          <option value="indexed">已索引</option>
-          <option value="pending">待处理</option>
-          <option value="error">处理失败</option>
-        </select>
-      </div>
-
-      <!-- 列表内容 -->
-      <div class="flex-1 overflow-auto">
-        <table class="w-full">
-          <thead class="bg-surface-50 sticky top-0">
-            <tr>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">文档名称</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">类型</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">大小</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">分片数</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">状态</th>
-              <th class="px-4 py-3 text-left text-xs font-semibold text-surface-500 uppercase tracking-wider">上传时间</th>
-              <th class="px-4 py-3 text-right text-xs font-semibold text-surface-500 uppercase tracking-wider">操作</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-surface-100">
-            <tr v-for="doc in filteredDocs" :key="doc.id" class="hover:bg-surface-50 transition-colors">
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg bg-surface-100 flex items-center justify-center">
-                    <svg class="w-4 h-4 text-surface-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <span class="text-sm font-medium text-surface-900 block">{{ doc.name }}</span>
-                    <span v-if="doc.description" class="text-xs text-surface-400 truncate max-w-[200px] block">{{ doc.description }}</span>
-                  </div>
-                </div>
-              </td>
-              <td class="px-4 py-3">
-                <span class="text-xs px-2 py-1 bg-surface-100 text-surface-600 rounded-full">{{ doc.type }}</span>
-              </td>
-              <td class="px-4 py-3 text-sm text-surface-600">{{ doc.size }}</td>
-              <td class="px-4 py-3 text-sm text-surface-600">{{ doc.chunk_count || '-' }}</td>
-              <td class="px-4 py-3">
-                <span 
-                  class="text-xs px-2 py-1 rounded-full"
-                  :class="{
-                    'bg-emerald-50 text-emerald-600': doc.status === 'indexed',
-                    'bg-amber-50 text-amber-600': doc.status === 'pending',
-                    'bg-blue-50 text-blue-600': doc.status === 'processing',
-                    'bg-rose-50 text-rose-600': doc.status === 'error'
-                  }"
-                >
-                  {{ statusText[doc.status] }}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-sm text-surface-500">{{ doc.uploadTime }}</td>
-              <td class="px-4 py-3 text-right">
-                <div class="flex items-center justify-end gap-1">
-                  <button 
-                    v-if="doc.status === 'pending' || doc.status === 'error'"
-                    @click="processDoc(doc)"
-                    class="p-1.5 text-surface-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                    title="处理文档"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
-                  <button 
-                    @click="viewDoc(doc)"
-                    class="p-1.5 text-surface-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                    title="查看分片"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                  <button 
-                    @click="deleteDoc(doc)"
-                    class="p-1.5 text-surface-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                    title="删除"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- 空状态 -->
-        <div v-if="filteredDocs.length === 0" class="p-16 text-center">
-          <div class="w-14 h-14 rounded-2xl bg-surface-50 border border-surface-100 flex items-center justify-center mx-auto mb-4">
-            <svg class="w-7 h-7 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h3 class="text-sm font-medium text-surface-700">暂无文档</h3>
-          <p class="text-xs text-surface-400 mt-1">点击上方「上传文档」开始添加</p>
-        </div>
-      </div>
-    </div>
+    <!-- 创建/编辑知识库弹窗 -->
+    <Modal
+      v-model:open="kbModalVisible"
+      :title="kbModalMode === 'create' ? '新建知识库' : '编辑知识库'"
+      :confirm-loading="kbSubmitting"
+      @ok="handleKBSubmit"
+    >
+      <Form ref="kbFormRef" :model="kbFormData" :rules="kbFormRules" layout="vertical" style="margin-top: 16px">
+        <FormItem label="知识库名称" name="name">
+          <Input v-model:value="kbFormData.name" placeholder="请输入知识库名称" />
+        </FormItem>
+        <FormItem label="描述" name="description">
+          <Textarea v-model:value="kbFormData.description" :rows="3" placeholder="请输入描述（可选）" />
+        </FormItem>
+      </Form>
+    </Modal>
 
     <!-- 上传文档弹窗 -->
-    <div v-if="showUploadModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg animate-fade-in">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-100">
-          <h3 class="text-lg font-semibold text-surface-900">上传文档</h3>
-          <button @click="closeUploadModal" class="p-1.5 text-surface-400 hover:text-surface-600 hover:bg-surface-100 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        <div class="p-6 space-y-4">
-          <!-- 文档名称 -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1.5">文档名称 <span class="text-rose-500">*</span></label>
-            <input 
-              v-model="uploadForm.name"
-              type="text"
-              placeholder="请输入文档名称"
-              class="w-full h-10 px-3.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all"
-            />
-          </div>
-          
-          <!-- 文档描述 -->
-          <div>
-            <label class="block text-sm font-medium text-surface-700 mb-1.5">文档描述</label>
-            <textarea 
-              v-model="uploadForm.description"
-              rows="2"
-              placeholder="请输入文档描述（可选）"
-              class="w-full px-3.5 py-2.5 bg-surface-50 border border-surface-200 rounded-xl text-sm text-surface-900 placeholder-surface-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 focus:bg-white transition-all resize-none"
-            ></textarea>
-          </div>
-          
-          <!-- 拖拽上传区域 -->
-          <div 
-            v-if="!selectedFile"
-            class="border-2 border-dashed border-surface-200 rounded-2xl p-6 text-center hover:border-brand-300 hover:bg-brand-50/30 transition-all cursor-pointer"
-            @click="openFilePicker"
-            @dragover.prevent
-            @drop.prevent="handleDrop"
-          >
-            <input 
-              ref="fileInput"
-              type="file" 
-              accept=".txt,.pdf,.doc,.docx,.md"
-              class="hidden"
-              @change="handleFileSelect"
-            />
-            <div class="w-12 h-12 rounded-xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
-              <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            </div>
-            <p class="text-sm font-medium text-surface-700 mb-1">点击或拖拽文件到此处上传</p>
-            <p class="text-xs text-surface-400">支持 TXT、PDF、Word、Markdown 格式</p>
-          </div>
-
-          <!-- 已选文件 -->
-          <div v-if="selectedFile" class="p-3 bg-surface-50 rounded-xl border border-surface-200">
-            <div class="flex items-center gap-3">
-              <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-surface-900 truncate">{{ selectedFile.name }}</p>
-                <p class="text-xs text-surface-400">{{ formatFileSize(selectedFile.size) }}</p>
-              </div>
-              <button @click="removeFile" class="p-1 text-surface-400 hover:text-rose-500 transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-surface-100">
-          <button 
-            @click="closeUploadModal"
-            class="px-4 py-2 text-sm font-medium text-surface-600 hover:text-surface-900 transition-colors"
-          >
-            取消
-          </button>
-          <button 
-            @click="uploadFile"
-            :disabled="!canUpload"
-            class="px-4 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white text-sm font-medium rounded-xl hover:from-brand-400 hover:to-brand-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <svg v-if="uploading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            {{ uploading ? '上传中...' : '开始上传' }}
-          </button>
+    <Modal
+      v-model:open="uploadModalVisible"
+      title="上传文档"
+      :confirm-loading="uploading"
+      ok-text="开始上传"
+      @ok="handleUpload"
+    >
+      <div class="upload-area" style="margin-top: 16px">
+        <UploadDragger
+          v-model:fileList="uploadFileList"
+          :before-upload="beforeUpload"
+          :max-count="1"
+          accept=".txt,.md,.pdf,.docx"
+        >
+          <p class="ant-upload-drag-icon">
+            <InboxOutlined />
+          </p>
+          <p class="ant-upload-text">点击或拖拽文件到此处上传</p>
+          <p class="ant-upload-hint">支持 .txt, .md, .pdf, .docx 格式</p>
+        </UploadDragger>
+        <div class="upload-option">
+          <Checkbox v-model:checked="useLlmSplit">使用 LLM 语义切分</Checkbox>
+          <span class="upload-option-hint">开启后由大模型进行语义分段，切分质量更高但速度较慢</span>
         </div>
       </div>
-    </div>
-    
-    <!-- 分片预览弹窗 -->
-    <div v-if="showChunkModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col animate-fade-in">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-surface-100">
-          <div>
-            <h3 class="text-lg font-semibold text-surface-900">分片预览</h3>
-            <p class="text-sm text-surface-400">{{ selectedDoc?.name }} - 共 {{ chunks.length }} 个分片</p>
-          </div>
-          <button @click="showChunkModal = false" class="p-1.5 text-surface-400 hover:text-surface-600 hover:bg-surface-100 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    </Modal>
+
+    <!-- 添加文本弹窗 -->
+    <Modal
+      v-model:open="textModalVisible"
+      title="添加文本"
+      :confirm-loading="textSubmitting"
+      @ok="handleAddText"
+    >
+      <Form ref="textFormRef" :model="textFormData" :rules="textFormRules" layout="vertical" style="margin-top: 16px">
+        <FormItem label="标题" name="title">
+          <Input v-model:value="textFormData.title" placeholder="请输入文档标题" />
+        </FormItem>
+        <FormItem label="内容" name="content">
+          <Textarea v-model:value="textFormData.content" :rows="8" placeholder="请输入文档内容" />
+        </FormItem>
+        <FormItem label="来源" name="source">
+          <Input v-model:value="textFormData.source" placeholder="来源标注（可选）" />
+        </FormItem>
+      </Form>
+    </Modal>
+
+    <!-- 查看片段抽屉 -->
+    <Drawer
+      v-model:open="chunksDrawerVisible"
+      :title="`文档片段 — ${chunksDocTitle}`"
+      :width="640"
+      placement="right"
+    >
+      <div v-if="chunksLoading" style="text-align: center; padding: 48px 0">
+        <Spin tip="加载中..." />
+      </div>
+      <div v-else-if="!chunksList.length" style="text-align: center; padding: 48px 0; color: #94a3b8">
+        暂无片段数据
+      </div>
+      <div v-else>
+        <div style="margin-bottom: 12px; font-size: 13px; color: #64748b">
+          共 {{ chunksList.length }} 个片段
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-6">
-          <div class="space-y-4">
-            <div v-for="(chunk, index) in chunks" :key="chunk.id" class="border border-surface-200 rounded-xl overflow-hidden">
-              <div class="bg-surface-50 px-4 py-2 border-b border-surface-200 flex items-center justify-between">
-                <span class="text-sm font-medium text-surface-700">分片 #{{ chunk.chunk_index + 1 }}</span>
-                <span class="text-xs text-surface-400">{{ chunk.char_count }} 字符</span>
-              </div>
-              <div class="p-4 bg-white">
-                <p class="text-sm text-surface-800 leading-relaxed whitespace-pre-wrap">{{ chunk.content }}</p>
-              </div>
+        <div class="chunks-list">
+          <div v-for="chunk in chunksList" :key="chunk.id" class="chunk-item">
+            <div class="chunk-header">
+              <Tag color="blue">片段 {{ chunk.chunk_index + 1 }}</Tag>
+              <span class="chunk-chars">{{ chunk.char_count }} 字</span>
             </div>
+            <div class="chunk-content">{{ chunk.content }}</div>
           </div>
         </div>
       </div>
-    </div>
+    </Drawer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import api from '@/api'
-import { formatDateTime } from '@/utils/datetime'
+import { ref, reactive, onMounted } from 'vue'
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Row,
+  Space,
+  Spin,
+  Statistic,
+  Table,
+  Tag,
+  Upload,
+  message,
+} from 'ant-design-vue'
+import {
+  BlockOutlined,
+  CheckCircleOutlined,
+  DatabaseOutlined,
+  FileTextOutlined,
+  FolderOpenOutlined,
+  InboxOutlined,
+} from '@ant-design/icons-vue'
+import dayjs from 'dayjs'
+import { ragApi, type KnowledgeBase, type KBStats, type Document } from '@/api/agent/index'
 
-interface Document {
-  id: string
-  name: string
-  description?: string
-  type: string
-  size: string
-  status: 'indexed' | 'pending' | 'error' | 'processing'
-  chunk_count: number
-  uploadTime: string
+const FormItem = Form.Item
+const Textarea = Input.TextArea
+const UploadDragger = Upload.Dragger
+
+// ============ 知识库列表 ============
+const kbLoading = ref(false)
+const knowledgeBases = ref<KnowledgeBase[]>([])
+const selectedKB = ref<KnowledgeBase | null>(null)
+
+const loadKnowledgeBases = async () => {
+  kbLoading.value = true
+  try {
+    knowledgeBases.value = await ragApi.getKnowledgeBases()
+  } catch {
+    knowledgeBases.value = []
+    message.error('加载知识库列表失败')
+  } finally {
+    kbLoading.value = false
+  }
 }
 
-interface Chunk {
-  id: number
-  chunk_index: number
-  content: string
-  char_count: number
+const selectKB = async (kb: KnowledgeBase) => {
+  selectedKB.value = kb
+  await Promise.all([loadKBStats(kb.id), loadDocuments(kb.id)])
 }
 
-const searchQuery = ref('')
-const filterStatus = ref('')
-const showUploadModal = ref(false)
-const selectedFile = ref<File | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
-const uploading = ref(false)
-const rebuilding = ref(false)
-const showChunkModal = ref(false)
-const selectedDoc = ref<Document | null>(null)
-const chunks = ref<Chunk[]>([])
-
-const uploadForm = ref({
+// ============ 知识库统计 ============
+const kbStats = reactive<KBStats>({
+  kb_id: 0,
   name: '',
-  description: ''
+  document_count: 0,
+  chunk_count: 0,
+  indexed_chunks: 0,
+  indexed_docs: 0,
 })
 
-const stats = ref({
-  totalDocs: 0,
-  indexedDocs: 0,
-  pendingDocs: 0,
-  totalChunks: 0
-})
-
-const statusText: Record<string, string> = {
-  indexed: '已索引',
-  pending: '待处理',
-  processing: '处理中',
-  error: '处理失败'
+const loadKBStats = async (kbId: number) => {
+  try {
+    const data = await ragApi.getKBStats(kbId)
+    Object.assign(kbStats, data)
+  } catch {
+    kbStats.document_count = 0
+    kbStats.chunk_count = 0
+    kbStats.indexed_chunks = 0
+    kbStats.indexed_docs = 0
+  }
 }
 
+// ============ 文档列表 ============
+const docLoading = ref(false)
 const documents = ref<Document[]>([])
 
-const filteredDocs = computed(() => {
-  return documents.value.filter(doc => {
-    const matchQuery = doc.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-    const matchStatus = !filterStatus.value || doc.status === filterStatus.value
-    return matchQuery && matchStatus
-  })
-})
+const docColumns = [
+  { title: '标题', dataIndex: 'title', key: 'title', ellipsis: true },
+  { title: '类型', dataIndex: 'doc_type', key: 'doc_type', width: 100 },
+  { title: '片段数', dataIndex: 'chunk_count', key: 'chunk_count', width: 100, align: 'center' as const },
+  { title: '状态', key: 'status', width: 120 },
+  { title: '创建时间', key: 'created_at', width: 180 },
+  { title: '操作', key: 'action', width: 180, fixed: 'right' as const },
+]
 
-const canUpload = computed(() => {
-  return uploadForm.value.name.trim() && selectedFile.value && !uploading.value
-})
-
-// 获取文档列表
-async function fetchDocuments() {
+const loadDocuments = async (kbId: number) => {
+  docLoading.value = true
   try {
-    const data = await api.get<any, any[]>('/v1/common/knowledge/documents')
-    documents.value = data.map((doc: any) => ({
-      id: doc.id.toString(),
-      name: doc.name,
-      description: doc.description,
-      type: doc.file_type.toUpperCase(),
-      size: formatFileSize(doc.file_size),
-      status: doc.status,
-      chunk_count: doc.chunk_count,
-      uploadTime: formatDateTime(doc.created_at)
-    }))
-    updateStats()
-  } catch (error) {
-    console.error('获取文档列表失败:', error)
+    documents.value = await ragApi.getDocuments(kbId)
+  } catch {
+    documents.value = []
+    message.error('加载文档列表失败')
+  } finally {
+    docLoading.value = false
   }
 }
 
-function updateStats() {
-  stats.value.totalDocs = documents.value.length
-  stats.value.indexedDocs = documents.value.filter(d => d.status === 'indexed').length
-  stats.value.pendingDocs = documents.value.filter(d => d.status === 'pending').length
-  stats.value.totalChunks = documents.value.reduce((sum, d) => sum + (d.chunk_count || 0), 0)
+const docTypeColor = (docType: string) => {
+  const map: Record<string, string> = {
+    pdf: 'red',
+    txt: 'blue',
+    md: 'green',
+    docx: 'orange',
+    markdown: 'green',
+    text: 'blue',
+  }
+  return map[docType?.toLowerCase()] || 'default'
 }
 
-function handleFileSelect(e: Event) {
-  const files = (e.target as HTMLInputElement).files
-  if (files && files.length > 0) {
-    selectedFile.value = files[0]
-    // 自动填充文件名（如果用户未输入）
-    if (!uploadForm.value.name) {
-      uploadForm.value.name = files[0].name.replace(/\.[^/.]+$/, '')
+// ============ 创建/编辑知识库 ============
+const kbModalVisible = ref(false)
+const kbModalMode = ref<'create' | 'edit'>('create')
+const kbSubmitting = ref(false)
+const kbFormRef = ref()
+const editingKBId = ref<number | null>(null)
+
+const kbFormData = reactive({
+  name: '',
+  description: '',
+})
+
+const kbFormRules = {
+  name: [{ required: true, message: '请输入知识库名称' }],
+}
+
+const openCreateKBModal = () => {
+  kbModalMode.value = 'create'
+  editingKBId.value = null
+  kbFormData.name = ''
+  kbFormData.description = ''
+  kbModalVisible.value = true
+}
+
+const openEditKBModal = (kb: KnowledgeBase) => {
+  kbModalMode.value = 'edit'
+  editingKBId.value = kb.id
+  kbFormData.name = kb.name
+  kbFormData.description = kb.description || ''
+  kbModalVisible.value = true
+}
+
+const handleKBSubmit = async () => {
+  try {
+    await kbFormRef.value?.validateFields()
+  } catch {
+    return
+  }
+  kbSubmitting.value = true
+  try {
+    if (kbModalMode.value === 'create') {
+      await ragApi.createKnowledgeBase({
+        name: kbFormData.name,
+        description: kbFormData.description || undefined,
+      })
+      message.success('知识库创建成功')
+    } else if (editingKBId.value !== null) {
+      const updated = await ragApi.updateKnowledgeBase(editingKBId.value, {
+        name: kbFormData.name,
+        description: kbFormData.description || undefined,
+      })
+      // If editing the currently selected KB, refresh it
+      if (selectedKB.value?.id === editingKBId.value) {
+        selectedKB.value = updated
+      }
+      message.success('知识库更新成功')
     }
+    kbModalVisible.value = false
+    await loadKnowledgeBases()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '操作失败')
+  } finally {
+    kbSubmitting.value = false
   }
 }
 
-function handleDrop(e: DragEvent) {
-  const files = e.dataTransfer?.files
-  if (files && files.length > 0) {
-    selectedFile.value = files[0]
-    if (!uploadForm.value.name) {
-      uploadForm.value.name = files[0].name.replace(/\.[^/.]+$/, '')
+const handleDeleteKB = async (id: number) => {
+  try {
+    await ragApi.deleteKnowledgeBase(id)
+    message.success('删除成功')
+    if (selectedKB.value?.id === id) {
+      selectedKB.value = null
+      documents.value = []
     }
+    await loadKnowledgeBases()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '删除失败')
   }
 }
 
-function openFilePicker() {
-  fileInput.value?.click()
+// ============ 上传文档 ============
+const uploadModalVisible = ref(false)
+const uploading = ref(false)
+const uploadFileList = ref<any[]>([])
+const useLlmSplit = ref(true)
+
+const openUploadModal = () => {
+  uploadFileList.value = []
+  useLlmSplit.value = true
+  uploadModalVisible.value = true
 }
 
-function removeFile() {
-  selectedFile.value = null
+const beforeUpload = () => {
+  // Prevent auto upload; we handle it manually
+  return false
 }
 
-function closeUploadModal() {
-  showUploadModal.value = false
-  selectedFile.value = null
-  uploadForm.value = { name: '', description: '' }
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-async function uploadFile() {
-  if (!selectedFile.value) return
-  
+const handleUpload = async () => {
+  if (!selectedKB.value) return
+  if (!uploadFileList.value.length) {
+    message.warning('请选择要上传的文件')
+    return
+  }
+  const file = uploadFileList.value[0].originFileObj || uploadFileList.value[0]
   uploading.value = true
-  
   try {
-    const formData = new FormData()
-    formData.append('file', selectedFile.value)
-    formData.append('name', uploadForm.value.name)
-    if (uploadForm.value.description) {
-      formData.append('description', uploadForm.value.description)
-    }
-    
-    await api.post('/v1/common/knowledge/documents/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    
-    await fetchDocuments()
-    closeUploadModal()
-  } catch (error) {
-    console.error('上传失败:', error)
-    alert('上传失败，请重试')
+    const res = await ragApi.uploadDocument(selectedKB.value.id, file, useLlmSplit.value)
+    message.success(res.message || '上传成功')
+    uploadModalVisible.value = false
+    await refreshCurrentKB()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '上传失败')
   } finally {
     uploading.value = false
   }
 }
 
-async function rebuildIndex() {
-  rebuilding.value = true
-  // 实际项目中这里会调用重建索引的API
-  await new Promise(r => setTimeout(r, 2000))
-  rebuilding.value = false
+// ============ 添加文本 ============
+const textModalVisible = ref(false)
+const textSubmitting = ref(false)
+const textFormRef = ref()
+
+const textFormData = reactive({
+  title: '',
+  content: '',
+  source: '',
+})
+
+const textFormRules = {
+  title: [{ required: true, message: '请输入文档标题' }],
+  content: [{ required: true, message: '请输入文档内容' }],
 }
 
-async function viewDoc(doc: Document) {
-  selectedDoc.value = doc
-  
-  if (doc.status === 'indexed' && doc.chunk_count > 0) {
-    try {
-      const data = await api.get<any, Chunk[]>(`/v1/common/knowledge/documents/${doc.id}/chunks`)
-      chunks.value = data
-      showChunkModal.value = true
-    } catch (error) {
-      console.error('获取分片失败:', error)
-    }
-  } else {
-    alert('该文档尚未建立索引，无法预览分片')
-  }
+const openAddTextModal = () => {
+  textFormData.title = ''
+  textFormData.content = ''
+  textFormData.source = ''
+  textModalVisible.value = true
 }
 
-async function processDoc(doc: Document) {
+const handleAddText = async () => {
+  if (!selectedKB.value) return
   try {
-    // 更新状态为处理中
-    const docIndex = documents.value.findIndex(d => d.id === doc.id)
-    if (docIndex !== -1) {
-      documents.value[docIndex].status = 'processing'
-    }
-    
-    // 使用更长的超时时间（60秒）
-    await api.post(`/v1/common/knowledge/documents/${doc.id}/process`, null, {
-      timeout: 60000
+    await textFormRef.value?.validateFields()
+  } catch {
+    return
+  }
+  textSubmitting.value = true
+  try {
+    await ragApi.createDocument(selectedKB.value.id, {
+      title: textFormData.title,
+      content: textFormData.content,
+      source: textFormData.source || undefined,
     })
-    
-    alert('文档处理完成')
-    await fetchDocuments()
-  } catch (error: any) {
-    console.error('处理失败:', error)
-    if (error.code === 'ECONNABORTED') {
-      alert('处理时间较长，请稍后刷新查看处理结果')
-    } else {
-      alert('处理失败，请重试')
-    }
-    await fetchDocuments() // 刷新状态
+    message.success('文档添加成功')
+    textModalVisible.value = false
+    await refreshCurrentKB()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '添加失败')
+  } finally {
+    textSubmitting.value = false
   }
 }
 
-async function deleteDoc(doc: Document) {
-  if (confirm(`确定要删除文档「${doc.name}」吗？`)) {
-    try {
-      await api.delete(`/v1/common/knowledge/documents/${doc.id}`)
-      await fetchDocuments()
-    } catch (error) {
-      console.error('删除失败:', error)
-      alert('删除失败，请重试')
-    }
+// ============ 文档操作 ============
+const reindexingId = ref<number | null>(null)
+
+const handleReindex = async (doc: Document) => {
+  reindexingId.value = doc.id
+  try {
+    const res = await ragApi.reindexDocument(doc.id)
+    message.success(res.message || '重新索引成功')
+    await refreshCurrentKB()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '重新索引失败')
+  } finally {
+    reindexingId.value = null
   }
 }
 
-// 初始化加载
-fetchDocuments()
+const handleDeleteDoc = async (docId: number) => {
+  try {
+    await ragApi.deleteDocument(docId)
+    message.success('文档已删除')
+    await refreshCurrentKB()
+  } catch (err: any) {
+    message.error(err?.response?.data?.detail || '删除失败')
+  }
+}
+
+// ============ 查看片段 ============
+const chunksDrawerVisible = ref(false)
+const chunksLoading = ref(false)
+const chunksDocTitle = ref('')
+const chunksList = ref<{ id: number; chunk_index: number; content: string; char_count: number }[]>([])
+
+const handleViewChunks = async (doc: Document) => {
+  chunksDocTitle.value = doc.title
+  chunksDrawerVisible.value = true
+  chunksLoading.value = true
+  try {
+    const res = await ragApi.getDocumentChunks(doc.id)
+    chunksList.value = res.chunks || []
+  } catch {
+    chunksList.value = []
+    message.error('加载片段失败')
+  } finally {
+    chunksLoading.value = false
+  }
+}
+
+// ============ 辅助 ============
+const refreshCurrentKB = async () => {
+  if (!selectedKB.value) return
+  await Promise.all([
+    loadKBStats(selectedKB.value.id),
+    loadDocuments(selectedKB.value.id),
+    loadKnowledgeBases(),
+  ])
+}
+
+// ============ 初始化 ============
+onMounted(() => {
+  loadKnowledgeBases()
+})
 </script>
+
+<style scoped>
+.kb-page {
+  height: 100%;
+}
+
+.kb-layout {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+}
+
+/* ---- 左侧边栏 ---- */
+.kb-sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kb-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.kb-sidebar-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.kb-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.kb-sidebar-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+  padding: 32px 12px;
+}
+
+.kb-sidebar-item {
+  position: relative;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  margin-bottom: 2px;
+}
+
+.kb-sidebar-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.kb-sidebar-item.active {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.kb-sidebar-item-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kb-sidebar-item-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kb-sidebar-item-meta {
+  display: flex;
+  gap: 4px;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kb-sidebar-item-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kb-sidebar-item-actions {
+  display: none;
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  gap: 0;
+  background: inherit;
+}
+
+.kb-sidebar-item:hover .kb-sidebar-item-actions {
+  display: flex;
+}
+
+/* ---- 右侧主区域 ---- */
+.kb-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.kb-main-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.kb-main-empty-icon {
+  margin-bottom: 16px;
+}
+
+.kb-main-empty-text {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+/* ---- 统计卡片 ---- */
+.kb-stats-row {
+  flex-shrink: 0;
+}
+
+.kb-stat-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+/* ---- 工具栏 ---- */
+.kb-toolbar-card {
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+
+/* ---- 文档表格 ---- */
+.kb-doc-card {
+  flex: 1;
+  min-height: 0;
+  border-radius: 8px;
+}
+
+.doc-title {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.kb-doc-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* ---- 上传选项 ---- */
+.upload-option {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-option-hint {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+/* ---- 片段列表 ---- */
+.chunks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chunk-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.chunk-item:hover {
+  border-color: #93c5fd;
+}
+
+.chunk-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #fff;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chunk-chars {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.chunk-content {
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+</style>
