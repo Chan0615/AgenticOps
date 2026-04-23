@@ -145,12 +145,10 @@ npm run dev
 | 编号 | 文档 | 说明 |
 |------|------|------|
 | 01 | [本地开发指南](docs/01-本地开发指南.md) | 本地环境搭建、首次配置、启动流程 |
-| 02 | [手动部署指南](docs/02-手动部署指南.md) | Linux 手动部署、systemd、Nginx |
+| 02 | [手动部署指南](docs/02-手动部署指南.md) | Linux 手动部署、systemd、Nginx、HTTPS |
 | 03 | [Docker部署指南](docs/03-Docker部署指南.md) | Docker Compose 容器化部署 |
 | 04 | [pgvector安装指南](docs/04-pgvector安装指南.md) | PostgreSQL + pgvector 安装 |
-| 05 | [Nginx反向代理配置](docs/05-Nginx反向代理配置.md) | 生产环境 Nginx 配置模板 |
-| 06 | [Systemd服务管理](docs/06-Systemd服务管理.md) | systemd 服务文件模板 |
-| 07 | [AI开发助手注记](docs/07-AI开发助手注记.md) | AI 编码助手上下文（AGENTS.md） |
+| 05 | [AI开发助手注记](docs/05-AI开发助手注记.md) | AI 编码助手上下文（AGENTS.md） |
 
 ## License
 
