@@ -11,9 +11,18 @@
 ## 一、快速开始
 
 ```bash
-# 1. 克隆代码
+# 1. 获取代码（二选一）
+
+# 方式 A：Git 克隆
 git clone <your-repo-url> AgenticOps
 cd AgenticOps
+
+# 方式 B：本地打包上传（国内服务器推荐）
+# 本地执行：
+#   tar -czf AgenticOps.tar.gz --exclude=node_modules --exclude=.venv --exclude=__pycache__ --exclude=dist --exclude=.git AgenticOps
+#   scp AgenticOps.tar.gz root@<服务器IP>:/opt/
+# 服务器执行：
+#   cd /opt && tar -xzf AgenticOps.tar.gz && cd AgenticOps
 
 # 2. 准备配置文件
 cp backend/config.yaml.example backend/config.yaml
