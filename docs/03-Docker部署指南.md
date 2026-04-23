@@ -98,7 +98,7 @@ docker compose exec app python init_db.py
 docker compose exec app python init_pgvector.py
 ```
 
-访问 `http://<服务器IP>:8080`，默认账号 `admin / admin123`。
+访问 `http://<服务器IP>:9080`，默认账号 `admin / admin123`。
 
 ### 2.3 服务列表
 
@@ -198,7 +198,7 @@ PG_DATABASE=agenticops_vector
 PG_PORT=5432
 
 # Nginx 对外端口
-HTTP_PORT=8080
+HTTP_PORT=9080
 EOF
 ```
 
@@ -212,7 +212,7 @@ EOF
 | `PG_PASSWORD` | `agenticops123` | pgvector 密码 |
 | `PG_DATABASE` | `agenticops_vector` | pgvector 数据库名 |
 | `PG_PORT` | `5432` | pgvector 对外端口 |
-| `HTTP_PORT` | `8080` | Nginx 对外 HTTP 端口 |
+| `HTTP_PORT` | `9080` | Nginx 对外 HTTP 端口 |
 
 > `.env` 中的变量只影响 `docker-compose.yml` 的占位符，后端应用读的是 `config.yaml`，两者需要对应。
 
@@ -284,7 +284,7 @@ docker compose down -v
 
 ## 八、HTTPS
 
-在宿主机上安装 Nginx + Certbot，反向代理到 Docker 的 8080 端口：
+在宿主机上安装 Nginx + Certbot，反向代理到 Docker 的 9080 端口：
 
 ```bash
 sudo apt install -y nginx certbot python3-certbot-nginx
@@ -296,7 +296,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:9080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -342,7 +342,7 @@ docker compose up -d
 
 ```bash
 # 查看端口占用
-ss -tlnp | grep -E '3306|6379|5432|8080'
+ss -tlnp | grep -E '3306|6379|5432|9080'
 
 # 修改 .env 避开冲突端口
 HTTP_PORT=9090

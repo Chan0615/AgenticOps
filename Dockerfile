@@ -26,13 +26,13 @@ RUN pip install --no-cache-dir -r requirements.txt \
 # Copy backend source
 COPY backend/ ./
 
-# Copy frontend build
-COPY --from=frontend-builder /app/frontend/dist /app/static
+# Copy frontend build (baked into image, not on a volume)
+COPY --from=frontend-builder /app/frontend/dist /app/_static_dist
 
 # Create necessary directories
 RUN mkdir -p /app/uploads /app/logs /app/storage
 
 EXPOSE 8000
 
-# Default: run API server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start: sync frontend to shared volume, then run API
+CMD ["sh", "-c", "cp -r /app/_static_dist/* /app/static/ 2>/dev/null || true; uvicorn app.main:app --host 0.0.0.0 --port 8000"]
