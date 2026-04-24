@@ -150,6 +150,7 @@ npm run dev
 | 04 | [pgvector安装指南](docs/04-pgvector安装指南.md) | PostgreSQL + pgvector 安装 |
 | 05 | [AI开发助手注记](docs/05-AI开发助手注记.md) | AI 编码助手上下文（AGENTS.md） |
 | 06 | [Docker常用操作手册](docs/06-Docker常用操作手册.md) | Docker 日常运维命令参考 |
+| 07 | [Git常用操作手册](docs/07-Git常用操作手册.md) | Git 日常操作与远程仓库管理 |
 
 ## License
 
