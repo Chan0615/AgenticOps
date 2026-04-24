@@ -149,6 +149,7 @@ npm run dev
 | 03 | [Docker部署指南](docs/03-Docker部署指南.md) | Docker Compose 容器化部署 |
 | 04 | [pgvector安装指南](docs/04-pgvector安装指南.md) | PostgreSQL + pgvector 安装 |
 | 05 | [AI开发助手注记](docs/05-AI开发助手注记.md) | AI 编码助手上下文（AGENTS.md） |
+| 06 | [Docker常用操作手册](docs/06-Docker常用操作手册.md) | Docker 日常运维命令参考 |
 
 ## License
 
